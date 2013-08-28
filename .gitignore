@@ -1,0 +1,15 @@
+#IntelliJ IDEA
+.idea/
+*.iml
+
+#Eclipse
+.classpath
+.project
+.settings/
+
+#Build artifacts
+bin/
+gen/
+libs/
+proguard-project.txt
+target/

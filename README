@@ -1,0 +1,43 @@
+Android application for TOTP with YubiKey NEO
+=============================================
+
+See the file COPYING for copyright and license information.
+
+Introduction
+------------
+
+This is a small android application for doing Oath TOTP codes with
+the help of a YubiKey NEO.
+To use it when you have a TOTP qr-code:
+
+1. Make sure NFC is turned on
+2. Start the application
+3. Select 'Program NEO'
+4. The barcode scanner will start if installed, otherwise offer to install
+5. Scan the barcode and select which slot to program
+6. Swipe the YubiKey NEO as instructed
+7. Select 'TOTP from Slot x' and the Slot you programmed
+8. Swipe the YubiKey NEO as instructed
+9. Enter the code shown on screen
+
+The programming feature is equivalent to running ykpersonalize with the
+correct slot:
+-----------
+  $ ykpersonalize -[1/2] -ochal-resp -ochal-hmac -ohmac-lt64 \
+    -oserial-api-visible -oallow-update
+-----------
+
+Building
+--------
+
+This project uses maven3 for building, so to build:
+-----------
+  $ mvn3 package
+-----------
+After building the .apk file can be found in the target directory.
+
+Issues
+------
+
+Please report any issues/feature-suggestions in the issue tracker
+on github (https://github.com/Yubico/yubitotp-android)

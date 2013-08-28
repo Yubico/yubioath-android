@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:orientation="vertical"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:layout_gravity="center"
+              android:gravity="center_vertical|center_horizontal"
+              android:padding="16dp">
+
+    <ProgressBar
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/timeRemaining"
+        style="@android:style/Widget.Holo.ProgressBar.Horizontal"
+        android:layout_gravity="center"
+        android:indeterminate="false"
+        android:max="1000"
+        android:visibility="gone"/>
+
+    <ListView
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:id="@id/android:list"
+        android:choiceMode="singleChoice"
+        />
+
+    <TextView
+        android:id="@id/android:empty"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/swipe_and_hold"
+        />
+</LinearLayout>
