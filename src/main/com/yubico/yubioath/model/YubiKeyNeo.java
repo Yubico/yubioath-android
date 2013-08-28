@@ -29,6 +29,7 @@ public class YubiKeyNeo {
     public static final byte T_RESPONSE_TAG = 0x76;
     public static final byte NO_RESPONSE_TAG = 0x77;
     public static final byte PROPERTY_TAG = 0x78;
+    public static final byte VERSION_TAG = 0x79;
 
     public static final byte PUT_INS = 0x01;
     public static final byte DELETE_INS = 0x02;
@@ -72,6 +73,9 @@ public class YubiKeyNeo {
         byte[] resp = requireStatus(isoTag.transceive(SELECT_COMMAND), APDU_OK);
 
         int offset = 0;
+        byte[] version = parseBlock(resp, offset, VERSION_TAG);
+        offset += version.length + 2;
+
         id = parseBlock(resp, offset, NAME_TAG);
         offset += id.length + 2;
         if (resp.length - offset - 4 > 0) {

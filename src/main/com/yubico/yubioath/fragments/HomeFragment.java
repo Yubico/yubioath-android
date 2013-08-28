@@ -1,6 +1,9 @@
 package com.yubico.yubioath.fragments;
 
 import android.app.*;
+import android.content.ClipData;
+import android.content.ClipboardManager;
+import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.*;
@@ -33,6 +36,7 @@ public class HomeFragment extends ListFragment implements MainActivity.OnYubiKey
     private SimpleAdapter adapter;
     private ProgressBar timeoutBar;
     private ActionMode actionMode;
+    private int selectedPos = -1;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -47,17 +51,17 @@ public class HomeFragment extends ListFragment implements MainActivity.OnYubiKey
         adapter = new SimpleAdapter(getActivity(), codes, R.layout.totp_code_view, FROM, TO);
         setListAdapter(adapter);
 
+        getListView().setChoiceMode(ListView.CHOICE_MODE_SINGLE);
         getListView().setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
             public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
                 Log.d("yubioath", "pos: " + position + ", id: " + id + ", view: " + view);
-                Log.d("yubioath", "enabled: "+adapter.isEnabled(position)+ " all: "+adapter.areAllItemsEnabled());
                 if(actionMode == null) {
-                    //actionMode = getActivity().startActionMode(HomeFragment.this);
-                    setSelection(position);
-                    Log.d("yubioath", "!selected id: "+getSelectedItemId()+", pos: "+getSelectedItemPosition());
-                    //getListView().setSelection(position);
+                    actionMode = getActivity().startActionMode(HomeFragment.this);
+                    selectedPos = position;
+                    Log.d("yubioath", "!selected id: "+getSelectedItemId()+", pos: "+getSelectedItemPosition()+ "checked: "+getListView().getCheckedItemPosition());
                 }
+                view.setSelected(true);
                 return true;
             }
         });
@@ -90,12 +94,13 @@ public class HomeFragment extends ListFragment implements MainActivity.OnYubiKey
 
     @Override
     public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
-        Log.d("yubioath", "actionItemClicked: "+ item.getItemId());
         switch (item.getItemId()) {
             case R.id.copy_to_clipboard:
-                Log.d("yubioath", "checked: "+getListView().getCheckedItemPosition());
-                Log.d("yubioath", "pos: "+getSelectedItemPosition()+", id: "+getSelectedItemId());
-                Log.d("yubioath", "COPY: "+codes.get(getSelectedItemPosition()).get("code"));
+                Map<String,String> code = codes.get(selectedPos);
+                ClipboardManager clipboard = (ClipboardManager) getActivity().getSystemService(Context.CLIPBOARD_SERVICE);
+                ClipData clip = ClipData.newPlainText(code.get("label"), code.get("code"));
+                clipboard.setPrimaryClip(clip);
+                Toast.makeText(getActivity(), R.string.copied, Toast.LENGTH_SHORT).show();
                 break;
             default:
                 return false;
