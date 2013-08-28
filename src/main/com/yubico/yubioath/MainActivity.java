@@ -14,7 +14,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 import com.yubico.yubioath.fragments.AddCodeFragment;
-import com.yubico.yubioath.fragments.HomeFragment;
+import com.yubico.yubioath.fragments.ListCodesFragment;
 import com.yubico.yubioath.fragments.SetPasswordFragment;
 import com.yubico.yubioath.model.KeyManager;
 import com.yubico.yubioath.model.PasswordRequiredException;
@@ -50,7 +50,7 @@ public class MainActivity extends Activity {
 
         keyManager = new KeyManager(this);
 
-        openFragment(new HomeFragment());
+        openFragment(new ListCodesFragment());
     }
 
     @Override
@@ -80,17 +80,8 @@ public class MainActivity extends Activity {
 
     public void openFragment(Fragment fragment) {
         if (fragment instanceof OnYubiKeyNeoListener) {
-            if (totpListener == null) {
-                /*Intent intent = getIntent();
-                intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
-                PendingIntent tagIntent = PendingIntent.getActivity(this, 0, intent, 0);
-                IntentFilter iso = new IntentFilter(NfcAdapter.ACTION_TECH_DISCOVERED);
-                adapter.enableForegroundDispatch(this, tagIntent, new IntentFilter[]{iso},
-                        new String[][]{new String[]{IsoDep.class.getName()}});*/
-            }
             totpListener = (OnYubiKeyNeoListener) fragment;
         } else if (totpListener != null) {
-            //adapter.disableForegroundDispatch(this);
             totpListener = null;
         }
 

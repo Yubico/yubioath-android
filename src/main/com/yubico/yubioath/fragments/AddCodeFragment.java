@@ -53,7 +53,7 @@ public class AddCodeFragment extends Fragment implements MainActivity.OnYubiKeyN
             view.post(new Runnable() {
                 @Override
                 public void run() {
-                    ((MainActivity) getActivity()).openFragment(new HomeFragment());
+                    ((MainActivity) getActivity()).openFragment(new ListCodesFragment());
                 }
             });
         }
@@ -122,7 +122,7 @@ public class AddCodeFragment extends Fragment implements MainActivity.OnYubiKeyN
         getView().post(new Runnable() {
             @Override
             public void run() {
-                final HomeFragment fragment = new HomeFragment();
+                final ListCodesFragment fragment = new ListCodesFragment();
                 ((MainActivity)getActivity()).openFragment(fragment);
                 getView().post(new Runnable() {
                     @Override

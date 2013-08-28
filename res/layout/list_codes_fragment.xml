@@ -16,7 +16,7 @@
         android:layout_gravity="center"
         android:indeterminate="false"
         android:max="1000"
-        android:visibility="gone"/>
+        />
 
     <ListView
         android:layout_width="fill_parent"
@@ -25,10 +25,18 @@
         android:choiceMode="singleChoice"
         />
 
-    <TextView
+    <LinearLayout
         android:id="@id/android:empty"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/swipe_and_hold"
-        />
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:gravity="center">
+
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/swipe_and_hold"
+            />
+
+    </LinearLayout>
 </LinearLayout>

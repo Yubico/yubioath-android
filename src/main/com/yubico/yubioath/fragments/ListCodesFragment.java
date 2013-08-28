@@ -27,20 +27,16 @@ import java.util.Map;
  * Time: 11:08 AM
  * To change this template use File | Settings | File Templates.
  */
-public class HomeFragment extends ListFragment implements MainActivity.OnYubiKeyNeoListener, ActionMode.Callback {
-    private static final String[] FROM = new String[]{"label", "code"};
-    private static final int[] TO = new int[]{R.id.label, R.id.code};
-
+public class ListCodesFragment extends ListFragment implements MainActivity.OnYubiKeyNeoListener, ActionMode.Callback {
     private final TimeoutAnimation timeoutAnimation = new TimeoutAnimation();
-    private final List<Map<String, String>> codes = new ArrayList<Map<String, String>>();
-    private SimpleAdapter adapter;
+    private CodeAdapter adapter;
     private ProgressBar timeoutBar;
     private ActionMode actionMode;
-    private int selectedPos = -1;
+    private Map<String, String> selectedItem;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.home_fragment, container, false);
+        View view = inflater.inflate(R.layout.list_codes_fragment, container, false);
         timeoutBar = (ProgressBar) view.findViewById(R.id.timeRemaining);
         return view;
     }
@@ -48,19 +44,19 @@ public class HomeFragment extends ListFragment implements MainActivity.OnYubiKey
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        adapter = new SimpleAdapter(getActivity(), codes, R.layout.totp_code_view, FROM, TO);
+        adapter = new CodeAdapter(new ArrayList<Map<String, String>>());
         setListAdapter(adapter);
 
         getListView().setChoiceMode(ListView.CHOICE_MODE_SINGLE);
         getListView().setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
             public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-                Log.d("yubioath", "pos: " + position + ", id: " + id + ", view: " + view);
-                if(actionMode == null) {
-                    actionMode = getActivity().startActionMode(HomeFragment.this);
-                    selectedPos = position;
-                    Log.d("yubioath", "!selected id: "+getSelectedItemId()+", pos: "+getSelectedItemPosition()+ "checked: "+getListView().getCheckedItemPosition());
+                selectedItem = adapter.getItem(position);
+                if (actionMode == null) {
+                    actionMode = getActivity().startActionMode(ListCodesFragment.this);
                 }
+                actionMode.setTitle(selectedItem.get("label"));
+                adapter.notifyDataSetChanged();
                 view.setSelected(true);
                 return true;
             }
@@ -73,13 +69,10 @@ public class HomeFragment extends ListFragment implements MainActivity.OnYubiKey
         showCodes(neo.getCodes(timestamp));
     }
 
-    public void showCodes(List<Map<String, String>> newCodes) {
-        codes.clear();
-        codes.addAll(newCodes);
-        adapter.notifyDataSetChanged();
+    public void showCodes(List<Map<String, String>> codes) {
+        adapter.setAll(codes);
 
         if (codes.size() == 0) {
-            timeoutBar.setVisibility(View.GONE);
             Toast.makeText(getActivity(), R.string.empty_list, Toast.LENGTH_LONG).show();
         } else {
             timeoutBar.startAnimation(timeoutAnimation);
@@ -96,9 +89,8 @@ public class HomeFragment extends ListFragment implements MainActivity.OnYubiKey
     public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
         switch (item.getItemId()) {
             case R.id.copy_to_clipboard:
-                Map<String,String> code = codes.get(selectedPos);
                 ClipboardManager clipboard = (ClipboardManager) getActivity().getSystemService(Context.CLIPBOARD_SERVICE);
-                ClipData clip = ClipData.newPlainText(code.get("label"), code.get("code"));
+                ClipData clip = ClipData.newPlainText(selectedItem.get("label"), selectedItem.get("code"));
                 clipboard.setPrimaryClip(clip);
                 Toast.makeText(getActivity(), R.string.copied, Toast.LENGTH_SHORT).show();
                 break;
@@ -123,6 +115,43 @@ public class HomeFragment extends ListFragment implements MainActivity.OnYubiKey
     @Override
     public void onDestroyActionMode(ActionMode mode) {
         actionMode = null;
+        selectedItem = null;
+        adapter.notifyDataSetChanged();
+    }
+
+    private class CodeAdapter extends ArrayAdapter<Map<String, String>> {
+        private boolean expired = false;
+
+        public CodeAdapter(List<Map<String, String>> codes) {
+            super(getActivity(), R.layout.oath_code_view, codes);
+        }
+
+        public void setAll(List<Map<String, String>> codes) {
+            clear();
+            expired = false;
+            addAll(codes);
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+            LayoutInflater inflater = getActivity().getLayoutInflater();
+            Map<String, String> code = getItem(position);
+
+            View view = convertView != null ? convertView : inflater.inflate(R.layout.oath_code_view, null);
+            view.setSelected(selectedItem == code);
+            ((ViewGroup) view).setDescendantFocusability(ViewGroup.FOCUS_BLOCK_DESCENDANTS);
+
+            TextView labelView = (TextView) view.findViewById(R.id.label);
+            TextView codeView = (TextView) view.findViewById(R.id.code);
+            ImageButton actionButton = (ImageButton) view.findViewById(R.id.actionButton);
+
+            labelView.setText(code.get("label"));
+            codeView.setText(code.get("code"));
+            codeView.setTextColor(getResources().getColor(expired ? android.R.color.secondary_text_light : android.R.color.primary_text_dark));
+            actionButton.setOnClickListener(new CopyToClipboardAction(code));
+
+            return view;
+        }
     }
 
     private class TimeoutAnimation extends Animation {
@@ -131,17 +160,12 @@ public class HomeFragment extends ListFragment implements MainActivity.OnYubiKey
             setAnimationListener(new AnimationListener() {
                 @Override
                 public void onAnimationStart(Animation animation) {
-                    timeoutBar.setVisibility(View.VISIBLE);
                 }
 
                 @Override
                 public void onAnimationEnd(Animation animation) {
-                    timeoutBar.setVisibility(View.GONE);
-                    codes.clear();
+                    adapter.expired = true;
                     adapter.notifyDataSetChanged();
-                    if(actionMode != null) {
-                        actionMode.finish();
-                    }
                 }
 
                 @Override
@@ -153,7 +177,24 @@ public class HomeFragment extends ListFragment implements MainActivity.OnYubiKey
         @Override
         protected void applyTransformation(float interpolatedTime, Transformation t) {
             super.applyTransformation(interpolatedTime, t);
-            timeoutBar.setProgress((int)((1.0-interpolatedTime) * 1000));
+            timeoutBar.setProgress((int) ((1.0 - interpolatedTime) * 1000));
+        }
+    }
+
+    private class CopyToClipboardAction implements View.OnClickListener {
+        private final Map<String, String> code;
+
+        public CopyToClipboardAction(Map<String,String> code) {
+            this.code = code;
+        }
+
+        @Override
+        public void onClick(View v) {
+            Log.d("yubioath", "view: "+v+", id: "+v.getId());
+            ClipboardManager clipboard = (ClipboardManager) getActivity().getSystemService(Context.CLIPBOARD_SERVICE);
+            ClipData clip = ClipData.newPlainText(code.get("label"), code.get("code"));
+            clipboard.setPrimaryClip(clip);
+            Toast.makeText(getActivity(), R.string.copied, Toast.LENGTH_SHORT).show();
         }
     }
 }

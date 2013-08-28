@@ -48,7 +48,7 @@ public class SetPasswordFragment extends Fragment implements MainActivity.OnYubi
         switch (v.getId()) {
             case R.id.cancelPassword:
                 closeKeyboard();
-                ((MainActivity) getActivity()).openFragment(new HomeFragment());
+                ((MainActivity) getActivity()).openFragment(new ListCodesFragment());
                 break;
             case R.id.savePassword:
                 closeKeyboard();
@@ -111,7 +111,7 @@ public class SetPasswordFragment extends Fragment implements MainActivity.OnYubi
             String newPass = ((EditText) getView().findViewById(R.id.editNewPassword)).getText().toString();
             neo.setDisplayName(label);
             neo.setLockCode(newPass);
-            ((MainActivity)getActivity()).openFragment(new HomeFragment());
+            ((MainActivity)getActivity()).openFragment(new ListCodesFragment());
         }
     }
 }
