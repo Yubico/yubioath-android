@@ -2,6 +2,7 @@ package com.yubico.yubioath.fragments;
 
 import android.app.DialogFragment;
 import android.app.Fragment;
+import android.app.FragmentTransaction;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -113,8 +114,13 @@ public class AddCodeFragment extends Fragment implements MainActivity.OnYubiKeyN
 
     @Override
     public void onPasswordMissing(KeyManager keyManager, byte[] id, boolean missing) {
+        FragmentTransaction ft = getFragmentManager().beginTransaction();
+        Fragment prev = getFragmentManager().findFragmentByTag("dialog");
+        if (prev != null) {
+            ft.remove(prev);
+        }
         DialogFragment dialog = RequirePasswordDialog.newInstance(keyManager, id, missing);
-        dialog.show(getFragmentManager(), "dialog");
+        dialog.show(ft, "dialog");
     }
 
     @Override

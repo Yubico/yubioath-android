@@ -51,14 +51,16 @@ public class ListCodesFragment extends ListFragment implements MainActivity.OnYu
         adapter = new CodeAdapter(new ArrayList<OathCode>());
         setListAdapter(adapter);
 
-        //getListView().setChoiceMode(ListView.CHOICE_MODE_SINGLE);
+        getListView().setChoiceMode(ListView.CHOICE_MODE_SINGLE);
         getListView().setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 if(actionMode != null) {
                     selectedItem = adapter.getItem(position);
                     actionMode.setTitle(selectedItem.getLabel());
-                    view.setSelected(true);
+                    getListView().setItemChecked(position, true);
+                } else {
+                    getListView().setItemChecked(position, false);
                 }
             }
         });
@@ -70,7 +72,7 @@ public class ListCodesFragment extends ListFragment implements MainActivity.OnYu
                     actionMode = getActivity().startActionMode(ListCodesFragment.this);
                 }
                 actionMode.setTitle(selectedItem.getLabel());
-                view.setSelected(true);
+                getListView().setItemChecked(position, true);
                 return true;
             }
         });
@@ -109,19 +111,33 @@ public class ListCodesFragment extends ListFragment implements MainActivity.OnYu
             hasTimeout = hasTimeout || !oathCode.hotp;
             codes.add(oathCode);
         }
+
+        if(actionMode != null) {
+            actionMode.finish();
+        }
+
         adapter.setAll(codes);
 
         if (codes.size() == 0) {
             Toast.makeText(getActivity(), R.string.empty_list, Toast.LENGTH_LONG).show();
-        } else if(hasTimeout) {
+        }
+        if(hasTimeout) {
             timeoutBar.startAnimation(timeoutAnimation);
+        } else {
+            timeoutAnimation.cancel();
+            timeoutBar.setProgress(0);
         }
     }
 
     @Override
     public void onPasswordMissing(KeyManager keyManager, byte[] id, boolean missing) {
+        FragmentTransaction ft = getFragmentManager().beginTransaction();
+        Fragment prev = getFragmentManager().findFragmentByTag("dialog");
+        if (prev != null) {
+            ft.remove(prev);
+        }
         DialogFragment dialog = RequirePasswordDialog.newInstance(keyManager, id, missing);
-        dialog.show(getFragmentManager(), "dialog");
+        dialog.show(ft, "dialog");
     }
 
     private void readHotp(OathCode code) {
@@ -161,6 +177,7 @@ public class ListCodesFragment extends ListFragment implements MainActivity.OnYu
     @Override
     public void onDestroyActionMode(ActionMode mode) {
         actionMode = null;
+        getListView().setItemChecked(getListView().getCheckedItemPosition(), false);
     }
 
     private class CodeAdapter extends ArrayAdapter<OathCode> {
@@ -189,7 +206,7 @@ public class ListCodesFragment extends ListFragment implements MainActivity.OnYu
             OathCode code = getItem(position);
 
             View view = convertView != null ? convertView : inflater.inflate(R.layout.oath_code_view, null);
-            view.setSelected(selectedItem == code);
+            getListView().setItemChecked(position, actionMode != null && selectedItem == code);
             ((ViewGroup) view).setDescendantFocusability(ViewGroup.FOCUS_BLOCK_DESCENDANTS);
 
             TextView labelView = (TextView) view.findViewById(R.id.label);
