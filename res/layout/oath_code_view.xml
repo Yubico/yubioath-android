@@ -4,7 +4,9 @@
                 android:orientation="horizontal"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:padding="12dp">
+                android:padding="12dp"
+                style="@style/activated"
+    >
 
     <LinearLayout
         android:layout_width="wrap_content"

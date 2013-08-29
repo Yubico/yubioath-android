@@ -3,46 +3,27 @@
 
     <string name="app_name">YubiOATH</string>
     <string name="about">About</string>
-    <string name="totp1">TOTP from Slot 1</string>
-    <string name="totp2">TOTP from Slot 2</string>
-    <string name="program">Program NEO</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>
     <string name="warning">Warning</string>
     <string name="barcode_scanner_not_found">Barcode scanner not found, do you want to install it?</string>
     <string name="invalid_barcode">The scanned Barcode is invalid</string>
     <string name="scan_failed">Barcode scanning failed</string>
-    <string name="program_slot">Which slot should be programmed?</string>
-    <string name="programming">Programming</string>
-    <string name="challenging">Challenging</string>
     <string name="swipe">Swipe your YubiKey NEO</string>
     <string name="swipe_and_hold">Swipe and hold your YubiKey NEO</string>
     <string name="totp">Oath TOTP</string>
     <string name="copy">Copy to clipboard</string>
-    <string name="clip_label">TOTP originating from a YubiKey NEO</string>
     <string name="copied">Code copied to clipboard</string>
-    <string name="totp_failed">Failed getting TOTP, is the YubiKey configured in challenge-response mode?</string>
     <string name="prog_success">Credential added!</string>
     <string name="prog_fail">Failed to program the YubiKey NEO</string>
     <string name="version">Version</string>
-    <string name="lost_tag">YubiKey NEO lost during operation</string>
-    <string name="tag_error">Error communication with YubiKey: </string>
-    <string name="slot1">Slot 1</string>
-    <string name="slot2">Slot 2</string>
-    <string name="totp_default"></string>
-    <string name="widget_image">YubiKey image for widget</string>
-    <string name="which_slot">Which slot should be used?</string>
+    <string name="tag_error">Error in YubiKey communication!</string>
     <string name="nfc_off">NFC seems to be off, turn on?</string>
     <string name="no_nfc">This device seems to not support NFC</string>
     <string name="credentials">Credentials</string>
-    <string name="switch_mode">Switch mode</string>
-    <string name="nocreds">No credentials available</string>
-    <string name="load_creds">Load credentials from NEO</string>
-    <string name="loading">Loading credentials</string>
     <string name="load_failed">Failed loading credentials</string>
     <string name="credential_name">Credential name</string>
     <string name="ok">OK</string>
-    <string name="prog_success2">Successfully programmed YubiKey NEO with credential %1$s</string>
     <string name="empty_list">Empty credentials list</string>
     <string name="save">Save</string>
     <string name="cancel">Cancel</string>
@@ -56,9 +37,8 @@
     <string name="read_hotp">Read a HOTP code</string>
     <string name="delete_cred">Delete credential</string>
     <string name="deleted">Credential deleted!</string>
-
-    <string-array name="slots">
-        <item >Slot 1</item>
-        <item >Slot 2</item>
-    </string-array>
+    <string name="old_password">Current password</string>
+    <string name="new_password">New password</string>
+    <string name="verify_password">Verify password</string>
+    <string name="password_mismatch">Verify password doesn\'t match New password!</string>
 </resources>
