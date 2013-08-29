@@ -38,7 +38,7 @@
     <string name="delete_cred">Delete credential</string>
     <string name="deleted">Credential deleted!</string>
     <string name="old_password">Current password</string>
-    <string name="new_password">New password</string>
+    <string name="new_password">New password (blank for none)</string>
     <string name="verify_password">Verify password</string>
     <string name="password_mismatch">Verify password doesn\'t match New password!</string>
 </resources>

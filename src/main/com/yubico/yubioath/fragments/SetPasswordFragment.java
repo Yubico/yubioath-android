@@ -56,11 +56,13 @@ public class SetPasswordFragment extends Fragment implements MainActivity.OnYubi
                     String oldPass = ((EditText) getView().findViewById(R.id.editOldPassword)).getText().toString();
                     keyManager.storeSecret(id, KeyManager.calculateSecret(oldPass, id));
                 }
-                String newPassword = ((EditText)getView().findViewById(R.id.editNewPassword)).getText().toString();
-                String verifyPassword = ((EditText)getView().findViewById(R.id.editVerifyPassword)).getText().toString();
-                if(newPassword.equals(verifyPassword)) {
+                EditText newPassword = (EditText)getView().findViewById(R.id.editNewPassword);
+                EditText verifyPassword = (EditText)getView().findViewById(R.id.editVerifyPassword);
+                if(newPassword.getText().toString().equals(verifyPassword.getText().toString())) {
                     swipeDialog.show(getFragmentManager(), "dialog");
                 } else {
+                    newPassword.setText("");
+                    verifyPassword.setText("");
                     Toast.makeText(getActivity(), R.string.password_mismatch, Toast.LENGTH_SHORT).show();
                 }
                 break;
