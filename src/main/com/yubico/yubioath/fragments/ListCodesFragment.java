@@ -1,12 +1,14 @@
 package com.yubico.yubioath.fragments;
 
-import android.app.*;
+import android.app.DialogFragment;
+import android.app.Fragment;
+import android.app.FragmentTransaction;
+import android.app.ListFragment;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.*;
 import android.view.animation.Animation;
 import android.view.animation.Transformation;
@@ -17,7 +19,10 @@ import com.yubico.yubioath.model.KeyManager;
 import com.yubico.yubioath.model.YubiKeyNeo;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Created with IntelliJ IDEA.
@@ -65,7 +70,7 @@ public class ListCodesFragment extends ListFragment implements MainActivity.OnYu
         getListView().setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                if(actionMode != null) {
+                if (actionMode != null) {
                     selectedItem = adapter.getItem(position);
                     actionMode.setTitle(selectedItem.getLabel());
                     getListView().setItemChecked(position, true);
@@ -129,7 +134,7 @@ public class ListCodesFragment extends ListFragment implements MainActivity.OnYu
             codes.add(oathCode);
         }
 
-        if(actionMode != null) {
+        if (actionMode != null) {
             actionMode.finish();
         }
 
@@ -138,7 +143,7 @@ public class ListCodesFragment extends ListFragment implements MainActivity.OnYu
         if (codes.size() == 0) {
             Toast.makeText(getActivity(), R.string.empty_list, Toast.LENGTH_LONG).show();
         }
-        if(hasTimeout) {
+        if (hasTimeout) {
             timeoutBar.startAnimation(timeoutAnimation);
         } else {
             timeoutAnimation.setStartTime(0);
@@ -157,7 +162,7 @@ public class ListCodesFragment extends ListFragment implements MainActivity.OnYu
     }
 
     private void readHotp(OathCode code) {
-        if(actionMode != null) {
+        if (actionMode != null) {
             actionMode.finish();
         }
         selectedItem = code;

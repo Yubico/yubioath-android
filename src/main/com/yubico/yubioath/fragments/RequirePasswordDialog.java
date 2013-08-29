@@ -47,8 +47,8 @@ public class RequirePasswordDialog extends DialogFragment {
         builder.setTitle(missing ? R.string.password_required : R.string.wrong_password);
         LayoutInflater inflater = getActivity().getLayoutInflater();
         View view = inflater.inflate(R.layout.require_password_dialog, null);
-        final EditText editDisplayName = (EditText)view.findViewById(R.id.editDisplayName);
-        final EditText editPassword = (EditText)view.findViewById(R.id.editPassword);
+        final EditText editDisplayName = (EditText) view.findViewById(R.id.editDisplayName);
+        final EditText editPassword = (EditText) view.findViewById(R.id.editPassword);
         editDisplayName.setText(keyManager.getDisplayName(id, getString(R.string.yubikey_neo)));
         builder.setView(view);
 

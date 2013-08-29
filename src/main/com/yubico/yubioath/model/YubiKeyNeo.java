@@ -149,7 +149,7 @@ public class YubiKeyNeo {
 
     public void setLockCode(String code) throws IOException {
         byte[] secret = KeyManager.calculateSecret(code, id);
-        if(secret.length == 0) {
+        if (secret.length == 0) {
             unsetLockCode();
             return;
         }
@@ -210,7 +210,7 @@ public class YubiKeyNeo {
         byte[] data = new byte[DELETE_COMMAND.length + 2 + nameBytes.length + 2];
         System.arraycopy(DELETE_COMMAND, 0, data, 0, DELETE_COMMAND.length);
         int offset = 4;
-        data[offset++] = (byte)(data.length - 5);
+        data[offset++] = (byte) (data.length - 5);
 
         data[offset++] = NAME_TAG;
         data[offset++] = (byte) nameBytes.length;
@@ -223,7 +223,7 @@ public class YubiKeyNeo {
         byte[] data = new byte[CALCULATE_COMMAND.length + 2 + nameBytes.length + 2];
         System.arraycopy(CALCULATE_COMMAND, 0, data, 0, CALCULATE_COMMAND.length);
         int offset = 4;
-        data[offset++] = (byte)(data.length - 5);
+        data[offset++] = (byte) (data.length - 5);
 
         data[offset++] = NAME_TAG;
         data[offset++] = (byte) nameBytes.length;
@@ -268,7 +268,7 @@ public class YubiKeyNeo {
                 default:
                     oathCode.put("code", "<invalid code>");
             }
-            Log.d("yubioath", "label: "+oathCode.get("label"));
+            Log.d("yubioath", "label: " + oathCode.get("label"));
             codes.add(oathCode);
         }
 
@@ -319,6 +319,6 @@ public class YubiKeyNeo {
     private static String codeFromTruncated(byte[] data) {
         int num_digits = data[0];
         int code = (data[1] << 24) | ((data[2] & 0xff) << 16) | ((data[3] & 0xff) << 8) | (data[4] & 0xff);
-        return String.format("%0"+num_digits+"d", code % MOD[num_digits]);
+        return String.format("%0" + num_digits + "d", code % MOD[num_digits]);
     }
 }

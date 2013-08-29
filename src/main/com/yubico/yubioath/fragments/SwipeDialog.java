@@ -5,11 +5,7 @@ import android.app.Dialog;
 import android.app.DialogFragment;
 import android.content.DialogInterface;
 import android.os.Bundle;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.widget.EditText;
 import com.yubico.yubioath.R;
-import com.yubico.yubioath.model.KeyManager;
 
 /**
  * Created with IntelliJ IDEA.
@@ -43,7 +39,7 @@ public class SwipeDialog extends DialogFragment {
     @Override
     public void onCancel(DialogInterface dialog) {
         super.onCancel(dialog);
-        if(onCancel != null) {
+        if (onCancel != null) {
             onCancel.onCancel(dialog);
         }
     }

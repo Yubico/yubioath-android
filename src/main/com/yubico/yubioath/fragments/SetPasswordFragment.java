@@ -1,6 +1,5 @@
 package com.yubico.yubioath.fragments;
 
-import android.app.DialogFragment;
 import android.app.Fragment;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -63,9 +62,9 @@ public class SetPasswordFragment extends Fragment implements MainActivity.OnYubi
                     String oldPass = ((EditText) getView().findViewById(R.id.editOldPassword)).getText().toString();
                     keyManager.storeSecret(id, KeyManager.calculateSecret(oldPass, id));
                 }
-                EditText newPassword = (EditText)getView().findViewById(R.id.editNewPassword);
-                EditText verifyPassword = (EditText)getView().findViewById(R.id.editVerifyPassword);
-                if(newPassword.getText().toString().equals(verifyPassword.getText().toString())) {
+                EditText newPassword = (EditText) getView().findViewById(R.id.editNewPassword);
+                EditText verifyPassword = (EditText) getView().findViewById(R.id.editVerifyPassword);
+                if (newPassword.getText().toString().equals(verifyPassword.getText().toString())) {
                     swipeDialog.show(getFragmentManager(), "dialog");
                 } else {
                     newPassword.setText("");
@@ -126,7 +125,7 @@ public class SetPasswordFragment extends Fragment implements MainActivity.OnYubi
             String newPass = ((EditText) getView().findViewById(R.id.editNewPassword)).getText().toString();
             neo.setDisplayName(label);
             neo.setLockCode(newPass);
-            ((MainActivity)getActivity()).openFragment(new ListCodesFragment());
+            ((MainActivity) getActivity()).openFragment(new ListCodesFragment());
         }
     }
 }

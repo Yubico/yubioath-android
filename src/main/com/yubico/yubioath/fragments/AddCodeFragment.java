@@ -48,8 +48,8 @@ public class AddCodeFragment extends Fragment implements MainActivity.OnYubiKeyN
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.add_code_fragment, container, false);
         Uri uri = Uri.parse(getArguments().getString(CODE_URI));
-        if(parseUri(uri)) {
-            ((TextView)view.findViewById(R.id.name)).setText(name);
+        if (parseUri(uri)) {
+            ((TextView) view.findViewById(R.id.name)).setText(name);
         } else {
             Toast.makeText(getActivity(), R.string.invalid_barcode, Toast.LENGTH_LONG).show();
             view.post(new Runnable() {
@@ -65,41 +65,41 @@ public class AddCodeFragment extends Fragment implements MainActivity.OnYubiKeyN
 
     private boolean parseUri(Uri uri) {
         String secret = uri.getQueryParameter("secret");
-        if(secret == null || secret.isEmpty()) {
+        if (secret == null || secret.isEmpty()) {
             return false;
         }
         Base32 base32 = new Base32();
         key = base32.decode(secret.toUpperCase());
 
         String path = uri.getPath(); // user name is stored in path...
-        if(path.charAt(0) == '/') {
+        if (path.charAt(0) == '/') {
             path = path.substring(1);
         }
-        if(path.length() > 64) {
+        if (path.length() > 64) {
             path = path.substring(0, 64);
         }
         name = path;
 
         String typeString = uri.getHost(); // type stored in host, totp/hotp
-        if(typeString.equals("totp")) {
+        if (typeString.equals("totp")) {
             oath_type = YubiKeyNeo.TOTP_TYPE;
-        } else if(typeString.equals("hotp")) {
+        } else if (typeString.equals("hotp")) {
             oath_type = YubiKeyNeo.HOTP_TYPE;
         } else {
             return false;
         }
 
         String algorithm = uri.getQueryParameter("algorithm");
-        if(algorithm == null || algorithm.isEmpty() || algorithm.equals("SHA1")) {
+        if (algorithm == null || algorithm.isEmpty() || algorithm.equals("SHA1")) {
             algorithm_type = YubiKeyNeo.HMAC_SHA1;
-        } else if(algorithm.equals("SHA256")) {
+        } else if (algorithm.equals("SHA256")) {
             algorithm_type = YubiKeyNeo.HMAC_SHA256;
         } else {
             return false;
         }
 
         String digit_string = uri.getQueryParameter("digits");
-        if(digit_string == null || digit_string.isEmpty()) {
+        if (digit_string == null || digit_string.isEmpty()) {
             digits = 6;
         } else {
             try {
@@ -125,7 +125,7 @@ public class AddCodeFragment extends Fragment implements MainActivity.OnYubiKeyN
 
     @Override
     public void onYubiKeyNeo(YubiKeyNeo neo) throws IOException {
-        name = ((EditText)getView().findViewById(R.id.name)).getText().toString();
+        name = ((EditText) getView().findViewById(R.id.name)).getText().toString();
         neo.storeCode(name, key, (byte) (oath_type | algorithm_type), digits);
         long timestamp = System.currentTimeMillis() / 1000 / 30;
         final List<Map<String, String>> codes = neo.getCodes(timestamp);
@@ -134,7 +134,7 @@ public class AddCodeFragment extends Fragment implements MainActivity.OnYubiKeyN
             @Override
             public void run() {
                 final ListCodesFragment fragment = new ListCodesFragment();
-                ((MainActivity)getActivity()).openFragment(fragment);
+                ((MainActivity) getActivity()).openFragment(fragment);
                 getView().post(new Runnable() {
                     @Override
                     public void run() {
