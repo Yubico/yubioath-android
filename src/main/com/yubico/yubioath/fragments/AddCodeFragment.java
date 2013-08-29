@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 import com.yubico.yubioath.MainActivity;
@@ -73,6 +74,9 @@ public class AddCodeFragment extends Fragment implements MainActivity.OnYubiKeyN
         if(path.charAt(0) == '/') {
             path = path.substring(1);
         }
+        if(path.length() > 64) {
+            path = path.substring(0, 64);
+        }
         name = path;
 
         String typeString = uri.getHost(); // type stored in host, totp/hotp
@@ -115,6 +119,7 @@ public class AddCodeFragment extends Fragment implements MainActivity.OnYubiKeyN
 
     @Override
     public void onYubiKeyNeo(YubiKeyNeo neo) throws IOException {
+        name = ((EditText)getView().findViewById(R.id.name)).getText().toString();
         neo.storeCode(name, key, (byte) (oath_type | algorithm_type), digits);
         long timestamp = System.currentTimeMillis() / 1000 / 30;
         final List<Map<String, String>> codes = neo.getCodes(timestamp);

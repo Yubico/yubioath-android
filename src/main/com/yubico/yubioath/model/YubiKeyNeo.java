@@ -54,6 +54,7 @@ public class YubiKeyNeo {
     //DATA 00  00 00 00 00 ...
     private static final byte[] SELECT_COMMAND = {0x00, (byte) 0xa4, 0x04, 0x00, 0x08, (byte) 0xa0, 0x00, 0x00, 0x05, 0x27, 0x21, 0x01, 0x01};
     private static final byte[] CALCULATE_ALL_COMMAND = {0x00, CALCULATE_ALL_INS, 0x00, 0x01, 0x0a, CHALLENGE_TAG, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+    private static final byte[] CALCULATE_COMMAND = {0x00, CALCULATE_INS, 0x00, 0x01, 0x00};
     private static final byte[] SET_LOCK_COMMAND = {0x00, SET_CODE_INS, 0x00, 0x00, 0x00};
     private static final byte[] UNLOCK_COMMAND = {0x00, VALIDATE_INS, 0x00, 0x00, 0x00};
     private static final byte[] PUT_COMMAND = {0x00, PUT_INS, 0x00, 0x00, 0x00};
@@ -135,13 +136,27 @@ public class YubiKeyNeo {
         throw new PasswordRequiredException("Password is incorrect!", id, false);
     }
 
+    private void unsetLockCode() throws IOException {
+        byte[] data = new byte[SET_LOCK_COMMAND.length + 2];
+        System.arraycopy(SET_LOCK_COMMAND, 0, data, 0, SET_LOCK_COMMAND.length);
+        data[4] = 2;
+        data[5] = KEY_TAG;
+
+        requireStatus(isoTag.transceive(data), APDU_OK);
+        keyManager.storeSecret(id, new byte[0]);
+    }
+
     public void setLockCode(String code) throws IOException {
         byte[] secret = KeyManager.calculateSecret(code, id);
+        if(secret.length == 0) {
+            unsetLockCode();
+            return;
+        }
 
         byte[] challenge = new byte[8];
         SecureRandom random = new SecureRandom();
         random.nextBytes(challenge);
-        byte[] response = secret.length == 0 ? secret : hmacSha1(secret, challenge);
+        byte[] response = hmacSha1(secret, challenge);
 
         byte[] data = new byte[SET_LOCK_COMMAND.length + 3 + secret.length + 2 + challenge.length + 2 + response.length];
         System.arraycopy(SET_LOCK_COMMAND, 0, data, 0, SET_LOCK_COMMAND.length);
@@ -163,7 +178,7 @@ public class YubiKeyNeo {
         data[offset++] = (byte) response.length;
         System.arraycopy(response, 0, data, offset, response.length);
 
-        byte[] resp = requireStatus(isoTag.transceive(data), APDU_OK);
+        requireStatus(isoTag.transceive(data), APDU_OK);
         keyManager.storeSecret(id, secret);
     }
 
@@ -181,12 +196,31 @@ public class YubiKeyNeo {
 
         data[offset++] = KEY_TAG;
         data[offset++] = (byte) (key.length + 2);
-        data[offset++] = TOTP_TYPE | HMAC_SHA1;
+        data[offset++] = type;
         data[offset++] = (byte) digits;
         System.arraycopy(key, 0, data, offset, key.length);
         offset += key.length;
 
         requireStatus(isoTag.transceive(data), APDU_OK);
+    }
+
+    public String readHotpCode(String name) throws IOException {
+        byte[] nameBytes = name.getBytes();
+        byte[] data = new byte[CALCULATE_COMMAND.length + 2 + nameBytes.length + 2];
+        System.arraycopy(CALCULATE_COMMAND, 0, data, 0, CALCULATE_COMMAND.length);
+        int offset = 4;
+        data[offset++] = (byte)(data.length - 5);
+
+        data[offset++] = NAME_TAG;
+        data[offset++] = (byte) nameBytes.length;
+        System.arraycopy(nameBytes, 0, data, offset, nameBytes.length);
+        offset += nameBytes.length;
+
+        data[offset++] = CHALLENGE_TAG;
+        data[offset++] = 0;
+
+        byte[] resp = requireStatus(isoTag.transceive(data), APDU_OK);
+        return codeFromTruncated(parseBlock(resp, 0, T_RESPONSE_TAG));
     }
 
     public List<Map<String, String>> getCodes(long timestamp) throws IOException {
@@ -212,13 +246,10 @@ public class YubiKeyNeo {
             oathCode.put("label", new String(name));
             switch (responseType) {
                 case T_RESPONSE_TAG:
-                    int num_digits = hashBytes[0];
-                    int code = ((hashBytes[1] & 0x7f) << 24) | ((hashBytes[2] & 0xff) << 16) | ((hashBytes[3] & 0xff) << 8) | (hashBytes[4] & 0xff);
-                    String displayCode = String.format("%06d", code % MOD[num_digits]);
-                    oathCode.put("code", displayCode);
+                    oathCode.put("code", codeFromTruncated(hashBytes));
                     break;
                 case NO_RESPONSE_TAG:
-                    oathCode.put("code", "<tap to read>");
+                    oathCode.put("code", null);
                     break;
                 default:
                     oathCode.put("code", "<invalid code>");
@@ -269,5 +300,11 @@ public class YubiKeyNeo {
         } catch (InvalidKeyException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private static String codeFromTruncated(byte[] data) {
+        int num_digits = data[0];
+        int code = (data[1] << 24) | ((data[2] & 0xff) << 16) | ((data[3] & 0xff) << 8) | (data[4] & 0xff);
+        return String.format("%0"+num_digits+"d", code % MOD[num_digits]);
     }
 }

@@ -1,50 +1,54 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:orientation="horizontal"
-              android:layout_width="match_parent"
-              android:layout_height="wrap_content"
-              android:padding="12dp">
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="12dp">
 
     <LinearLayout
-        android:orientation="vertical"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="left"
-        android:gravity="center_vertical"
-        >
+        android:orientation="horizontal"
+        android:layout_alignParentRight="true"
+        android:id="@+id/buttonContainer">
 
-        <TextView
+        <ImageButton
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Label"
-            android:id="@+id/label"
-            android:layout_gravity="left|top"/>
+            android:contentDescription="@string/read_hotp"
+            android:id="@+id/readButton"
+            android:layout_gravity="center_vertical"
+            android:src="@drawable/navigation_refresh"
+            android:visibility="gone"
+            style="?android:attr/actionButtonStyle"/>
 
-        <TextView
+        <ImageButton
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="012345"
-            android:id="@+id/code"
-            android:layout_gravity="left|top"
-            android:textAppearance="@android:style/TextAppearance.Large"
-            />
+            android:contentDescription="@string/copy_to_clipboard"
+            android:id="@+id/copyButton"
+            android:layout_gravity="center_vertical"
+            android:src="@drawable/content_copy"
+            style="?android:attr/actionButtonStyle"/>
+
     </LinearLayout>
 
-    <Space
-        android:layout_width="wrap_content"
-        android:layout_height="match_parent"
-        android:id="@+id/space"
-        android:layout_weight="1"/>
+    <TextView
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="Label"
+        android:id="@+id/label"
+        android:layout_toLeftOf="@id/buttonContainer"
+        android:layout_gravity="left|top"/>
 
-    <ImageButton
+    <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:contentDescription="@string/copy_to_clipboard"
-        android:id="@+id/actionButton"
-        android:layout_gravity="center_vertical"
-        android:src="@drawable/content_copy"
-         style="?android:attr/borderlessButtonStyle"
+        android:text="012345"
+        android:id="@+id/code"
+        android:layout_below="@id/label"
+        android:textAppearance="@android:style/TextAppearance.Large"
         />
 
-</LinearLayout>
+</RelativeLayout>

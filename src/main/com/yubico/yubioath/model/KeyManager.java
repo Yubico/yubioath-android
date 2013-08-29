@@ -21,14 +21,12 @@ import java.security.spec.KeySpec;
  * To change this template use File | Settings | File Templates.
  */
 public class KeyManager {
-    private static final String NAME_STORE = "com.yubico.yubiotp.NAME_STORE";
-    private static final String SECRET_STORE = "com.yubico.yubiotp.SECRET_STORE";
-    private final Context context;
+    private static final String NAME_STORE = "com.yubico.yubioath.NAME_STORE";
+    private static final String SECRET_STORE = "com.yubico.yubioath.SECRET_STORE";
     private final SharedPreferences nameStore;
     private final SharedPreferences secretStore;
 
     public KeyManager(Context context) {
-        this.context = context;
         nameStore = context.getSharedPreferences(NAME_STORE, Context.MODE_PRIVATE);
         secretStore = context.getSharedPreferences(SECRET_STORE, Context.MODE_PRIVATE);
     }

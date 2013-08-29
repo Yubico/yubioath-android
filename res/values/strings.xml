@@ -53,6 +53,7 @@
     <string name="yubikey_neo">YubiKey NEO</string>
     <string name="wrong_password">Incorrect password</string>
     <string name="copy_to_clipboard">Copy</string>
+    <string name="read_hotp">Read a HOTP code</string>
         
     <string-array name="slots">
         <item >Slot 1</item>
