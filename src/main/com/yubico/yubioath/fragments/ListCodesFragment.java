@@ -5,7 +5,6 @@ import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.*;
 import android.view.animation.Animation;
 import android.view.animation.Transformation;
@@ -51,10 +50,7 @@ public class ListCodesFragment extends ListFragment implements MainActivity.OnYu
         adapter = new CodeAdapter(new ArrayList<OathCode>());
         setListAdapter(adapter);
 
-<<<<<<< HEAD
-=======
         getListView().setChoiceMode(ListView.CHOICE_MODE_SINGLE);
->>>>>>> 5374d235f07b93a424a1e8ac2b9280ad4c44d4e4
         getListView().setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
