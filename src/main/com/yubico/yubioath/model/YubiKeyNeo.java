@@ -58,6 +58,7 @@ public class YubiKeyNeo {
     private static final byte[] SET_LOCK_COMMAND = {0x00, SET_CODE_INS, 0x00, 0x00, 0x00};
     private static final byte[] UNLOCK_COMMAND = {0x00, VALIDATE_INS, 0x00, 0x00, 0x00};
     private static final byte[] PUT_COMMAND = {0x00, PUT_INS, 0x00, 0x00, 0x00};
+    private static final byte[] DELETE_COMMAND = {0x00, DELETE_INS, 0x00, 0x00, 0x00};
 
     private static final int[] MOD = {1, 10, 100, 1000, 10000, 100000, 1000000, 10000000, 10000000};
 
@@ -201,6 +202,19 @@ public class YubiKeyNeo {
         System.arraycopy(key, 0, data, offset, key.length);
         offset += key.length;
 
+        requireStatus(isoTag.transceive(data), APDU_OK);
+    }
+
+    public void deleteCode(String name) throws IOException {
+        byte[] nameBytes = name.getBytes();
+        byte[] data = new byte[DELETE_COMMAND.length + 2 + nameBytes.length + 2];
+        System.arraycopy(DELETE_COMMAND, 0, data, 0, DELETE_COMMAND.length);
+        int offset = 4;
+        data[offset++] = (byte)(data.length - 5);
+
+        data[offset++] = NAME_TAG;
+        data[offset++] = (byte) nameBytes.length;
+        System.arraycopy(nameBytes, 0, data, offset, nameBytes.length);
         requireStatus(isoTag.transceive(data), APDU_OK);
     }
 

@@ -54,7 +54,9 @@
     <string name="wrong_password">Incorrect password</string>
     <string name="copy_to_clipboard">Copy</string>
     <string name="read_hotp">Read a HOTP code</string>
-        
+    <string name="delete_cred">Delete credential</string>
+    <string name="deleted">Credential deleted!</string>
+
     <string-array name="slots">
         <item >Slot 1</item>
         <item >Slot 2</item>

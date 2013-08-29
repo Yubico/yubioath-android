@@ -26,12 +26,17 @@ import java.util.*;
  * To change this template use File | Settings | File Templates.
  */
 public class ListCodesFragment extends ListFragment implements MainActivity.OnYubiKeyNeoListener, ActionMode.Callback {
+    private static final int READ_LIST = 0;
+    private static final int READ_SELECTED = 1;
+    private static final int DELETE_SELECTED = 2;
+
     private final TimeoutAnimation timeoutAnimation = new TimeoutAnimation();
     private CodeAdapter adapter;
     private ProgressBar timeoutBar;
     private ActionMode actionMode;
+    private int state = READ_LIST;
     private OathCode selectedItem;
-    private DialogFragment swipeDialog;
+    private DialogFragment swipeDialog = new SwipeDialog();
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -46,7 +51,17 @@ public class ListCodesFragment extends ListFragment implements MainActivity.OnYu
         adapter = new CodeAdapter(new ArrayList<OathCode>());
         setListAdapter(adapter);
 
-        getListView().setChoiceMode(ListView.CHOICE_MODE_SINGLE);
+        //getListView().setChoiceMode(ListView.CHOICE_MODE_SINGLE);
+        getListView().setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                if(actionMode != null) {
+                    selectedItem = adapter.getItem(position);
+                    actionMode.setTitle(selectedItem.getLabel());
+                    view.setSelected(true);
+                }
+            }
+        });
         getListView().setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
             public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
@@ -55,7 +70,6 @@ public class ListCodesFragment extends ListFragment implements MainActivity.OnYu
                     actionMode = getActivity().startActionMode(ListCodesFragment.this);
                 }
                 actionMode.setTitle(selectedItem.getLabel());
-                adapter.notifyDataSetChanged();
                 view.setSelected(true);
                 return true;
             }
@@ -64,13 +78,25 @@ public class ListCodesFragment extends ListFragment implements MainActivity.OnYu
 
     @Override
     public void onYubiKeyNeo(YubiKeyNeo neo) throws IOException {
-        if(swipeDialog != null && swipeDialog.isAdded()) {
-            selectedItem.setCode(neo.readHotpCode(selectedItem.getLabel()));
-            adapter.notifyDataSetChanged();
-            swipeDialog.dismiss();
-        } else {
-            long timestamp = System.currentTimeMillis() / 1000 / 30;
-            showCodes(neo.getCodes(timestamp));
+        switch (state) {
+            case READ_LIST:
+                long timestamp = System.currentTimeMillis() / 1000 / 30;
+                showCodes(neo.getCodes(timestamp));
+                break;
+            case READ_SELECTED:
+                selectedItem.setCode(neo.readHotpCode(selectedItem.getLabel()));
+                adapter.notifyDataSetChanged();
+                swipeDialog.dismiss();
+                state = READ_LIST;
+                break;
+            case DELETE_SELECTED:
+                neo.deleteCode(selectedItem.getLabel());
+                adapter.remove(selectedItem);
+                selectedItem = null;
+                swipeDialog.dismiss();
+                Toast.makeText(getActivity(), R.string.deleted, Toast.LENGTH_SHORT).show();
+                state = READ_LIST;
+                break;
         }
     }
 
@@ -102,18 +128,16 @@ public class ListCodesFragment extends ListFragment implements MainActivity.OnYu
             actionMode.finish();
         }
         selectedItem = code;
-        swipeDialog = new SwipeDialog();
+        state = READ_SELECTED;
         swipeDialog.show(getFragmentManager(), "dialog");
     }
 
     @Override
     public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.copy_to_clipboard:
-                ClipboardManager clipboard = (ClipboardManager) getActivity().getSystemService(Context.CLIPBOARD_SERVICE);
-                ClipData clip = ClipData.newPlainText(selectedItem.getLabel(), selectedItem.getCode());
-                clipboard.setPrimaryClip(clip);
-                Toast.makeText(getActivity(), R.string.copied, Toast.LENGTH_SHORT).show();
+            case R.id.delete:
+                state = DELETE_SELECTED;
+                swipeDialog.show(getFragmentManager(), "dialog");
                 break;
             default:
                 return false;
@@ -136,8 +160,6 @@ public class ListCodesFragment extends ListFragment implements MainActivity.OnYu
     @Override
     public void onDestroyActionMode(ActionMode mode) {
         actionMode = null;
-        selectedItem = null;
-        adapter.notifyDataSetChanged();
     }
 
     private class CodeAdapter extends ArrayAdapter<OathCode> {
