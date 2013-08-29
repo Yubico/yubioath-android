@@ -78,9 +78,10 @@ public class ListCodesFragment extends ListFragment implements MainActivity.OnYu
 
     @Override
     public void onYubiKeyNeo(YubiKeyNeo neo) throws IOException {
+        long timestamp = System.currentTimeMillis() / 1000 / 30;
+
         switch (state) {
             case READ_LIST:
-                long timestamp = System.currentTimeMillis() / 1000 / 30;
                 showCodes(neo.getCodes(timestamp));
                 break;
             case READ_SELECTED:
@@ -91,10 +92,10 @@ public class ListCodesFragment extends ListFragment implements MainActivity.OnYu
                 break;
             case DELETE_SELECTED:
                 neo.deleteCode(selectedItem.getLabel());
-                adapter.remove(selectedItem);
                 selectedItem = null;
                 swipeDialog.dismiss();
                 Toast.makeText(getActivity(), R.string.deleted, Toast.LENGTH_SHORT).show();
+                showCodes(neo.getCodes(timestamp));
                 state = READ_LIST;
                 break;
         }

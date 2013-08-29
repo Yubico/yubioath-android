@@ -31,6 +31,7 @@ import java.io.IOException;
  */
 public class MainActivity extends Activity {
     private static final int SCAN_BARCODE = 1;
+    private static final String NEO_STORE = "NEO_STORE";
 
     private NfcAdapter adapter;
     private KeyManager keyManager;
@@ -48,7 +49,8 @@ public class MainActivity extends Activity {
             Toast.makeText(this, R.string.nfc_off, Toast.LENGTH_LONG).show();
         }
 
-        keyManager = new KeyManager(this);
+        SharedPreferences preferences = getSharedPreferences(NEO_STORE, Context.MODE_PRIVATE);
+        keyManager = new KeyManager(preferences);
 
         openFragment(new ListCodesFragment());
     }
