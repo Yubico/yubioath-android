@@ -2,5 +2,5 @@ To make a new release:
 
 * bump versions in AndroidManifest.xml
 * make sure everything is commited
-* mvn3 release:prepare release:perform -Darguments=-Dsign.storepass=$smart_card_pin
+* mvn release:prepare release:perform -Darguments=-Dsign.storepass=$smart_card_pin
 * if happy with the release: git push && git push --tags

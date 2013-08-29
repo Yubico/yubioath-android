@@ -5,6 +5,7 @@ import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.*;
 import android.view.animation.Animation;
 import android.view.animation.Transformation;
@@ -75,6 +76,12 @@ public class ListCodesFragment extends ListFragment implements MainActivity.OnYu
                 return true;
             }
         });
+    }
+
+    @Override
+    public void onPause() {
+        adapter.clear();
+        super.onPause();
     }
 
     @Override

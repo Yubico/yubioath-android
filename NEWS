@@ -1,13 +1,5 @@
-yubitotp-android NEWS -- History of user-visible changes.     -*- outline -*-
+yubioath-android NEWS -- History of user-visible changes.     -*- outline -*-
 
-* Version 0.0.3 (unreleased)
-
-* Version 0.0.2 (released 2013-01-23)
-
-** Add a widget for doing totp from homescreen.
-
-** Set required api level to 10 (2.3.3)
-
-* Version 0.0.1 (released 2013-01-16)
+* Version 0.0.1 un(released)
 
 ** Initial release.
