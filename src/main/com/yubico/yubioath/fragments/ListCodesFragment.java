@@ -4,6 +4,7 @@ import android.app.*;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.*;
@@ -36,7 +37,7 @@ public class ListCodesFragment extends ListFragment implements MainActivity.OnYu
     private ActionMode actionMode;
     private int state = READ_LIST;
     private OathCode selectedItem;
-    private DialogFragment swipeDialog = new SwipeDialog();
+    private SwipeDialog swipeDialog;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -48,6 +49,15 @@ public class ListCodesFragment extends ListFragment implements MainActivity.OnYu
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
+
+        swipeDialog = new SwipeDialog();
+        swipeDialog.setOnCancel(new DialogInterface.OnCancelListener() {
+            @Override
+            public void onCancel(DialogInterface dialog) {
+                state = READ_LIST;
+            }
+        });
+
         adapter = new CodeAdapter(new ArrayList<OathCode>());
         setListAdapter(adapter);
 
@@ -80,8 +90,9 @@ public class ListCodesFragment extends ListFragment implements MainActivity.OnYu
 
     @Override
     public void onPause() {
-        adapter.clear();
         super.onPause();
+        adapter.clear();
+        timeoutAnimation.setStartTime(0);
     }
 
     @Override
@@ -130,8 +141,7 @@ public class ListCodesFragment extends ListFragment implements MainActivity.OnYu
         if(hasTimeout) {
             timeoutBar.startAnimation(timeoutAnimation);
         } else {
-            timeoutAnimation.cancel();
-            timeoutBar.setProgress(0);
+            timeoutAnimation.setStartTime(0);
         }
     }
 

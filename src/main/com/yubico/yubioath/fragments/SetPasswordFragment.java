@@ -3,6 +3,7 @@ package com.yubico.yubioath.fragments;
 import android.app.DialogFragment;
 import android.app.Fragment;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -28,7 +29,7 @@ public class SetPasswordFragment extends Fragment implements MainActivity.OnYubi
     private byte[] id = null;
     private KeyManager keyManager;
     private boolean needsPassword = false;
-    private DialogFragment swipeDialog;
+    private SwipeDialog swipeDialog;
     private boolean needsId = true;
 
     @Override
@@ -38,6 +39,12 @@ public class SetPasswordFragment extends Fragment implements MainActivity.OnYubi
         view.findViewById(R.id.savePassword).setOnClickListener(this);
 
         swipeDialog = new SwipeDialog();
+        swipeDialog.setOnCancel(new DialogInterface.OnCancelListener() {
+            @Override
+            public void onCancel(DialogInterface dialog) {
+                ((MainActivity) getActivity()).openFragment(new ListCodesFragment());
+            }
+        });
         swipeDialog.show(getFragmentManager(), "dialog");
 
         return view;

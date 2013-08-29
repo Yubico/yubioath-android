@@ -19,6 +19,8 @@ import com.yubico.yubioath.model.KeyManager;
  * To change this template use File | Settings | File Templates.
  */
 public class SwipeDialog extends DialogFragment {
+    private DialogInterface.OnCancelListener onCancel;
+
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
@@ -32,5 +34,17 @@ public class SwipeDialog extends DialogFragment {
         });
 
         return builder.create();
+    }
+
+    public void setOnCancel(DialogInterface.OnCancelListener onCancel) {
+        this.onCancel = onCancel;
+    }
+
+    @Override
+    public void onCancel(DialogInterface dialog) {
+        super.onCancel(dialog);
+        if(onCancel != null) {
+            onCancel.onCancel(dialog);
+        }
     }
 }
