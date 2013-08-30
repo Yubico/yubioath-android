@@ -65,6 +65,7 @@ public class KeyManager {
     }
 
     public void clearAll() {
+        memStore.clear();
         SharedPreferences.Editor editor = store.edit();
         editor.clear();
         editor.apply();
