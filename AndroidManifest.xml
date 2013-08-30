@@ -31,8 +31,8 @@
 
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.yubico.yubioath"
-    android:versionCode="7"
-    android:versionName="0.0.2-SNAPSHOT" >
+    android:versionCode="8"
+    android:versionName="0.0.2" >
 
     <uses-sdk
         android:minSdkVersion="11"

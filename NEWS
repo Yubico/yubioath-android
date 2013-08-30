@@ -1,6 +1,8 @@
 yubioath-android NEWS -- History of user-visible changes.     -*- outline -*-
 
-* Version 0.0.2-SNAPSHOT unreleased
+* Version 0.0.2 released 2013-08-30
+
+** Added exit button.
 
 * Version 0.0.1 released 2013-08-30
 
