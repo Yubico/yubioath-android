@@ -37,6 +37,7 @@ import android.nfc.NfcAdapter;
 import android.nfc.Tag;
 import android.nfc.tech.IsoDep;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.Menu;
@@ -44,10 +45,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Toast;
-import com.yubico.yubioath.fragments.AboutFragment;
-import com.yubico.yubioath.fragments.AddCodeFragment;
-import com.yubico.yubioath.fragments.ListCodesFragment;
-import com.yubico.yubioath.fragments.SetPasswordFragment;
+import com.yubico.yubioath.fragments.*;
 import com.yubico.yubioath.model.KeyManager;
 import com.yubico.yubioath.model.PasswordRequiredException;
 import com.yubico.yubioath.model.YubiKeyNeo;
@@ -73,7 +71,8 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        getWindow().setFlags(WindowManager.LayoutParams.FLAG_SECURE, WindowManager.LayoutParams.FLAG_SECURE);
+        //This causes rotation animation to look like crap.
+        //getWindow().setFlags(WindowManager.LayoutParams.FLAG_SECURE, WindowManager.LayoutParams.FLAG_SECURE);
 
         setContentView(R.layout.main_activity);
 
@@ -195,6 +194,10 @@ public class MainActivity extends Activity {
                 break;
             case R.id.menu_about:
                 openFragment(AboutFragment.newInstance(keyManager));
+                break;
+            case R.id.menu_exit:
+                keyManager.clearMem();
+                openFragment(new ExitFragment());
                 break;
         }
         return true;

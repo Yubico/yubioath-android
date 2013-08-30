@@ -30,30 +30,17 @@
   ~ SUCH DAMAGE.
   -->
 
-<menu xmlns:android="http://schemas.android.com/apk/res/android">
-    <item
-        android:id="@+id/menu_add_account"
-        android:orderInCategory="100"
-        android:showAsAction="never"
-        android:title="@string/add_account"/>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center">
 
-    <item
-        android:id="@+id/menu_change_password"
-        android:orderInCategory="200"
-        android:showAsAction="never"
-        android:title="@string/change_password"/>
-
-    <item
-        android:id="@+id/menu_about"
-        android:orderInCategory="300"
-        android:showAsAction="never"
-        android:title="@string/about"/>
-
-    <item
-        android:id="@+id/menu_exit"
-        android:orderInCategory="400"
-        android:showAsAction="always"
-        android:icon="@drawable/exit"
-        android:title="@string/exit"/>
-
-</menu>
+    <ProgressBar android:layout_width="wrap_content"
+                 android:layout_height="wrap_content"
+                 android:layout_gravity="center"/>
+    <TextView android:layout_gravity="center"
+              android:layout_height="wrap_content"
+              android:layout_width="wrap_content"
+              android:text="Closing..."/>
+</LinearLayout>

@@ -101,6 +101,10 @@ public class KeyManager {
         editor.apply();
     }
 
+    public void clearMem() {
+        memStore.clear();
+    }
+
     public static byte[] calculateSecret(String password, byte[] id) {
         if (password.isEmpty()) {
             return new byte[0];
