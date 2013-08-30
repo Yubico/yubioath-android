@@ -43,6 +43,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
+import com.yubico.yubioath.fragments.AboutFragment;
 import com.yubico.yubioath.fragments.AddCodeFragment;
 import com.yubico.yubioath.fragments.ListCodesFragment;
 import com.yubico.yubioath.fragments.SetPasswordFragment;
@@ -187,6 +188,9 @@ public class MainActivity extends Activity {
                 break;
             case R.id.menu_change_password:
                 openFragment(new SetPasswordFragment());
+                break;
+            case R.id.menu_about:
+                openFragment(AboutFragment.newInstance(keyManager));
                 break;
         }
         return true;

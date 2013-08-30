@@ -32,7 +32,6 @@
 <resources>
 
     <string name="app_name">YubiOATH</string>
-    <string name="about">About</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>
     <string name="warning">Warning</string>
@@ -41,6 +40,8 @@
     <string name="scan_failed">Barcode scanning failed</string>
     <string name="swipe">Swipe your YubiKey NEO</string>
     <string name="swipe_and_hold">Swipe and hold your YubiKey NEO</string>
+    <string name="swipe_to_list">Swipe your YubiKey NEO to view credentials</string>
+    <string name="swipe_to_put">Swipe your YubiKey NEO to store</string>
     <string name="totp">Oath TOTP</string>
     <string name="copy">Copy to clipboard</string>
     <string name="copied">Code copied to clipboard</string>
@@ -74,4 +75,22 @@
     <string name="password_mismatch">Verify password doesn\'t match New password!</string>
     <string name="remember_password">Remember password</string>
     <string name="display_name">Display name</string>
+    <string name="clear_data">Clear stored passwords</string>
+    <string name="clear_countdown">Press %1$d times more to clear...</string>
+    <string name="data_cleared">Stored passwords cleared!</string>
+    <string name="about">About</string>
+    <string name="about_text"><![CDATA[
+<p><b>About</b><br/>
+YubiOATH for Android<br/>
+Version: %1$s<br/>
+<a href="https://github.com/Yubico/yubioath-android">Source code</a></p>
+
+<p>YubiOATH requires a YubiKey NEO with the YubiOATH applet loaded.<br/>
+<br/><a href="http://www.yubico.com">More information</a><br/>
+<br/><a href="http://www.yubico.com">Demo video</a>
+</p>
+
+<p>Copyright 2013, Yubico<br/>
+<a href="http://www.yubico.com">http://www.yubico.com</a></p>]]></string>
+
 </resources>
