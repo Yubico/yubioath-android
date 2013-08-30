@@ -90,7 +90,7 @@ public class YubiKeyNeo {
     private static final byte[] PUT_COMMAND = {0x00, PUT_INS, 0x00, 0x00, 0x00};
     private static final byte[] DELETE_COMMAND = {0x00, DELETE_INS, 0x00, 0x00, 0x00};
 
-    private static final int[] MOD = {1, 10, 100, 1000, 10000, 100000, 1000000, 10000000, 10000000};
+    private static final int[] MOD = {1, 10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000};
 
 
     private final KeyManager keyManager;
