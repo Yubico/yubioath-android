@@ -144,10 +144,10 @@ public class YubiKeyNeo {
         data[5] = KEY_TAG;
 
         requireStatus(isoTag.transceive(data), APDU_OK);
-        keyManager.storeSecret(id, new byte[0]);
+        keyManager.storeSecret(id, new byte[0], true);
     }
 
-    public void setLockCode(String code) throws IOException {
+    public void setLockCode(String code, boolean remember) throws IOException {
         byte[] secret = KeyManager.calculateSecret(code, id);
         if (secret.length == 0) {
             unsetLockCode();
@@ -180,7 +180,7 @@ public class YubiKeyNeo {
         System.arraycopy(response, 0, data, offset, response.length);
 
         requireStatus(isoTag.transceive(data), APDU_OK);
-        keyManager.storeSecret(id, secret);
+        keyManager.storeSecret(id, secret, remember);
     }
 
     public void storeCode(String name, byte[] key, byte type, int digits) throws IOException {

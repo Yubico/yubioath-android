@@ -9,6 +9,8 @@ import java.security.Key;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.KeySpec;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created with IntelliJ IDEA.
@@ -18,33 +20,47 @@ import java.security.spec.KeySpec;
  * To change this template use File | Settings | File Templates.
  */
 public class KeyManager {
+    private static final String KEY = "key_";
+    private static final String NAME = "name_";
+
     private final SharedPreferences store;
+    private final Map<String, String> memStore;
 
     public KeyManager(SharedPreferences store) {
         this.store = store;
+        memStore = new HashMap<String, String>();
     }
 
     public byte[] getSecret(byte[] id) {
-        return string2bytes(store.getString("k" + bytes2string(id), null));
+        String key = KEY + bytes2string(id);
+        return string2bytes(store.getString(key, memStore.get(key)));
     }
 
-    public void storeSecret(byte[] id, byte[] secret) {
+    public void storeSecret(byte[] id, byte[] secret, boolean remember) {
+        String key = KEY+bytes2string(id);
         SharedPreferences.Editor editor = store.edit();
         if (secret.length > 0) {
-            editor.putString("k" + bytes2string(id), bytes2string(secret));
+            String value = bytes2string(secret);
+            memStore.put(key, value);
+            if(remember) {
+                editor.putString(key, value);
+            } else {
+                editor.remove(key);
+            }
         } else {
-            editor.remove("k" + bytes2string(id));
+            memStore.remove(key);
+            editor.remove(key);
         }
         editor.apply();
     }
 
     public String getDisplayName(byte[] id, String defaultName) {
-        return store.getString("n" + bytes2string(id), defaultName);
+        return store.getString(NAME + bytes2string(id), defaultName);
     }
 
     public void setDisplayName(byte[] id, String name) {
         SharedPreferences.Editor editor = store.edit();
-        editor.putString("n" + bytes2string(id), name);
+        editor.putString(NAME + bytes2string(id), name);
         editor.apply();
     }
 

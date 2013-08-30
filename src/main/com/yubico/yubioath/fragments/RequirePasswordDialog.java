@@ -7,6 +7,7 @@ import android.content.DialogInterface;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import com.yubico.yubioath.R;
 import com.yubico.yubioath.model.KeyManager;
@@ -46,7 +47,7 @@ public class RequirePasswordDialog extends DialogFragment {
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         builder.setTitle(missing ? R.string.password_required : R.string.wrong_password);
         LayoutInflater inflater = getActivity().getLayoutInflater();
-        View view = inflater.inflate(R.layout.require_password_dialog, null);
+        final View view = inflater.inflate(R.layout.require_password_dialog, null);
         final EditText editDisplayName = (EditText) view.findViewById(R.id.editDisplayName);
         final EditText editPassword = (EditText) view.findViewById(R.id.editPassword);
         editDisplayName.setText(keyManager.getDisplayName(id, getString(R.string.yubikey_neo)));
@@ -57,8 +58,9 @@ public class RequirePasswordDialog extends DialogFragment {
             public void onClick(DialogInterface dialog, int which) {
                 String label = editDisplayName.getText().toString().trim();
                 String password = editPassword.getText().toString().trim();
+                boolean remember = ((CheckBox)view.findViewById(R.id.rememberPassword)).isChecked();
                 keyManager.setDisplayName(id, label);
-                keyManager.storeSecret(id, KeyManager.calculateSecret(password, id));
+                keyManager.storeSecret(id, KeyManager.calculateSecret(password, id), remember);
             }
         });
 

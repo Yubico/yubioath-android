@@ -8,6 +8,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.Toast;
 import com.yubico.yubioath.MainActivity;
@@ -60,7 +61,7 @@ public class SetPasswordFragment extends Fragment implements MainActivity.OnYubi
                 closeKeyboard();
                 if (needsPassword) {
                     String oldPass = ((EditText) getView().findViewById(R.id.editOldPassword)).getText().toString();
-                    keyManager.storeSecret(id, KeyManager.calculateSecret(oldPass, id));
+                    keyManager.storeSecret(id, KeyManager.calculateSecret(oldPass, id), false);
                 }
                 EditText newPassword = (EditText) getView().findViewById(R.id.editNewPassword);
                 EditText verifyPassword = (EditText) getView().findViewById(R.id.editVerifyPassword);
@@ -123,8 +124,9 @@ public class SetPasswordFragment extends Fragment implements MainActivity.OnYubi
         } else {
             String label = ((EditText) getView().findViewById(R.id.editDisplayName)).getText().toString().trim();
             String newPass = ((EditText) getView().findViewById(R.id.editNewPassword)).getText().toString();
+            boolean remember = ((CheckBox)getView().findViewById(R.id.rememberPassword)).isChecked();
             neo.setDisplayName(label);
-            neo.setLockCode(newPass);
+            neo.setLockCode(newPass, remember);
             ((MainActivity) getActivity()).openFragment(new ListCodesFragment());
         }
     }

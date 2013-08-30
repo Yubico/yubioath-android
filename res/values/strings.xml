@@ -37,8 +37,11 @@
     <string name="read_hotp">Read a HOTP code</string>
     <string name="delete_cred">Delete credential</string>
     <string name="deleted">Credential deleted!</string>
+    <string name="password">Password</string>
     <string name="old_password">Current password</string>
     <string name="new_password">New password (blank for none)</string>
     <string name="verify_password">Verify password</string>
     <string name="password_mismatch">Verify password doesn\'t match New password!</string>
+    <string name="remember_password">Remember password</string>
+    <string name="display_name">Display name</string>
 </resources>
