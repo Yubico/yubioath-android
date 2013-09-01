@@ -37,7 +37,6 @@ import android.app.ListFragment;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.os.Bundle;
 import android.view.*;
 import android.view.animation.Animation;
@@ -86,12 +85,6 @@ public class ListCodesFragment extends ListFragment implements MainActivity.OnYu
         super.onActivityCreated(savedInstanceState);
 
         swipeDialog = new SwipeDialog();
-        swipeDialog.setOnCancel(new DialogInterface.OnCancelListener() {
-            @Override
-            public void onCancel(DialogInterface dialog) {
-                state = READ_LIST;
-            }
-        });
 
         adapter = new CodeAdapter(new ArrayList<OathCode>());
         setListAdapter(adapter);
@@ -121,13 +114,6 @@ public class ListCodesFragment extends ListFragment implements MainActivity.OnYu
                 return true;
             }
         });
-    }
-
-    @Override
-    public void onPause() {
-        super.onPause();
-        adapter.clear();
-        timeoutAnimation.setStartTime(0);
     }
 
     @Override
