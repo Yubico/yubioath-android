@@ -1,5 +1,7 @@
 yubioath-android NEWS -- History of user-visible changes.     -*- outline -*-
 
+* Version 0.0.4-SHAPSHOT unreleased
+
 * Version 0.0.3 released 2013-09-02
 
 ** Fixed HOTP.
