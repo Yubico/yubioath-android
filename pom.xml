@@ -33,7 +33,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.yubico.yubioath</groupId>
     <artifactId>yubioath</artifactId>
-    <version>0.0.3-SNAPSHOT</version>
+    <version>0.0.3</version>
     <packaging>apk</packaging>
     <name>YubiOATH</name>
 
