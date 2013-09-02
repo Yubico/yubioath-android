@@ -97,16 +97,21 @@ public class YubiKeyNeo {
     private final IsoDep isoTag;
     private final byte[] id;
 
-    public YubiKeyNeo(KeyManager keyManager, IsoDep isoTag) throws IOException, PasswordRequiredException {
+    public YubiKeyNeo(KeyManager keyManager, IsoDep isoTag) throws IOException, AppletSelectException {
         this.keyManager = keyManager;
         this.isoTag = isoTag;
 
         isoTag.connect();
         byte[] resp = requireStatus(isoTag.transceive(SELECT_COMMAND), APDU_OK);
+        if(!compareStatus(resp, APDU_OK)) {
+            throw new AppletMissingException();
+        }
 
         int offset = 0;
         byte[] version = parseBlock(resp, offset, VERSION_TAG);
         offset += version.length + 2;
+
+        checkVersion(version);
 
         id = parseBlock(resp, offset, NAME_TAG);
         offset += id.length + 2;
@@ -307,6 +312,14 @@ public class YubiKeyNeo {
 
     public void close() throws IOException {
         isoTag.close();
+    }
+
+    private static void checkVersion(byte[] version) throws UnsupportedAppletException {
+        byte major = version[0];
+
+        if(major > 0) {
+            throw new UnsupportedAppletException(version);
+        }
     }
 
     private static boolean compareStatus(byte[] apdu, byte[] status) {

@@ -37,21 +37,16 @@ package com.yubico.yubioath.model;
  * Time: 4:26 PM
  * To change this template use File | Settings | File Templates.
  */
-public class PasswordRequiredException extends AppletSelectException {
-    private final byte[] id;
-    private final boolean missing;
+public class UnsupportedAppletException extends AppletSelectException {
+    private final byte[] version;
 
-    public PasswordRequiredException(String message, byte[] id, boolean missing) {
-        super(message);
-        this.id = id;
-        this.missing = missing;
+    public UnsupportedAppletException(byte[] version) {
+        super("Unsupported applet version: " + version[0] + "." + version[1] + "." + version[2]);
+
+        this.version = version;
     }
 
-    public byte[] getId() {
-        return id;
-    }
-
-    public boolean isMissing() {
-        return missing;
+    public byte[] getVersion() {
+        return version;
     }
 }

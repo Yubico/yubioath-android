@@ -51,6 +51,8 @@
     <string name="tag_error">Error in YubiKey communication!</string>
     <string name="nfc_off">NFC seems to be off, turn on?</string>
     <string name="no_nfc">This device seems to not support NFC</string>
+    <string name="unsupported_applet_version">Unsupported YubiOATH applet version, make sure this app is up to date!</string>
+    <string name="applet_missing">YubiOATH applet not installed!</string>
     <string name="credentials">Credentials</string>
     <string name="load_failed">Failed loading credentials</string>
     <string name="credential_name">Credential name</string>

@@ -46,9 +46,7 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.Toast;
 import com.yubico.yubioath.fragments.*;
-import com.yubico.yubioath.model.KeyManager;
-import com.yubico.yubioath.model.PasswordRequiredException;
-import com.yubico.yubioath.model.YubiKeyNeo;
+import com.yubico.yubioath.model.*;
 
 import java.io.IOException;
 
@@ -216,6 +214,15 @@ public class MainActivity extends Activity {
             } catch (IOException e) {
                 Toast.makeText(this, R.string.tag_error, Toast.LENGTH_SHORT).show();
                 Log.e("yubioath", "IOException in handler", e);
+            } catch (AppletMissingException e) {
+                Toast.makeText(this, R.string.applet_missing, Toast.LENGTH_SHORT).show();
+                Log.e("yubioath", "AppletMissingException in handler", e);
+            } catch (UnsupportedAppletException e) {
+                Toast.makeText(this, R.string.unsupported_applet_version, Toast.LENGTH_SHORT).show();
+                Log.e("yubioath", "UnsupportedAppletException in handler", e);
+            } catch (AppletSelectException e) {
+                Toast.makeText(this, R.string.tag_error, Toast.LENGTH_SHORT).show();
+                Log.e("yubioath", "AppletSelectException in handler", e);
             } finally {
                 if (yubiKeyNeo != null) {
                     try {
