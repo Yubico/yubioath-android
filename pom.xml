@@ -38,9 +38,9 @@
     <name>YubiOATH</name>
 
     <scm>
-        <url>scm:git:git://github.com/Yubico/yubitotp-android.git</url>
-        <connection>scm:git:git://github.com/Yubico/yubitotp-android.git</connection>
-        <developerConnection>scm:git:ssh://git@github.com/Yubico/yubitotp-android.git</developerConnection>
+        <url>scm:git:git://github.com/Yubico/yubioath-android.git</url>
+        <connection>scm:git:git://github.com/Yubico/yubioath-android.git</connection>
+        <developerConnection>scm:git:ssh://git@github.com/Yubico/yubioath-android.git</developerConnection>
     </scm>
 
     <dependencies>
