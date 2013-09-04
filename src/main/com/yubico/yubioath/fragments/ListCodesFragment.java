@@ -124,7 +124,11 @@ public class ListCodesFragment extends ListFragment implements MainActivity.OnYu
 
         switch (state) {
             case READ_LIST:
-                showCodes(neo.getCodes(timestamp));
+                List<Map<String, String>> codes = neo.getCodes(timestamp);
+                showCodes(codes);
+                if (codes.size() == 0) {
+                    Toast.makeText(getActivity(), R.string.empty_list, Toast.LENGTH_LONG).show();
+                }
                 break;
             case READ_SELECTED:
                 selectedItem.setCode(neo.readHotpCode(selectedItem.getLabel()));
@@ -158,9 +162,6 @@ public class ListCodesFragment extends ListFragment implements MainActivity.OnYu
 
         adapter.setAll(codes);
 
-        if (codes.size() == 0) {
-            Toast.makeText(getActivity(), R.string.empty_list, Toast.LENGTH_LONG).show();
-        }
         if (hasTimeout) {
             timeoutBar.startAnimation(timeoutAnimation);
         } else {

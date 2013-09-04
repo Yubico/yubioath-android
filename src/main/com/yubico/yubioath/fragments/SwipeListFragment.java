@@ -2,10 +2,10 @@ package com.yubico.yubioath.fragments;
 
 import android.app.Fragment;
 import android.app.FragmentManager;
-import android.app.ListFragment;
 import android.os.Bundle;
 import android.support.v13.app.FragmentStatePagerAdapter;
 import android.support.v4.view.ViewPager;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,6 +15,8 @@ import com.yubico.yubioath.model.KeyManager;
 import com.yubico.yubioath.model.YubiKeyNeo;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Map;
 
 /**
  * Created with IntelliJ IDEA.
@@ -24,13 +26,33 @@ import java.io.IOException;
  * To change this template use File | Settings | File Templates.
  */
 public class SwipeListFragment extends Fragment implements MainActivity.OnYubiKeyNeoListener {
-    private ListCodesFragment fragment;
+    private ListCodesFragment fragment = new ListCodesFragment();
+    private ListCodesFragment emptyFragment = new ListCodesFragment();
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.swipe_list_fragment, container, false);
-        ViewPager pager = (ViewPager) view.findViewById(R.id.pager);
+        final ViewPager pager = (ViewPager) view.findViewById(R.id.pager);
+        pager.setOffscreenPageLimit(0);
         pager.setAdapter(new ListAdapter(getFragmentManager()));
+        pager.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+            }
+
+            @Override
+            public void onPageSelected(int position) {
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int state) {
+                if(state == 0 && pager.getCurrentItem() == 1) {
+                    fragment.showCodes(new ArrayList<Map<String, String>>());
+                    pager.setCurrentItem(0, false);
+                }
+
+            }
+        });
 
         return view;
     }
@@ -45,14 +67,18 @@ public class SwipeListFragment extends Fragment implements MainActivity.OnYubiKe
         fragment.onPasswordMissing(keyManager, id, missing);
     }
 
+    public ListCodesFragment getCurrent() {
+        return fragment;
+    }
+
     private class ListAdapter extends FragmentStatePagerAdapter {
         public ListAdapter(FragmentManager fm) {
             super(fm);
         }
+
         @Override
         public Fragment getItem(int position) {
-            fragment = new ListCodesFragment();
-            return fragment;
+            return position == 0 ? fragment : emptyFragment;
         }
 
         @Override
