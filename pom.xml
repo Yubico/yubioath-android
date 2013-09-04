@@ -55,6 +55,11 @@
             <artifactId>commons-codec</artifactId>
             <version>1.5</version>
         </dependency>
+        <dependency>
+            <groupId>com.android.support</groupId>
+            <artifactId>support-v13</artifactId>
+            <version>18.0.0</version>
+        </dependency>
     </dependencies>
     <build>
         <finalName>${project.artifactId}</finalName>

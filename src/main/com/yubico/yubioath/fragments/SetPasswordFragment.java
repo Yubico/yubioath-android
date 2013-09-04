@@ -72,7 +72,7 @@ public class SetPasswordFragment extends Fragment implements MainActivity.OnYubi
         swipeDialog.setOnCancel(new DialogInterface.OnCancelListener() {
             @Override
             public void onCancel(DialogInterface dialog) {
-                ((MainActivity) getActivity()).openFragment(new ListCodesFragment());
+                ((MainActivity) getActivity()).openFragment(new SwipeListFragment());
             }
         });
         swipeDialog.show(getFragmentManager(), "dialog");
@@ -85,7 +85,7 @@ public class SetPasswordFragment extends Fragment implements MainActivity.OnYubi
         switch (v.getId()) {
             case R.id.cancelPassword:
                 closeKeyboard();
-                ((MainActivity) getActivity()).openFragment(new ListCodesFragment());
+                ((MainActivity) getActivity()).openFragment(new SwipeListFragment());
                 break;
             case R.id.savePassword:
                 closeKeyboard();
@@ -157,7 +157,7 @@ public class SetPasswordFragment extends Fragment implements MainActivity.OnYubi
             boolean remember = ((CheckBox)getView().findViewById(R.id.rememberPassword)).isChecked();
             neo.setDisplayName(label);
             neo.setLockCode(newPass, remember);
-            ((MainActivity) getActivity()).openFragment(new ListCodesFragment());
+            ((MainActivity) getActivity()).openFragment(new SwipeListFragment());
         }
     }
 }

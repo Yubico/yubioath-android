@@ -38,8 +38,10 @@ import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.*;
 import android.view.animation.Animation;
+import android.view.animation.LinearInterpolator;
 import android.view.animation.Transformation;
 import android.widget.*;
 import com.yubico.yubioath.MainActivity;
@@ -267,6 +269,7 @@ public class ListCodesFragment extends ListFragment implements MainActivity.OnYu
     private class TimeoutAnimation extends Animation {
         public TimeoutAnimation() {
             setDuration(30000);
+            setInterpolator(new LinearInterpolator());
             setAnimationListener(new AnimationListener() {
                 @Override
                 public void onAnimationStart(Animation animation) {

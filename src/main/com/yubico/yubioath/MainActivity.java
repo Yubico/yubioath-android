@@ -86,7 +86,7 @@ public class MainActivity extends Activity {
         SharedPreferences preferences = getSharedPreferences(NEO_STORE, Context.MODE_PRIVATE);
         keyManager = new KeyManager(preferences);
 
-        openFragment(new ListCodesFragment());
+        openFragment(new SwipeListFragment());
     }
 
     @Override

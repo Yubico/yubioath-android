@@ -53,7 +53,7 @@ public class ExitFragment extends Fragment {
             @Override
             public void run() {
                 getActivity().moveTaskToBack(true);
-                ((MainActivity)getActivity()).openFragment(new ListCodesFragment());
+                ((MainActivity)getActivity()).openFragment(new SwipeListFragment());
             }
         }, 200);
 
