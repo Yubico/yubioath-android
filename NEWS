@@ -1,8 +1,10 @@
 yubioath-android NEWS -- History of user-visible changes.     -*- outline -*-
 
-* Version 0.0.5-SNAPSHOT unreleased
+* Version 0.1.0 released 2013-09-04
 
 ** Added support for APDU chaining (increased number of credentials).
+
+** Better error handing when device is full.
 
 * Version 0.0.4 released 2013-09-03
 

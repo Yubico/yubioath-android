@@ -88,9 +88,9 @@
 YubiOATH for Android<br/>
 Version: %1$s</p>
 
-<p><a href="http://opensource.yubico.com/yubioath/">Web site</a><br/>
-<br/><a href="https://github.com/Yubico/yubioath-android">Source code</a><br/>
-<br/><a href="http://www.youtube.com/watch?v=knoLhGcAuu8">Demo video</a></p>
+<p><a href="http://opensource.yubico.com/yubioath-android/">Web site</a><br/>
+<br/><a href="https://github.com/Yubico/yubioath-android/">Source code</a><br/>
+<br/><a href="http://www.youtube.com/watch?v=W7if0FW12D0">Demo video</a></p>
 
 <p>YubiOATH requires a YubiKey NEO with the <a href="http://opensource.yubico.com/ykneo-oath/">ykneo-oath applet</a> loaded.</p>
 
