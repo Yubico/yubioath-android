@@ -37,14 +37,16 @@ import android.nfc.NfcAdapter;
 import android.nfc.Tag;
 import android.nfc.tech.IsoDep;
 import android.os.Bundle;
-import android.os.Handler;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.WindowManager;
 import android.widget.Toast;
+import com.yubico.yubioath.exc.AppletMissingException;
+import com.yubico.yubioath.exc.AppletSelectException;
+import com.yubico.yubioath.exc.PasswordRequiredException;
+import com.yubico.yubioath.exc.UnsupportedAppletException;
 import com.yubico.yubioath.fragments.*;
 import com.yubico.yubioath.model.*;
 

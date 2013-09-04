@@ -32,6 +32,7 @@ package com.yubico.yubioath.model;
 
 import android.nfc.tech.IsoDep;
 import android.util.Log;
+import com.yubico.yubioath.exc.*;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
@@ -50,6 +51,7 @@ import java.util.*;
  */
 public class YubiKeyNeo {
     private static final byte[] APDU_OK = {(byte) 0x90, 0x00};
+    private static final byte[] APDU_FILE_FULL = {(byte) 0x6a, (byte) 0x84};
 
     public static final byte NAME_TAG = 0x71;
     public static final byte NAME_LIST_TAG = 0x72;
@@ -70,6 +72,7 @@ public class YubiKeyNeo {
     public static final byte CALCULATE_INS = (byte) 0xa2;
     public static final byte VALIDATE_INS = (byte) 0xa3;
     public static final byte CALCULATE_ALL_INS = (byte) 0xa4;
+    public static final byte SEND_REMAINING_INS = (byte) 0xa5;
 
     public static final byte HMAC_MASK = 0x0f;
     public static final byte HMAC_SHA1 = 0x01;
@@ -89,6 +92,7 @@ public class YubiKeyNeo {
     private static final byte[] UNLOCK_COMMAND = {0x00, VALIDATE_INS, 0x00, 0x00, 0x00};
     private static final byte[] PUT_COMMAND = {0x00, PUT_INS, 0x00, 0x00, 0x00};
     private static final byte[] DELETE_COMMAND = {0x00, DELETE_INS, 0x00, 0x00, 0x00};
+    private static final byte[] SEND_REMAINING_COMMAND = {0x00, SEND_REMAINING_INS, 0x00, 0x00, 0x00};
 
     private static final int[] MOD = {1, 10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000};
 
@@ -237,7 +241,12 @@ public class YubiKeyNeo {
         System.arraycopy(key, 0, data, offset, key.length);
         offset += key.length;
 
-        requireStatus(isoTag.transceive(data), APDU_OK);
+        byte[] resp = isoTag.transceive(data);
+        if(compareStatus(resp, APDU_FILE_FULL)) {
+            throw new StorageFullException("No more room for OATH credentials!");
+        } else {
+            requireStatus(resp, APDU_OK);
+        }
     }
 
     public void deleteCode(String name) throws IOException {
@@ -268,12 +277,13 @@ public class YubiKeyNeo {
         data[offset++] = CHALLENGE_TAG;
         data[offset++] = 0;
 
-        byte[] resp = requireStatus(isoTag.transceive(data), APDU_OK);
+        byte[] resp = requireStatus(send(data), APDU_OK);
         return codeFromTruncated(parseBlock(resp, 0, T_RESPONSE_TAG));
     }
 
     public List<Map<String, String>> getCodes(long timestamp) throws IOException {
         List<Map<String, String>> codes = new ArrayList<Map<String, String>>();
+
         byte[] command = new byte[CALCULATE_ALL_COMMAND.length];
         System.arraycopy(CALCULATE_ALL_COMMAND, 0, command, 0, CALCULATE_ALL_COMMAND.length);
         int offset = CALCULATE_ALL_COMMAND.length - 4;
@@ -282,7 +292,8 @@ public class YubiKeyNeo {
         command[offset++] = (byte) (timestamp >> 8);
         command[offset++] = (byte) timestamp;
 
-        byte[] resp = requireStatus(isoTag.transceive(command), APDU_OK);
+        byte[] resp = requireStatus(send(command), APDU_OK);
+
         offset = 0;
         while (resp[offset] == NAME_TAG) {
             byte[] name = parseBlock(resp, offset, NAME_TAG);
@@ -308,6 +319,24 @@ public class YubiKeyNeo {
         }
 
         return codes;
+    }
+
+    private byte[] send(byte[] command) throws IOException {
+        byte[] resp = isoTag.transceive(command);
+        byte[] buf = new byte[2048];
+        int offset = 0;
+
+        while(resp[resp.length - 2] == 0x61) {
+            System.arraycopy(resp, 0, buf, offset, resp.length - 2);
+            offset += resp.length - 2;
+            resp = isoTag.transceive(SEND_REMAINING_COMMAND);
+        }
+
+        System.arraycopy(resp, 0, buf, offset, resp.length);
+        byte[] properlySized = new byte[offset+resp.length];
+        System.arraycopy(buf, 0, properlySized, 0, properlySized.length);
+
+        return properlySized;
     }
 
     public void close() throws IOException {

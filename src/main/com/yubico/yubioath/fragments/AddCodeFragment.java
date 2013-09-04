@@ -43,6 +43,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 import com.yubico.yubioath.MainActivity;
 import com.yubico.yubioath.R;
+import com.yubico.yubioath.exc.StorageFullException;
 import com.yubico.yubioath.model.KeyManager;
 import com.yubico.yubioath.model.YubiKeyNeo;
 import org.apache.commons.codec.binary.Base32;
@@ -156,22 +157,26 @@ public class AddCodeFragment extends Fragment implements MainActivity.OnYubiKeyN
     @Override
     public void onYubiKeyNeo(YubiKeyNeo neo) throws IOException {
         name = ((EditText) getView().findViewById(R.id.name)).getText().toString();
-        neo.storeCode(name, key, (byte) (oath_type | algorithm_type), digits);
-        long timestamp = System.currentTimeMillis() / 1000 / 30;
-        final List<Map<String, String>> codes = neo.getCodes(timestamp);
-        Toast.makeText(getActivity(), R.string.prog_success, Toast.LENGTH_LONG).show();
-        getView().post(new Runnable() {
-            @Override
-            public void run() {
-                final ListCodesFragment fragment = new ListCodesFragment();
-                ((MainActivity) getActivity()).openFragment(fragment);
-                getView().post(new Runnable() {
-                    @Override
-                    public void run() {
-                        fragment.showCodes(codes);
-                    }
-                });
-            }
-        });
+        try {
+            neo.storeCode(name, key, (byte) (oath_type | algorithm_type), digits);
+            long timestamp = System.currentTimeMillis() / 1000 / 30;
+            final List<Map<String, String>> codes = neo.getCodes(timestamp);
+            Toast.makeText(getActivity(), R.string.prog_success, Toast.LENGTH_LONG).show();
+            getView().post(new Runnable() {
+                @Override
+                public void run() {
+                    final ListCodesFragment fragment = new ListCodesFragment();
+                    ((MainActivity) getActivity()).openFragment(fragment);
+                    getView().post(new Runnable() {
+                        @Override
+                        public void run() {
+                            fragment.showCodes(codes);
+                        }
+                    });
+                }
+            });
+        } catch (StorageFullException e) {
+            Toast.makeText(getActivity(), R.string.storage_full, Toast.LENGTH_LONG).show();
+        }
     }
 }

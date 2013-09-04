@@ -1,5 +1,9 @@
 yubioath-android NEWS -- History of user-visible changes.     -*- outline -*-
 
+* Version 0.0.5-SNAPSHOT unreleased
+
+** Added support for APDU chaining (increased number of credentials).
+
 * Version 0.0.4 released 2013-09-03
 
 ** First public release.

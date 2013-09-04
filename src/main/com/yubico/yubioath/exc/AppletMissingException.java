@@ -28,7 +28,7 @@
  * SUCH DAMAGE.
  */
 
-package com.yubico.yubioath.model;
+package com.yubico.yubioath.exc;
 
 /**
  * Created with IntelliJ IDEA.
@@ -37,21 +37,8 @@ package com.yubico.yubioath.model;
  * Time: 4:26 PM
  * To change this template use File | Settings | File Templates.
  */
-public class PasswordRequiredException extends AppletSelectException {
-    private final byte[] id;
-    private final boolean missing;
-
-    public PasswordRequiredException(String message, byte[] id, boolean missing) {
-        super(message);
-        this.id = id;
-        this.missing = missing;
-    }
-
-    public byte[] getId() {
-        return id;
-    }
-
-    public boolean isMissing() {
-        return missing;
+public class AppletMissingException extends AppletSelectException {
+    public AppletMissingException() {
+        super("YubiOATH applet missing!");
     }
 }

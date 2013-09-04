@@ -28,25 +28,17 @@
  * SUCH DAMAGE.
  */
 
-package com.yubico.yubioath.model;
+package com.yubico.yubioath.exc;
 
 /**
  * Created with IntelliJ IDEA.
  * User: dain
- * Date: 8/23/13
- * Time: 4:26 PM
+ * Date: 9/2/13
+ * Time: 1:46 PM
  * To change this template use File | Settings | File Templates.
  */
-public class UnsupportedAppletException extends AppletSelectException {
-    private final byte[] version;
-
-    public UnsupportedAppletException(byte[] version) {
-        super("Unsupported applet version: " + version[0] + "." + version[1] + "." + version[2]);
-
-        this.version = version;
-    }
-
-    public byte[] getVersion() {
-        return version;
+public class AppletSelectException extends Exception {
+    public AppletSelectException(String message) {
+        super(message);
     }
 }

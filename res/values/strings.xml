@@ -81,6 +81,7 @@
     <string name="clear_data">Clear stored passwords</string>
     <string name="clear_countdown">Press %1$d times more to clear...</string>
     <string name="data_cleared">Stored passwords cleared!</string>
+    <string name="storage_full">YubiKey NEO storage is full!</string>
     <string name="about">About</string>
     <string name="about_text"><![CDATA[
 <p><b>About</b><br/>
