@@ -195,10 +195,6 @@ public class MainActivity extends Activity {
             case R.id.menu_about:
                 openFragment(AboutFragment.newInstance(keyManager));
                 break;
-            case R.id.menu_exit:
-                keyManager.clearMem();
-                openFragment(new ExitFragment());
-                break;
         }
         return true;
     }

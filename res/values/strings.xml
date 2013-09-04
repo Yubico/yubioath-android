@@ -60,7 +60,6 @@
     <string name="empty_list">Empty credentials list</string>
     <string name="save">Save</string>
     <string name="cancel">Cancel</string>
-    <string name="exit">Exit</string>
     <string name="add_account">Scan new QR-code</string>
     <string name="change_password">Change device password</string>
     <string name="password_required">Password required</string>
