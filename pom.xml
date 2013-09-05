@@ -43,6 +43,13 @@
         <developerConnection>scm:git:ssh://git@github.com/Yubico/yubioath-android.git</developerConnection>
     </scm>
 
+    <repositories>
+      <repository>
+        <id>android-extras</id>
+        <url>file://${env.ANDROID_HOME}/extras/android/m2repository/</url>
+      </repository>
+    </repositories>
+
     <dependencies>
         <dependency>
             <groupId>com.google.android</groupId>

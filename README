@@ -23,11 +23,10 @@ To view codes, just start the app and swipe your YubiKey NEO.
 Building
 --------
 
-This project requires libraries provided by the android SDK that
-need to be installed in your local maven repository:
------------
-  $ cp -r <android_sdk_home>/extras/android/m2repository/* ~/.m2/repository/
------------
+The "Android Support Repository" part of the android SDK needs to be installed
+to build this project.
+
+Make sure to set the environment variable ANDROID_HOME before running mvn.
 
 This project uses maven3 for building, so to build:
 -----------
