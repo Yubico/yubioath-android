@@ -68,6 +68,7 @@ public class ListCodesFragment extends ListFragment implements MainActivity.OnYu
     private static final int DELETE_SELECTED = 2;
 
     private final TimeoutAnimation timeoutAnimation = new TimeoutAnimation();
+    private List<Map<String,String>> initialCodes;
     private CodeAdapter adapter;
     private ProgressBar timeoutBar;
     private ActionMode actionMode;
@@ -116,6 +117,11 @@ public class ListCodesFragment extends ListFragment implements MainActivity.OnYu
                 return true;
             }
         });
+
+        if(initialCodes != null) {
+            showCodes(initialCodes);
+            initialCodes = null;
+        }
     }
 
     @Override
@@ -148,6 +154,11 @@ public class ListCodesFragment extends ListFragment implements MainActivity.OnYu
     }
 
     public void showCodes(List<Map<String, String>> codeMap) {
+        if(adapter == null) {
+            initialCodes = codeMap;
+            return;
+        }
+
         List<OathCode> codes = new ArrayList<OathCode>();
         boolean hasTimeout = false;
         for (Map<String, String> code : codeMap) {

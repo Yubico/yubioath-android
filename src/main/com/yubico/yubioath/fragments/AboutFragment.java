@@ -133,13 +133,8 @@ public class AboutFragment extends Fragment implements MainActivity.OnYubiKeyNeo
             @Override
             public void run() {
                 final SwipeListFragment fragment = new SwipeListFragment();
+                fragment.getCurrent().showCodes(codes);
                 ((MainActivity) getActivity()).openFragment(fragment);
-                getView().post(new Runnable() {
-                    @Override
-                    public void run() {
-                        fragment.getCurrent().showCodes(codes);
-                    }
-                });
             }
         });
     }

@@ -166,13 +166,8 @@ public class AddCodeFragment extends Fragment implements MainActivity.OnYubiKeyN
                 @Override
                 public void run() {
                     final SwipeListFragment fragment = new SwipeListFragment();
+                    fragment.getCurrent().showCodes(codes);
                     ((MainActivity) getActivity()).openFragment(fragment);
-                    getView().post(new Runnable() {
-                        @Override
-                        public void run() {
-                            fragment.getCurrent().showCodes(codes);
-                        }
-                    });
                 }
             });
         } catch (StorageFullException e) {
