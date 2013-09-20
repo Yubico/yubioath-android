@@ -38,7 +38,6 @@ import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.*;
 import android.view.animation.Animation;
 import android.view.animation.LinearInterpolator;
@@ -80,6 +79,7 @@ public class ListCodesFragment extends ListFragment implements MainActivity.OnYu
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.list_codes_fragment, container, false);
         timeoutBar = (ProgressBar) view.findViewById(R.id.timeRemaining);
+
         return view;
     }
 
