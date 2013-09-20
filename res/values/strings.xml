@@ -49,8 +49,9 @@
     <string name="prog_fail">Failed to program the YubiKey NEO</string>
     <string name="version">Version</string>
     <string name="tag_error">Error in YubiKey communication!</string>
-    <string name="nfc_off">NFC seems to be off, turn on?</string>
+    <string name="nfc_off">NFC is disabled!</string>
     <string name="no_nfc">This device seems to not support NFC</string>
+    <string name="enable_nfc">Enable NFC</string>
     <string name="unsupported_applet_version">Unsupported YubiOATH applet version, make sure this app is up to date!</string>
     <string name="applet_missing">YubiOATH applet not installed!</string>
     <string name="credentials">Credentials</string>
@@ -60,6 +61,7 @@
     <string name="empty_list">Empty credentials list</string>
     <string name="save">Save</string>
     <string name="cancel">Cancel</string>
+    <string name="close">Close</string>
     <string name="add_account">Scan new QR-code</string>
     <string name="change_password">Change device password</string>
     <string name="password_required">Password required</string>

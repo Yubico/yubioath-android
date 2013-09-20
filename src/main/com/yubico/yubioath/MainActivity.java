@@ -79,8 +79,6 @@ public class MainActivity extends Activity {
         adapter = NfcAdapter.getDefaultAdapter(this);
         if (adapter == null) {
             Toast.makeText(this, R.string.no_nfc, Toast.LENGTH_LONG).show();
-        } else if (!adapter.isEnabled()) {
-            Toast.makeText(this, R.string.nfc_off, Toast.LENGTH_LONG).show();
         }
 
         SharedPreferences preferences = getSharedPreferences(NEO_STORE, Context.MODE_PRIVATE);
@@ -104,7 +102,15 @@ public class MainActivity extends Activity {
     public void onResume() {
         super.onResume();
 
-        if (totpListener != null) {
+        if(!adapter.isEnabled()) {
+            FragmentTransaction ft = getFragmentManager().beginTransaction();
+            Fragment prev = getFragmentManager().findFragmentByTag("dialog");
+            if (prev != null) {
+                ft.remove(prev);
+            }
+            DialogFragment dialog = new EnableNfcDialog();
+            dialog.show(ft, "dialog");
+        } else if (totpListener != null) {
             Intent intent = getIntent();
             intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
             PendingIntent tagIntent = PendingIntent.getActivity(this, 0, intent, 0);
