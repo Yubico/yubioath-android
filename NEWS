@@ -1,5 +1,11 @@
 yubioath-android NEWS -- History of user-visible changes.     -*- outline -*-
 
+* Version 0.1.4 released 2013-09-20
+
+** Swiping codes list in either direction now clears the list.
+
+** Prompt user to enable NFC if disabled.
+
 * Version 0.1.3 released 2013-09-05
 
 ** Fix NPE when scanning codes.
