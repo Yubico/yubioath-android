@@ -54,6 +54,8 @@ public class SwipeListFragment extends Fragment implements MainActivity.OnYubiKe
             }
         });
 
+        pager.setCurrentItem(1, false);
+
         return view;
     }
 
