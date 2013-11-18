@@ -66,6 +66,7 @@ public class AddCodeFragment extends Fragment implements MainActivity.OnYubiKeyN
     private byte oath_type;
     private byte algorithm_type;
     private int digits;
+    private int counter;
 
     public static AddCodeFragment newInstance(String uri) {
         Bundle bundle = new Bundle();
@@ -139,6 +140,17 @@ public class AddCodeFragment extends Fragment implements MainActivity.OnYubiKeyN
                 return false;
             }
         }
+        
+        String counter_string = uri.getQueryParameter("counter");
+        if(counter_string == null || counter_string.isEmpty()) {
+        	counter = 0;
+        } else {
+        	try {
+        		counter = Integer.parseInt(counter_string);
+        	} catch (NumberFormatException e) {
+        		return false;
+        	}
+        }
 
         return true;
     }
@@ -158,7 +170,7 @@ public class AddCodeFragment extends Fragment implements MainActivity.OnYubiKeyN
     public void onYubiKeyNeo(YubiKeyNeo neo) throws IOException {
         name = ((EditText) getView().findViewById(R.id.name)).getText().toString();
         try {
-            neo.storeCode(name, key, (byte) (oath_type | algorithm_type), digits);
+            neo.storeCode(name, key, (byte) (oath_type | algorithm_type), digits, counter);
             long timestamp = System.currentTimeMillis() / 1000 / 30;
             final List<Map<String, String>> codes = neo.getCodes(timestamp);
             Toast.makeText(getActivity(), R.string.prog_success, Toast.LENGTH_LONG).show();

@@ -62,6 +62,7 @@ public class YubiKeyNeo {
     public static final byte NO_RESPONSE_TAG = 0x77;
     public static final byte PROPERTY_TAG = 0x78;
     public static final byte VERSION_TAG = 0x79;
+    public static final byte IMF_TAG = 0x7a;
 
     public static final byte PUT_INS = 0x01;
     public static final byte DELETE_INS = 0x02;
@@ -222,9 +223,19 @@ public class YubiKeyNeo {
         keyManager.storeSecret(id, secret, remember);
     }
 
-    public void storeCode(String name, byte[] key, byte type, int digits) throws IOException {
+    public void storeCode(String name, byte[] key, byte type, int digits, int counter) throws IOException {
         byte[] nameBytes = name.getBytes();
-        byte[] data = new byte[PUT_COMMAND.length + 2 + nameBytes.length + 4 + key.length];
+        byte[] counterBytes = null;
+        int length = PUT_COMMAND.length + 2 + nameBytes.length + 4 + key.length;
+        if(counter > 0) {
+        	length += 6;
+        	counterBytes = new byte[4];
+        	counterBytes[0] = (byte) (counter >>> 24);
+        	counterBytes[1] = (byte) (counter >>> 16);
+        	counterBytes[2] = (byte) (counter >>> 8);
+        	counterBytes[3] = (byte) counter;
+        }
+        byte[] data = new byte[length];
         System.arraycopy(PUT_COMMAND, 0, data, 0, PUT_COMMAND.length);
         int offset = 4;
         data[offset++] = (byte) (data.length - 5);
@@ -240,6 +251,13 @@ public class YubiKeyNeo {
         data[offset++] = (byte) digits;
         System.arraycopy(key, 0, data, offset, key.length);
         offset += key.length;
+        
+        if(counterBytes != null) {
+        	data[offset++] = IMF_TAG;
+        	data[offset++] = (byte) counterBytes.length;
+        	System.arraycopy(counterBytes, 0, data, offset, counterBytes.length);
+        	offset += counterBytes.length;
+        }
 
         byte[] resp = isoTag.transceive(data);
         if(compareStatus(resp, APDU_FILE_FULL)) {
