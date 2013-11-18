@@ -126,7 +126,8 @@ public class ListCodesFragment extends ListFragment implements MainActivity.OnYu
 
     @Override
     public void onYubiKeyNeo(YubiKeyNeo neo) throws IOException {
-        long timestamp = System.currentTimeMillis() / 1000 / 30;
+        //If less than 10 seconds remain until we'd get the next OTP, skip ahead.
+        long timestamp = (System.currentTimeMillis() / 1000 + 10) / 30;
 
         switch (state) {
             case READ_LIST:
