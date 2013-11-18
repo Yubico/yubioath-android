@@ -36,7 +36,7 @@
     <string name="no">No</string>
     <string name="warning">Warning</string>
     <string name="barcode_scanner_not_found">Barcode scanner not found, do you want to install it?</string>
-    <string name="invalid_barcode">The scanned Barcode is invalid</string>
+    <string name="invalid_barcode">The scanned barcode is invalid</string>
     <string name="scan_failed">Barcode scanning failed</string>
     <string name="swipe">Swipe your YubiKey NEO</string>
     <string name="swipe_and_hold">Swipe and hold your YubiKey NEO</string>
