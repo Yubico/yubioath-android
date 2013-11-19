@@ -129,6 +129,11 @@ public class ListCodesFragment extends ListFragment implements MainActivity.OnYu
         //If less than 10 seconds remain until we'd get the next OTP, skip ahead.
         long timestamp = (System.currentTimeMillis() / 1000 + 10) / 30;
 
+        if(!swipeDialog.isAdded()) {
+            //If the swipeDialog has been dismissed we ignore the state and just list the OTPs.
+            state = READ_LIST;
+        }
+
         switch (state) {
             case READ_LIST:
                 List<Map<String, String>> codes = neo.getCodes(timestamp);
