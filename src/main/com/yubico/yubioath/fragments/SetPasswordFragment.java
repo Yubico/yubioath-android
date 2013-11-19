@@ -34,6 +34,7 @@ import android.app.Fragment;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -154,10 +155,22 @@ public class SetPasswordFragment extends Fragment implements MainActivity.OnYubi
         } else {
             String label = ((EditText) getView().findViewById(R.id.editDisplayName)).getText().toString().trim();
             String newPass = ((EditText) getView().findViewById(R.id.editNewPassword)).getText().toString();
-            boolean remember = ((CheckBox)getView().findViewById(R.id.rememberPassword)).isChecked();
+            boolean remember = ((CheckBox) getView().findViewById(R.id.rememberPassword)).isChecked();
             neo.setDisplayName(label);
-            neo.setLockCode(newPass, remember);
-            ((MainActivity) getActivity()).openFragment(new SwipeListFragment());
+            try {
+                neo.setLockCode(newPass, remember);
+                ((MainActivity) getActivity()).openFragment(new SwipeListFragment());
+                Toast.makeText(getActivity(), R.string.password_updated, Toast.LENGTH_SHORT).show();
+            } catch (IOException e) {
+                Log.e("yubioath", "Set password failed, retry", e);
+                getView().post(new Runnable() {
+                    @Override
+                    public void run() {
+                        swipeDialog.show(getFragmentManager(), "dialog");
+                        Toast.makeText(getActivity(), R.string.tag_error_retry, Toast.LENGTH_SHORT).show();
+                    }
+                });
+            }
         }
     }
 }

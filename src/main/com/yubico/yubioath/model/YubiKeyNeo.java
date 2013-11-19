@@ -107,8 +107,8 @@ public class YubiKeyNeo {
         this.isoTag = isoTag;
 
         isoTag.connect();
-        byte[] resp = requireStatus(isoTag.transceive(SELECT_COMMAND), APDU_OK);
-        if(!compareStatus(resp, APDU_OK)) {
+        byte[] resp = isoTag.transceive(SELECT_COMMAND);
+        if (!compareStatus(resp, APDU_OK)) {
             throw new AppletMissingException();
         }
 
@@ -140,10 +140,23 @@ public class YubiKeyNeo {
 
     private void unlock(byte[] challenge) throws IOException, PasswordRequiredException {
         byte[] secret = keyManager.getSecret(id);
-        if (secret == null) {
+        byte[] altSecret = keyManager.getAltSecret(id);
+        if (secret == null && altSecret == null) {
             throw new PasswordRequiredException("Password is missing!", id, true);
         }
 
+        if (secret != null && doUnlock(challenge, secret)) { //Try the main password
+            keyManager.storeAltSecret(id, new byte[0], true);
+            return;
+        } else if (altSecret != null && doUnlock(challenge, altSecret)) { //Try a password that might have been set
+            keyManager.promoteAltSecret(id);
+            return;
+        }
+
+        throw new PasswordRequiredException("Password is incorrect!", id, false);
+    }
+
+    private boolean doUnlock(byte[] challenge, byte[] secret) throws IOException {
         byte[] response = hmacSha1(secret, challenge);
         byte[] myChallenge = new byte[8];
         SecureRandom random = new SecureRandom();
@@ -170,21 +183,22 @@ public class YubiKeyNeo {
         if (compareStatus(resp, APDU_OK)) {
             byte[] neoResponse = parseBlock(resp, 0, RESPONSE_TAG);
             if (Arrays.equals(myResponse, neoResponse)) {
-                return;
+                return true;
             }
         }
 
-        throw new PasswordRequiredException("Password is incorrect!", id, false);
+        return false;
     }
 
     private void unsetLockCode() throws IOException {
+        keyManager.storeAltSecret(id, new byte[0], true);
         byte[] data = new byte[SET_LOCK_COMMAND.length + 2];
         System.arraycopy(SET_LOCK_COMMAND, 0, data, 0, SET_LOCK_COMMAND.length);
         data[4] = 2;
         data[5] = KEY_TAG;
 
         requireStatus(isoTag.transceive(data), APDU_OK);
-        keyManager.storeSecret(id, new byte[0], true);
+        keyManager.promoteAltSecret(id);
     }
 
     public void setLockCode(String code, boolean remember) throws IOException {
@@ -192,7 +206,11 @@ public class YubiKeyNeo {
         if (secret.length == 0) {
             unsetLockCode();
             return;
+        } else if(Arrays.equals(secret, keyManager.getSecret(id))) {
+            return;
         }
+
+        keyManager.storeAltSecret(id, secret, remember); //Store but don't overwrite. If we get a failure below we won't know if the password was set or not.
 
         byte[] challenge = new byte[8];
         SecureRandom random = new SecureRandom();
@@ -220,20 +238,20 @@ public class YubiKeyNeo {
         System.arraycopy(response, 0, data, offset, response.length);
 
         requireStatus(isoTag.transceive(data), APDU_OK);
-        keyManager.storeSecret(id, secret, remember);
+        keyManager.promoteAltSecret(id);
     }
 
     public void storeCode(String name, byte[] key, byte type, int digits, int counter) throws IOException {
         byte[] nameBytes = name.getBytes();
         byte[] counterBytes = null;
         int length = PUT_COMMAND.length + 2 + nameBytes.length + 4 + key.length;
-        if(counter > 0) {
-        	length += 6;
-        	counterBytes = new byte[4];
-        	counterBytes[0] = (byte) (counter >>> 24);
-        	counterBytes[1] = (byte) (counter >>> 16);
-        	counterBytes[2] = (byte) (counter >>> 8);
-        	counterBytes[3] = (byte) counter;
+        if (counter > 0) {
+            length += 6;
+            counterBytes = new byte[4];
+            counterBytes[0] = (byte) (counter >>> 24);
+            counterBytes[1] = (byte) (counter >>> 16);
+            counterBytes[2] = (byte) (counter >>> 8);
+            counterBytes[3] = (byte) counter;
         }
         byte[] data = new byte[length];
         System.arraycopy(PUT_COMMAND, 0, data, 0, PUT_COMMAND.length);
@@ -251,16 +269,16 @@ public class YubiKeyNeo {
         data[offset++] = (byte) digits;
         System.arraycopy(key, 0, data, offset, key.length);
         offset += key.length;
-        
-        if(counterBytes != null) {
-        	data[offset++] = IMF_TAG;
-        	data[offset++] = (byte) counterBytes.length;
-        	System.arraycopy(counterBytes, 0, data, offset, counterBytes.length);
-        	offset += counterBytes.length;
+
+        if (counterBytes != null) {
+            data[offset++] = IMF_TAG;
+            data[offset++] = (byte) counterBytes.length;
+            System.arraycopy(counterBytes, 0, data, offset, counterBytes.length);
+            offset += counterBytes.length;
         }
 
         byte[] resp = isoTag.transceive(data);
-        if(compareStatus(resp, APDU_FILE_FULL)) {
+        if (compareStatus(resp, APDU_FILE_FULL)) {
             throw new StorageFullException("No more room for OATH credentials!");
         } else {
             requireStatus(resp, APDU_OK);
@@ -344,14 +362,14 @@ public class YubiKeyNeo {
         byte[] buf = new byte[2048];
         int offset = 0;
 
-        while(resp[resp.length - 2] == 0x61) {
+        while (resp[resp.length - 2] == 0x61) {
             System.arraycopy(resp, 0, buf, offset, resp.length - 2);
             offset += resp.length - 2;
             resp = isoTag.transceive(SEND_REMAINING_COMMAND);
         }
 
         System.arraycopy(resp, 0, buf, offset, resp.length);
-        byte[] properlySized = new byte[offset+resp.length];
+        byte[] properlySized = new byte[offset + resp.length];
         System.arraycopy(buf, 0, properlySized, 0, properlySized.length);
 
         return properlySized;
@@ -364,7 +382,7 @@ public class YubiKeyNeo {
     private static void checkVersion(byte[] version) throws UnsupportedAppletException {
         byte major = version[0];
 
-        if(major > 0) {
+        if (major > 0) {
             throw new UnsupportedAppletException(version);
         }
     }

@@ -51,6 +51,7 @@ import java.util.Map;
  */
 public class KeyManager {
     private static final String KEY = "key_";
+    private static final String ALTKEY = "altkey_";
     private static final String NAME = "name_";
 
     private final SharedPreferences store;
@@ -66,13 +67,18 @@ public class KeyManager {
         return string2bytes(store.getString(key, memStore.get(key)));
     }
 
-    public void storeSecret(byte[] id, byte[] secret, boolean remember) {
-        String key = KEY+bytes2string(id);
+    public byte[] getAltSecret(byte[] id) {
+        String key = ALTKEY + bytes2string(id);
+        return string2bytes(store.getString(key, memStore.get(key)));
+    }
+
+    private void doStoreSecret(byte[] id, byte[] secret, boolean remember, String prefix) {
+        String key = prefix + bytes2string(id);
         SharedPreferences.Editor editor = store.edit();
         if (secret.length > 0) {
             String value = bytes2string(secret);
             memStore.put(key, value);
-            if(remember) {
+            if (remember) {
                 editor.putString(key, value);
             } else {
                 editor.remove(key);
@@ -82,6 +88,27 @@ public class KeyManager {
             editor.remove(key);
         }
         editor.apply();
+    }
+
+    public void storeSecret(byte[] id, byte[] secret, boolean remember) {
+        doStoreSecret(id, secret, remember, KEY);
+    }
+
+    public void storeAltSecret(byte[] id, byte[] secret, boolean remember) {
+        doStoreSecret(id, secret, remember, ALTKEY);
+    }
+
+    public void promoteAltSecret(byte[] id) {
+        byte[] altSecret = getAltSecret(id);
+        if(altSecret != null) {
+            memStore.put(KEY + bytes2string(id), bytes2string(altSecret));
+            if(store.contains(ALTKEY + bytes2string(id))) {
+                storeSecret(id, altSecret, true);
+            }
+        } else {
+            storeSecret(id, new byte[0], true);
+        }
+        storeAltSecret(id, new byte[0], true);
     }
 
     public String getDisplayName(byte[] id, String defaultName) {

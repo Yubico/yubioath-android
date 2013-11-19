@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
   ~ Copyright (c) 2013, Yubico AB.  All rights reserved.
   ~
   ~ Redistribution and use in source and binary forms, with or without
@@ -49,10 +48,12 @@
     <string name="prog_fail">Failed to program the YubiKey NEO</string>
     <string name="version">Version</string>
     <string name="tag_error">Error in YubiKey communication!</string>
+    <string name="tag_error_retry">Error in YubiKey communication! Try again.</string>
     <string name="nfc_off">NFC is disabled!</string>
     <string name="no_nfc">This device seems to not support NFC</string>
     <string name="enable_nfc">Enable NFC</string>
-    <string name="unsupported_applet_version">Unsupported YubiOATH applet version, make sure this app is up to date!</string>
+    <string name="unsupported_applet_version">Unsupported YubiOATH applet version, make sure this app is up to date!
+    </string>
     <string name="applet_missing">YubiOATH applet not installed!</string>
     <string name="credentials">Credentials</string>
     <string name="load_failed">Failed loading credentials</string>
@@ -78,6 +79,7 @@
     <string name="verify_password">Verify password</string>
     <string name="password_mismatch">Verify password doesn\'t match New password!</string>
     <string name="remember_password">Remember password</string>
+    <string name="password_updated">Password updated!</string>
     <string name="display_name">Display name</string>
     <string name="clear_data">Clear stored passwords</string>
     <string name="clear_countdown">Press %1$d times more to clear...</string>

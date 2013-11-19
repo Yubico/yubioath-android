@@ -1,5 +1,13 @@
 yubioath-android NEWS -- History of user-visible changes.     -*- outline -*-
 
+* Version 0.1.5 unreleased
+
+** Better error handling for setting or changing a password.
+
+** Improved notifications.
+
+** Added 10 seconds to OTP generation for longer validity.
+
 * Version 0.1.4 released 2013-09-20
 
 ** Swiping codes list in either direction now clears the list.
