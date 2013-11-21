@@ -107,6 +107,7 @@ public class YubiKeyNeo {
         this.isoTag = isoTag;
 
         isoTag.connect();
+        isoTag.setTimeout(3000);
         byte[] resp = isoTag.transceive(SELECT_COMMAND);
         if (!compareStatus(resp, APDU_OK)) {
             throw new AppletMissingException();
