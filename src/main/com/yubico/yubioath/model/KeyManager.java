@@ -38,7 +38,6 @@ import javax.crypto.spec.PBEKeySpec;
 import java.security.Key;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
-import java.security.spec.KeySpec;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -137,15 +136,20 @@ public class KeyManager {
             return new byte[0];
         }
 
+        PBEKeySpec keyspec = null;
         try {
             SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
-            KeySpec keyspec = new PBEKeySpec(password.toCharArray(), id, 1000, 128);
+            keyspec = new PBEKeySpec(password.toCharArray(), id, 1000, 128);
             Key key = factory.generateSecret(keyspec);
             return key.getEncoded();
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException(e);
         } catch (InvalidKeySpecException e) {
             throw new RuntimeException(e);
+        } finally {
+            if(keyspec != null) {
+                keyspec.clearPassword();
+            }
         }
     }
 
