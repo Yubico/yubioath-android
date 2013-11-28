@@ -96,7 +96,8 @@ public class AddCodeFragment extends Fragment implements MainActivity.OnYubiKeyN
     }
 
     protected boolean parseUri(Uri uri) {
-        if(!uri.isHierarchical() || !uri.getScheme().equals("otpauth")) {
+    	String scheme = uri.getScheme();
+        if(!uri.isHierarchical() || scheme == null || !scheme.equals("otpauth")) {
             return false;
         }
 
