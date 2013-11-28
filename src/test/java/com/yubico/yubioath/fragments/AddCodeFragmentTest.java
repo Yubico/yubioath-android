@@ -18,10 +18,10 @@ public class AddCodeFragmentTest {
 		fragment = new AddCodeFragment();
 	}
 	
-
 	@Test
 	public void testParseUriBad() {
-		String failingUris[] = {"http://example.com/"};
+		String failingUris[] = {"http://example.com/", "otpauth://foobar?secret=kaka", "foobar",
+				"otpauth://totp/Example:alice@google.com?secret=balhonga1&issuer=Example"};
 		for(String uri : failingUris) {
 			try {
 				assertEquals("URI " + uri + " did not fail.", false, fragment.parseUri(Uri.parse(uri)));

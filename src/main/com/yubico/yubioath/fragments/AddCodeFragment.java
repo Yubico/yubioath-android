@@ -106,9 +106,15 @@ public class AddCodeFragment extends Fragment implements MainActivity.OnYubiKeyN
             return false;
         }
         Base32 base32 = new Base32();
+        if(!base32.isInAlphabet(secret.toUpperCase())) {
+        	return false;
+        }
         key = base32.decode(secret.toUpperCase());
 
         String path = uri.getPath(); // user name is stored in path...
+        if(path == null || path.isEmpty()) {
+        	return false;
+        }
         if (path.charAt(0) == '/') {
             path = path.substring(1);
         }
