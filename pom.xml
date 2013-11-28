@@ -149,7 +149,7 @@
                                     </includes>
                                     <keystore>NONE</keystore>
                                     <storetype>PKCS11</storetype>
-                                    <alias>Certificate</alias>
+                                    <alias>Certificate for PIV Authentication</alias>
                                     <storepass>${sign.storepass}</storepass>
                                     <arguments>
                                         <argument>-sigalg</argument>
