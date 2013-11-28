@@ -1,5 +1,11 @@
 yubioath-android NEWS -- History of user-visible changes.     -*- outline -*-
 
+* Version 0.1.8 released 2013-11-28
+
+** Rebranded app as "Yubico Authenticator"
+
+** Better error handling for invalid OATH URLs.
+
 * Version 0.1.7 released 2013-11-22
 
 ** Increase timeout for NFC operations. Patch contributed by Andrew Rowson.
