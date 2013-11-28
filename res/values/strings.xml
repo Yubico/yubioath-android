@@ -30,7 +30,7 @@
 
 <resources>
 
-    <string name="app_name">YubiOATH</string>
+    <string name="app_name">Yubico Authenticator</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>
     <string name="warning">Warning</string>
@@ -52,9 +52,9 @@
     <string name="nfc_off">NFC is disabled!</string>
     <string name="no_nfc">This device seems to not support NFC</string>
     <string name="enable_nfc">Enable NFC</string>
-    <string name="unsupported_applet_version">Unsupported YubiOATH applet version, make sure this app is up to date!
+    <string name="unsupported_applet_version">Unsupported applet version on NEO, make sure this app is up to date!
     </string>
-    <string name="applet_missing">YubiOATH applet not installed!</string>
+    <string name="applet_missing">Yubico Authenticator applet not installed on NEO!</string>
     <string name="credentials">Credentials</string>
     <string name="load_failed">Failed loading credentials</string>
     <string name="credential_name">Credential name</string>
@@ -88,14 +88,14 @@
     <string name="about">About</string>
     <string name="about_text"><![CDATA[
 <p><b>About</b><br/>
-YubiOATH for Android<br/>
+Yubico Authenticator for Android<br/>
 Version: %1$s</p>
 
 <p><a href="http://opensource.yubico.com/yubioath-android/">Web site</a><br/>
 <br/><a href="https://github.com/Yubico/yubioath-android/">Source code</a><br/>
 <br/><a href="http://www.youtube.com/watch?v=W7if0FW12D0">Demo video</a></p>
 
-<p>YubiOATH requires a YubiKey NEO with the <a href="http://opensource.yubico.com/ykneo-oath/">ykneo-oath applet</a> loaded.</p>
+<p>Yubico Authenticator requires a YubiKey NEO with the <a href="http://opensource.yubico.com/ykneo-oath/">ykneo-oath applet</a> loaded.</p>
 
 <p>Copyright 2013, Yubico<br/>
 <a href="http://www.yubico.com/">http://www.yubico.com/</a></p>]]></string>

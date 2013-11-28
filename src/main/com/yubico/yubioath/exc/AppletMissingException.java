@@ -39,6 +39,6 @@ package com.yubico.yubioath.exc;
  */
 public class AppletMissingException extends AppletSelectException {
     public AppletMissingException() {
-        super("YubiOATH applet missing!");
+        super("Yubico Authenticator applet missing!");
     }
 }

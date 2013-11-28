@@ -35,7 +35,7 @@
     <artifactId>yubioath</artifactId>
     <version>0.1.8-SNAPSHOT</version>
     <packaging>apk</packaging>
-    <name>YubiOATH</name>
+    <name>Yubico Authenticator</name>
 
     <scm>
         <url>scm:git:git://github.com/Yubico/yubioath-android.git</url>
