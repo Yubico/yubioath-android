@@ -21,7 +21,8 @@ public class AddCodeFragmentTest {
 	@Test
 	public void testParseUriBad() {
 		String failingUris[] = {"http://example.com/", "otpauth://foobar?secret=kaka", "foobar",
-				"otpauth://totp/Example:alice@google.com?secret=balhonga1&issuer=Example"};
+				"otpauth://totp/Example:alice@google.com?secret=balhonga1&issuer=Example",
+				"otpauth:///foo:mallory@example.com?secret=kaka"};
 		for(String uri : failingUris) {
 			try {
 				assertEquals("URI " + uri + " did not fail.", false, fragment.parseUri(Uri.parse(uri)));
@@ -34,7 +35,9 @@ public class AddCodeFragmentTest {
 	
 	@Test
 	public void testParseUriGood() {
-		String goodUris[] = {"otpauth://totp/Example:alice@google.com?secret=JBSWY3DPEHPK3PXP&issuer=Example"};
+		String goodUris[] = {
+				"otpauth://totp/Example:alice@google.com?secret=JBSWY3DPEHPK3PXP&issuer=Example",
+				"otpauth://hotp/foobar:bob@example.com?secret=blahonga2"};
 		for(String uri : goodUris) {
 			try {
 				assertEquals("URI " + uri + " failed unexpectedly.", true, fragment.parseUri(Uri.parse(uri)));
