@@ -37,10 +37,10 @@
     <string name="barcode_scanner_not_found">Barcode scanner not found, do you want to install it?</string>
     <string name="invalid_barcode">The scanned barcode is invalid</string>
     <string name="scan_failed">Barcode scanning failed</string>
-    <string name="swipe">Swipe your YubiKey NEO</string>
-    <string name="swipe_and_hold">Swipe and hold your YubiKey NEO</string>
-    <string name="swipe_to_list">Swipe your YubiKey NEO to view credentials</string>
-    <string name="swipe_to_put">Swipe your YubiKey NEO to store</string>
+    <string name="swipe">Tap your YubiKey NEO</string>
+    <string name="swipe_and_hold">Tap and hold your YubiKey NEO</string>
+    <string name="swipe_to_list">Tap your YubiKey NEO to view credentials</string>
+    <string name="swipe_to_put">Tap your YubiKey NEO to store</string>
     <string name="totp">Oath TOTP</string>
     <string name="copy">Copy to clipboard</string>
     <string name="copied">Code copied to clipboard</string>
