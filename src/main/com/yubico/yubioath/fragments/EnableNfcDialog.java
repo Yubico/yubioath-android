@@ -35,6 +35,7 @@ import android.app.Dialog;
 import android.app.DialogFragment;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import com.yubico.yubioath.R;
 
@@ -54,7 +55,11 @@ public class EnableNfcDialog extends DialogFragment {
                 .setTitle(R.string.nfc_off)
                 .setPositiveButton(R.string.enable_nfc, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
-                        Intent settings = new Intent(android.provider.Settings.ACTION_NFC_SETTINGS);
+                    	String action = android.provider.Settings.ACTION_WIRELESS_SETTINGS;
+    					if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+    						action = android.provider.Settings.ACTION_NFC_SETTINGS;
+    					}
+                        Intent settings = new Intent(action);
                         startActivity(settings);
                         dialog.dismiss();
                     }
