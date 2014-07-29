@@ -5,3 +5,5 @@ android:
     - android-19
     - extra-android-m2repository
     - extra-android-support
+  licenses:
+    - android-sdk-license-.+
