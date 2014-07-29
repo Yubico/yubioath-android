@@ -5,3 +5,4 @@ License: BSD-2-Clause
 Name: yubioath-android
 Project: yubioath-android
 Summary: YubiOATH Android app
+Travis: https://travis-ci.org/Yubico/yubioath-android
