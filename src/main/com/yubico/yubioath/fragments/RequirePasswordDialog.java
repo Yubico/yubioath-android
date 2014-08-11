@@ -83,7 +83,7 @@ public class RequirePasswordDialog extends DialogFragment {
         return new AlertDialog.Builder(getActivity())
                 .setTitle(missing ? R.string.password_required : R.string.wrong_password)
                 .setView(view)
-                .setPositiveButton(R.string.save, new DialogInterface.OnClickListener() {
+                .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         String label = editDisplayName.getText().toString().trim();
