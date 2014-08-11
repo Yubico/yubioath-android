@@ -1,6 +1,6 @@
 To make a new release:
 
-* bump versioCode and versionName in AndroidManifest.xml
+* bump versionCode and versionName in AndroidManifest.xml
 * update NEWS
 * make sure everything is commited
 * mvn release:prepare release:perform -Darguments=-Dsign.storepass=$smart_card_pin
