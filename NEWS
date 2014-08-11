@@ -1,5 +1,15 @@
 yubioath-android NEWS -- History of user-visible changes.     -*- outline -*-
 
+* Version 0.1.9 released 2014-08-11
+
+** Fix potential crash bug when no NFC adapter is found
+
+** Change around some UI strings
+
+** Fix potential crash bug on on anroid versions older than Jelly Bean
+
+** Change password box to not remember password by default
+
 * Version 0.1.8 released 2013-11-28
 
 ** Rebranded app as "Yubico Authenticator"
