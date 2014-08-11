@@ -149,6 +149,9 @@
                                     </includes>
                                     <keystore>NONE</keystore>
                                     <storetype>PKCS11</storetype>
+                                    <providerClass>sun.security.pkcs11.SunPKCS11</providerClass>
+                                    <providerName>SunPKCS11-OpenSC-PKCS11</providerName>
+                                    <providerArg>/etc/pkcs11_java.cfg</providerArg>
                                     <alias>Certificate for PIV Authentication</alias>
                                     <storepass>${sign.storepass}</storepass>
                                     <arguments>
