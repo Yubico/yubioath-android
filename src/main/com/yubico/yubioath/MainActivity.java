@@ -79,12 +79,13 @@ public class MainActivity extends Activity {
         adapter = NfcAdapter.getDefaultAdapter(this);
         if (adapter == null) {
             Toast.makeText(this, R.string.no_nfc, Toast.LENGTH_LONG).show();
+            finish();
+        } else {
+        	SharedPreferences preferences = getSharedPreferences(NEO_STORE, Context.MODE_PRIVATE);
+        	keyManager = new KeyManager(preferences);
+
+        	openFragment(new SwipeListFragment());
         }
-
-        SharedPreferences preferences = getSharedPreferences(NEO_STORE, Context.MODE_PRIVATE);
-        keyManager = new KeyManager(preferences);
-
-        openFragment(new SwipeListFragment());
     }
 
     @Override
