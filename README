@@ -1,10 +1,8 @@
-Android application for OATH with YubiKey NEO
-=============================================
+== Android application for OATH with YubiKey NEO
 
 See the file COPYING for copyright and license information.
 
-Introduction
-------------
+=== Introduction
 
 This is a small android application for doing OATH codes with
 the help of a YubiKey NEO.
@@ -20,8 +18,7 @@ To use it when you have an OATH QR-code:
 To view codes, just start the app and swipe your YubiKey NEO.
 
 
-Building
---------
+=== Building
 
 The "Android Support Repository" part of the android SDK needs to be installed
 to build this project.
@@ -29,13 +26,13 @@ to build this project.
 Make sure to set the environment variable ANDROID_HOME before running mvn.
 
 This project uses maven3 for building, so to build:
------------
-  $ mvn package
------------
+
+[source, sh]
+$ mvn package
+
 After building the .apk file can be found in the target directory.
 
-Issues
-------
+=== Issues
 
 Please report any issues/feature-suggestions in the issue tracker
 on github (https://github.com/Yubico/yubioath-android)
