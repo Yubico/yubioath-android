@@ -1,75 +1,52 @@
 yubioath-android NEWS -- History of user-visible changes.     -*- outline -*-
 
 * Version 0.1.9 released 2014-08-11
-
-** Fix potential crash bug when no NFC adapter is found
-
-** Change around some UI strings
-
-** Fix potential crash bug on on anroid versions older than Jelly Bean
-
-** Change password box to not remember password by default
+ ** Fix potential crash bug when no NFC adapter is found
+ ** Change around some UI strings
+ ** Fix potential crash bug on on anroid versions older than Jelly Bean
+ ** Change password box to not remember password by default
 
 * Version 0.1.8 released 2013-11-28
-
-** Rebranded app as "Yubico Authenticator"
-
-** Better error handling for invalid OATH URLs.
+ ** Rebranded app as "Yubico Authenticator"
+ ** Better error handling for invalid OATH URLs.
 
 * Version 0.1.7 released 2013-11-22
-
-** Increase timeout for NFC operations. Patch contributed by Andrew Rowson.
+ ** Increase timeout for NFC operations. Patch contributed by Andrew Rowson.
 
 * Version 0.1.6 released 2013-11-19
-
-** Correctly cancel the current action when the "swipe" dialog is dismissed.
+ ** Correctly cancel the current action when the "swipe" dialog is dismissed.
 
 * Version 0.1.5 released 2013-11-19
-
-** Better error handling for setting or changing a password.
-
-** Improved notifications.
-
-** Fixed crash when scanning non-hierarchical URLs.
-
-** Added 10 seconds to OTP generation for longer validity.
+ ** Better error handling for setting or changing a password.
+ ** Improved notifications.
+ ** Fixed crash when scanning non-hierarchical URLs.
+ ** Added 10 seconds to OTP generation for longer validity.
 
 * Version 0.1.4 released 2013-09-20
-
-** Swiping codes list in either direction now clears the list.
-
-** Prompt user to enable NFC if disabled.
+ ** Swiping codes list in either direction now clears the list.
+ ** Prompt user to enable NFC if disabled.
 
 * Version 0.1.3 released 2013-09-05
-
-** Fix NPE when scanning codes.
+ ** Fix NPE when scanning codes.
 
 * Version 0.1.2 released 2013-09-04
-
-** Last release was broken due to proguard config. This is fixed.
+ ** Last release was broken due to proguard config. This is fixed.
 
 * Version 0.1.1 released 2013-09-04
-
-** Removed exit button in favor of swipe to clear list.
+ ** Removed exit button in favor of swipe to clear list.
 
 * Version 0.1.0 released 2013-09-04
-
-** Added support for APDU chaining (increased number of credentials).
-
-** Better error handing when device is full.
+ ** Added support for APDU chaining (increased number of credentials).
+ ** Better error handing when device is full.
 
 * Version 0.0.4 released 2013-09-03
-
-** First public release.
+ ** First public release.
 
 * Version 0.0.3 released 2013-09-02
-
-** Fixed HOTP.
+ ** Fixed HOTP.
 
 * Version 0.0.2 released 2013-08-30
-
-** Added exit button.
+ ** Added exit button.
 
 * Version 0.0.1 released 2013-08-30
-
-** Initial release.
+ ** Initial release.
