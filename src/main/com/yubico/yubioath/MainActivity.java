@@ -136,7 +136,6 @@ public class MainActivity extends Activity {
 
     private void scanQRCode() {
         Intent intent = new Intent("com.google.zxing.client.android.SCAN");
-        intent.setPackage("com.google.zxing.client.android");
         intent.putExtra("SCAN_MODE", "QR_CODE_MODE");
         intent.putExtra("SAVE_HISTORY", false);
 
