@@ -7,3 +7,5 @@ android:
     - extra-android-support
   licenses:
     - android-sdk-license-.+
+after_success:
+  - COVERALLS=true mvn clean test jacoco:report coveralls:report
