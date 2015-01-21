@@ -36,6 +36,9 @@
     <version>0.1.10-SNAPSHOT</version>
     <packaging>apk</packaging>
     <name>Yubico Authenticator</name>
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
 
     <scm>
         <url>scm:git:git://github.com/Yubico/yubioath-android.git</url>
