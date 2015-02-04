@@ -31,12 +31,12 @@
 
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.yubico.yubioath"
-    android:versionCode="20"
-    android:versionName="0.1.9" >
+    android:versionCode="21"
+    android:versionName="0.1.10" >
 
     <uses-sdk
         android:minSdkVersion="14"
-        android:targetSdkVersion="18" />
+        android:targetSdkVersion="21" />
 
     <uses-permission android:name="android.permission.NFC" />
 
