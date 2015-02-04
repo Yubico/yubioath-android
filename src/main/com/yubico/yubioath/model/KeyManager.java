@@ -32,14 +32,15 @@ package com.yubico.yubioath.model;
 
 import android.content.SharedPreferences;
 import android.util.Base64;
+import android.util.Log;
 
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
+import java.nio.charset.Charset;
 import java.security.Key;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created with IntelliJ IDEA.
@@ -50,35 +51,39 @@ import java.util.Map;
  */
 public class KeyManager {
     private static final String KEY = "key_";
-    private static final String ALTKEY = "altkey_";
     private static final String NAME = "name_";
 
     private final SharedPreferences store;
-    private final Map<String, String> memStore;
+    private final Map<String, Set<String>> memStore;
 
     public KeyManager(SharedPreferences store) {
         this.store = store;
-        memStore = new HashMap<String, String>();
+        memStore = new HashMap<String, Set<String>>();
     }
 
-    public byte[] getSecret(byte[] id) {
+    public Set<byte[]> getSecrets(byte[] id) {
         String key = KEY + bytes2string(id);
-        return string2bytes(store.getString(key, memStore.get(key)));
+        return strings2bytes(store.getStringSet(key, getMem(key)));
     }
 
-    public byte[] getAltSecret(byte[] id) {
-        String key = ALTKEY + bytes2string(id);
-        return string2bytes(store.getString(key, memStore.get(key)));
+    private Set<String> getMem(String key) {
+        Set<String> existing = memStore.get(key);
+        if(existing == null) {
+            existing = new HashSet<String>();
+            memStore.put(key, existing);
+        }
+        return existing;
     }
 
-    private void doStoreSecret(byte[] id, byte[] secret, boolean remember, String prefix) {
-        String key = prefix + bytes2string(id);
+    private void doStoreSecret(byte[] id, byte[] secret, boolean remember) {
+        String key = KEY + bytes2string(id);
         SharedPreferences.Editor editor = store.edit();
         if (secret.length > 0) {
             String value = bytes2string(secret);
-            memStore.put(key, value);
+            Set<String> secrets = getMem(key);
+            secrets.add(value);
             if (remember) {
-                editor.putString(key, value);
+                editor.putStringSet(key, secrets);
             } else {
                 editor.remove(key);
             }
@@ -90,24 +95,14 @@ public class KeyManager {
     }
 
     public void storeSecret(byte[] id, byte[] secret, boolean remember) {
-        doStoreSecret(id, secret, remember, KEY);
+        doStoreSecret(id, secret, remember);
     }
 
-    public void storeAltSecret(byte[] id, byte[] secret, boolean remember) {
-        doStoreSecret(id, secret, remember, ALTKEY);
-    }
-
-    public void promoteAltSecret(byte[] id) {
-        byte[] altSecret = getAltSecret(id);
-        if(altSecret != null) {
-            memStore.put(KEY + bytes2string(id), bytes2string(altSecret));
-            if(store.contains(ALTKEY + bytes2string(id))) {
-                storeSecret(id, altSecret, true);
-            }
-        } else {
-            storeSecret(id, new byte[0], true);
-        }
-        storeAltSecret(id, new byte[0], true);
+    public void setOnlySecret(byte[] id, byte[] secret) {
+        String key = KEY + bytes2string(id);
+        boolean remember = store.getStringSet(KEY + bytes2string(id), null) != null;
+        doStoreSecret(id, new byte[0], true); // Clear memory
+        doStoreSecret(id, secret, remember);
     }
 
     public String getDisplayName(byte[] id, String defaultName) {
@@ -131,19 +126,42 @@ public class KeyManager {
         memStore.clear();
     }
 
-    public static byte[] calculateSecret(String password, byte[] id) {
+    public static byte[] calculateSecret(String password, byte[] id, boolean legacy) {
         if (password.isEmpty()) {
             return new byte[0];
         }
 
-        PBEKeySpec keyspec = null;
         try {
             SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
-            keyspec = new PBEKeySpec(password.toCharArray(), id, 1000, 128);
-            Key key = factory.generateSecret(keyspec);
-            return key.getEncoded();
+            SecretKeyFactory legacyFactory;
+            try {
+                legacyFactory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1And8bit");
+                return doCalculateSecret(legacy ? legacyFactory : factory, password.toCharArray(), id);
+            } catch (NoSuchAlgorithmException e) {
+                // Pre 4.4, standard key factory is wrong.
+                legacyFactory = factory;
+                factory = null;
+                char[] pwChars = password.toCharArray();
+                if(!legacy) { // Android < 4.4 only uses the lowest 8 bits of each character, so fix the char[].
+                    byte[] pwBytes = password.getBytes(Charset.forName("UTF-8"));
+                    pwChars = new char[pwBytes.length];
+                    for(int i=0; i<pwBytes.length; i++) {
+                        pwChars[i] = (char)pwBytes[i];
+                    }
+                }
+                return doCalculateSecret(legacyFactory, pwChars, id);
+            }
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    private static byte[] doCalculateSecret(SecretKeyFactory factory, char[] password, byte[] id) {
+        PBEKeySpec keyspec = null;
+        try {
+            keyspec = new PBEKeySpec(password, id, 1000, 128);
+            Key key = factory.generateSecret(keyspec);
+            return key.getEncoded();
         } catch (InvalidKeySpecException e) {
             throw new RuntimeException(e);
         } finally {
@@ -159,5 +177,13 @@ public class KeyManager {
 
     private static byte[] string2bytes(String string) {
         return string == null ? null : Base64.decode(string, Base64.NO_WRAP);
+    }
+
+    private static Set<byte[]> strings2bytes(Set<String> strings) {
+        Set<byte[]> bytes = new HashSet<byte[]>();
+        for(String string : strings) {
+            bytes.add(string2bytes(string));
+        }
+        return bytes;
     }
 }

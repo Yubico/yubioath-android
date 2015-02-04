@@ -42,6 +42,8 @@ import android.widget.EditText;
 import com.yubico.yubioath.R;
 import com.yubico.yubioath.model.KeyManager;
 
+import java.util.Arrays;
+
 /**
  * Created with IntelliJ IDEA.
  * User: dain
@@ -90,7 +92,8 @@ public class RequirePasswordDialog extends DialogFragment {
                         String password = editPassword.getText().toString().trim();
                         boolean remember = ((CheckBox) view.findViewById(R.id.rememberPassword)).isChecked();
                         keyManager.setDisplayName(id, label);
-                        keyManager.storeSecret(id, KeyManager.calculateSecret(password, id), remember);
+                        keyManager.storeSecret(id, KeyManager.calculateSecret(password, id, false), remember);
+                        keyManager.storeSecret(id, KeyManager.calculateSecret(password, id, true), remember);
                     }
                 }).setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
                     @Override

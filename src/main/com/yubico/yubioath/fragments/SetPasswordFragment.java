@@ -92,7 +92,8 @@ public class SetPasswordFragment extends Fragment implements MainActivity.OnYubi
                 closeKeyboard();
                 if (needsPassword) {
                     String oldPass = ((EditText) getView().findViewById(R.id.editOldPassword)).getText().toString();
-                    keyManager.storeSecret(id, KeyManager.calculateSecret(oldPass, id), false);
+                    keyManager.storeSecret(id, KeyManager.calculateSecret(oldPass, id, false), false);
+                    keyManager.storeSecret(id, KeyManager.calculateSecret(oldPass, id, true), false);
                 }
                 EditText newPassword = (EditText) getView().findViewById(R.id.editNewPassword);
                 EditText verifyPassword = (EditText) getView().findViewById(R.id.editVerifyPassword);

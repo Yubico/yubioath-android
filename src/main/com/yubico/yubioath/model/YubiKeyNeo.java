@@ -140,18 +140,17 @@ public class YubiKeyNeo {
     }
 
     private void unlock(byte[] challenge) throws IOException, PasswordRequiredException {
-        byte[] secret = keyManager.getSecret(id);
-        byte[] altSecret = keyManager.getAltSecret(id);
-        if (secret == null && altSecret == null) {
+        Set<byte[]> secrets = keyManager.getSecrets(id);
+
+        if (secrets.isEmpty()) {
             throw new PasswordRequiredException("Password is missing!", id, true);
         }
 
-        if (secret != null && doUnlock(challenge, secret)) { //Try the main password
-            keyManager.storeAltSecret(id, new byte[0], true);
-            return;
-        } else if (altSecret != null && doUnlock(challenge, altSecret)) { //Try a password that might have been set
-            keyManager.promoteAltSecret(id);
-            return;
+        for(byte[] secret : secrets) {
+            if(doUnlock(challenge, secret)) {
+                keyManager.setOnlySecret(id, secret);
+                return;
+            }
         }
 
         throw new PasswordRequiredException("Password is incorrect!", id, false);
@@ -192,26 +191,23 @@ public class YubiKeyNeo {
     }
 
     private void unsetLockCode() throws IOException {
-        keyManager.storeAltSecret(id, new byte[0], true);
         byte[] data = new byte[SET_LOCK_COMMAND.length + 2];
         System.arraycopy(SET_LOCK_COMMAND, 0, data, 0, SET_LOCK_COMMAND.length);
         data[4] = 2;
         data[5] = KEY_TAG;
 
         requireStatus(isoTag.transceive(data), APDU_OK);
-        keyManager.promoteAltSecret(id);
+        keyManager.storeSecret(id, new byte[0], true);
     }
 
     public void setLockCode(String code, boolean remember) throws IOException {
-        byte[] secret = KeyManager.calculateSecret(code, id);
+        byte[] secret = KeyManager.calculateSecret(code, id, false);
         if (secret.length == 0) {
             unsetLockCode();
             return;
-        } else if(Arrays.equals(secret, keyManager.getSecret(id))) {
+        } else if(keyManager.getSecrets(id).contains(secret)) {
             return;
         }
-
-        keyManager.storeAltSecret(id, secret, remember); //Store but don't overwrite. If we get a failure below we won't know if the password was set or not.
 
         byte[] challenge = new byte[8];
         SecureRandom random = new SecureRandom();
@@ -239,7 +235,7 @@ public class YubiKeyNeo {
         System.arraycopy(response, 0, data, offset, response.length);
 
         requireStatus(isoTag.transceive(data), APDU_OK);
-        keyManager.promoteAltSecret(id);
+        keyManager.setOnlySecret(id, secret);
     }
 
     public void storeCode(String name, byte[] key, byte type, int digits, int counter) throws IOException {
