@@ -91,11 +91,11 @@
 Yubico Authenticator for Android<br/>
 Version: %1$s</p>
 
-<p><a href="http://opensource.yubico.com/yubioath-android/">Web site</a><br/>
+<p><a href="https://developers.yubico.com/yubioath-android/">Web site</a><br/>
 <br/><a href="https://github.com/Yubico/yubioath-android/">Source code</a><br/>
 <br/><a href="http://www.youtube.com/watch?v=W7if0FW12D0">Demo video</a></p>
 
-<p>Yubico Authenticator requires a YubiKey NEO with the <a href="http://opensource.yubico.com/ykneo-oath/">ykneo-oath applet</a> loaded.</p>
+<p>Yubico Authenticator requires a YubiKey NEO with the <a href="https://developers.yubico.com/ykneo-oath/">ykneo-oath applet</a> loaded.</p>
 
 <p>Copyright 2013, Yubico<br/>
 <a href="http://www.yubico.com/">http://www.yubico.com/</a></p>]]></string>
