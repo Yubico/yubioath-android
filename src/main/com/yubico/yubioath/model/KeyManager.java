@@ -63,6 +63,12 @@ public class KeyManager {
 
     public Set<byte[]> getSecrets(byte[] id) {
         String key = KEY + bytes2string(id);
+        Object value = store.getAll().get(key);
+        if(value instanceof String) { //Workaround for old data being stored as a String instead of a Set<String>.
+            Set<String> set = new HashSet<String>();
+            set.add((String) value);
+            store.edit().putStringSet(key, set).apply();
+        }
         return strings2bytes(store.getStringSet(key, getMem(key)));
     }
 
@@ -100,7 +106,7 @@ public class KeyManager {
 
     public void setOnlySecret(byte[] id, byte[] secret) {
         String key = KEY + bytes2string(id);
-        boolean remember = store.getStringSet(KEY + bytes2string(id), null) != null;
+        boolean remember = store.contains(KEY + bytes2string(id));
         doStoreSecret(id, new byte[0], true); // Clear memory
         doStoreSecret(id, secret, remember);
     }
