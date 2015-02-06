@@ -1,6 +1,6 @@
 yubioath-android NEWS -- History of user-visible changes.     -*- outline -*-
 
-* Version 0.1.11 released 2015-02-16
+* Version 0.1.11 released 2015-02-06
  ** Fix crash when encountering old application data introduced in 0.1.10.
  ** Updated about page URLs.
 
