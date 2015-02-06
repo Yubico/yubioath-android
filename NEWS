@@ -1,5 +1,9 @@
 yubioath-android NEWS -- History of user-visible changes.     -*- outline -*-
 
+* Version 0.1.11 released 2015-02-16
+ ** Fix crash when encountering old application data introduced in 0.1.10.
+ ** Updated about page URLs.
+
 * Version 0.1.10 released 2015-02-04
  ** Correctly handle unicode characters in passwords on pre-KitKat devices.
  ** Use Material theme on supported devices.
