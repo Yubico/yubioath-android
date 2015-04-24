@@ -1,5 +1,8 @@
 == Android application for OATH with YubiKey NEO
 
+This app is hosted on Google Play as
+https://play.google.com/store/apps/details?id=com.yubico.yubioath[Yubico Authenticator].
+
 See the file COPYING for copyright and license information.
 
 === Introduction
@@ -34,5 +37,5 @@ After building the .apk file can be found in the target directory.
 
 === Issues
 
-Please report any issues/feature-suggestions in the issue tracker
-on github (https://github.com/Yubico/yubioath-android)
+Please report any issues/feature-suggestions in 
+https://github.com/Yubico/yubioath-android[the issue tracker on GitHub].
