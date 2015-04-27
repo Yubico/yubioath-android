@@ -42,7 +42,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/credential_name"
-        android:layout_gravity="left|top"/>
+        android:layout_gravity="start|top"/>
 
     <EditText
         android:layout_width="fill_parent"
@@ -51,7 +51,7 @@
         android:inputType="text"
         android:maxLength="64"
         android:text=""
-        android:layout_gravity="left|top"/>
+        android:layout_gravity="start|top"/>
 
     <LinearLayout
         android:orientation="vertical"
@@ -67,6 +67,6 @@
             android:text="@string/swipe_to_put"
             android:layout_gravity="center"
             />
-
     </LinearLayout>
+
 </LinearLayout>

@@ -129,7 +129,7 @@ public class AboutFragment extends Fragment implements MainActivity.OnYubiKeyNeo
     public void onYubiKeyNeo(YubiKeyNeo neo) throws IOException {
         long timestamp = System.currentTimeMillis() / 1000 / 30;
         final List<Map<String, String>> codes = neo.getCodes(timestamp);
-        getView().post(new Runnable() {
+        getActivity().getWindow().getDecorView().getRootView().post(new Runnable() {
             @Override
             public void run() {
                 final SwipeListFragment fragment = new SwipeListFragment();

@@ -91,12 +91,12 @@ public class SetPasswordFragment extends Fragment implements MainActivity.OnYubi
             case R.id.savePassword:
                 closeKeyboard();
                 if (needsPassword) {
-                    String oldPass = ((EditText) getView().findViewById(R.id.editOldPassword)).getText().toString();
+                    String oldPass = ((EditText) getActivity().findViewById(R.id.editOldPassword)).getText().toString();
                     keyManager.storeSecret(id, KeyManager.calculateSecret(oldPass, id, false), false);
                     keyManager.storeSecret(id, KeyManager.calculateSecret(oldPass, id, true), false);
                 }
-                EditText newPassword = (EditText) getView().findViewById(R.id.editNewPassword);
-                EditText verifyPassword = (EditText) getView().findViewById(R.id.editVerifyPassword);
+                EditText newPassword = (EditText) getActivity().findViewById(R.id.editNewPassword);
+                EditText verifyPassword = (EditText) getActivity().findViewById(R.id.editVerifyPassword);
                 if (newPassword.getText().toString().equals(verifyPassword.getText().toString())) {
                     swipeDialog.show(getFragmentManager(), "dialog");
                 } else {
@@ -129,11 +129,11 @@ public class SetPasswordFragment extends Fragment implements MainActivity.OnYubi
             this.keyManager = keyManager;
             needsPassword = true;
             needsId = false;
-            ((EditText) getView().findViewById(R.id.editDisplayName)).setText(R.string.yubikey_neo);
-            getView().findViewById(R.id.requiresPassword).setVisibility(View.VISIBLE);
+            ((EditText) getActivity().findViewById(R.id.editDisplayName)).setText(R.string.yubikey_neo);
+            getActivity().findViewById(R.id.requiresPassword).setVisibility(View.VISIBLE);
         } else {
             //Wrong (old) password, try again.
-            EditText editOldPassword = (EditText) getView().findViewById(R.id.editOldPassword);
+            EditText editOldPassword = (EditText) getActivity().findViewById(R.id.editOldPassword);
             editOldPassword.setText("");
             editOldPassword.requestFocus();
             Toast.makeText(getActivity(), R.string.wrong_password, Toast.LENGTH_LONG).show();
@@ -151,12 +151,12 @@ public class SetPasswordFragment extends Fragment implements MainActivity.OnYubi
 
         if (needsId) {
             id = neo.getId();
-            ((EditText) getView().findViewById(R.id.editDisplayName)).setText(neo.getDisplayName(getString(R.string.yubikey_neo)));
+            ((EditText) getActivity().findViewById(R.id.editDisplayName)).setText(neo.getDisplayName(getString(R.string.yubikey_neo)));
             needsId = false;
         } else {
-            String label = ((EditText) getView().findViewById(R.id.editDisplayName)).getText().toString().trim();
-            String newPass = ((EditText) getView().findViewById(R.id.editNewPassword)).getText().toString();
-            boolean remember = ((CheckBox) getView().findViewById(R.id.rememberPassword)).isChecked();
+            String label = ((EditText) getActivity().findViewById(R.id.editDisplayName)).getText().toString().trim();
+            String newPass = ((EditText) getActivity().findViewById(R.id.editNewPassword)).getText().toString();
+            boolean remember = ((CheckBox) getActivity().findViewById(R.id.rememberPassword)).isChecked();
             neo.setDisplayName(label);
             try {
                 neo.setLockCode(newPass, remember);
@@ -164,7 +164,7 @@ public class SetPasswordFragment extends Fragment implements MainActivity.OnYubi
                 Toast.makeText(getActivity(), R.string.password_updated, Toast.LENGTH_SHORT).show();
             } catch (IOException e) {
                 Log.e("yubioath", "Set password failed, retry", e);
-                getView().post(new Runnable() {
+                getActivity().getWindow().getDecorView().getRootView().post(new Runnable() {
                     @Override
                     public void run() {
                         swipeDialog.show(getFragmentManager(), "dialog");

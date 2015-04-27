@@ -32,7 +32,6 @@ package com.yubico.yubioath.model;
 
 import android.content.SharedPreferences;
 import android.util.Base64;
-import android.util.Log;
 
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
@@ -105,7 +104,6 @@ public class KeyManager {
     }
 
     public void setOnlySecret(byte[] id, byte[] secret) {
-        String key = KEY + bytes2string(id);
         boolean remember = store.contains(KEY + bytes2string(id));
         doStoreSecret(id, new byte[0], true); // Clear memory
         doStoreSecret(id, secret, remember);
@@ -126,10 +124,6 @@ public class KeyManager {
         SharedPreferences.Editor editor = store.edit();
         editor.clear();
         editor.apply();
-    }
-
-    public void clearMem() {
-        memStore.clear();
     }
 
     public static byte[] calculateSecret(String password, byte[] id, boolean legacy) {

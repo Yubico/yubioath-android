@@ -52,23 +52,33 @@
     <string name="nfc_off">NFC is disabled!</string>
     <string name="no_nfc">This device seems to not support NFC</string>
     <string name="enable_nfc">Enable NFC</string>
-    <string name="unsupported_applet_version">Unsupported applet version on NEO, make sure this app is up to date!
-    </string>
+    <string name="unsupported_applet_version">Unsupported applet version on NEO, make sure this app is up to date!</string>
     <string name="applet_missing">Yubico Authenticator applet not installed on NEO!</string>
     <string name="credentials">Credentials</string>
     <string name="load_failed">Failed loading credentials</string>
     <string name="credential_name">Credential name</string>
-    <string name="ok">OK</string>
     <string name="empty_list">Empty credentials list</string>
+    <string name="enter_credential_name">Enter credential name</string>
+    <string name="enter_secret_key">Enter secret key</string>
+    <string-array name="credential_type">
+        <item>Time based (TOTP)</item>
+        <item>Counter based (HOTP)</item>
+    </string-array>
+    <string name="credential_manual_back">Back</string>
+    <string name="credential_manual_add">Add</string>
+    <string name="credential_manual_error">Incomplete credentials</string>
     <string name="save">Save</string>
-    <string name="cancel">Cancel</string>
     <string name="close">Close</string>
-    <string name="add_account">Scan new QR-code</string>
+    <string name="add_account_scan">Scan account QR-code</string>
+    <string name="add_account_manual">Add account manually</string>
     <string name="change_password">Change device password</string>
     <string name="password_required">Password required</string>
     <string name="input_required">Enter the missing values, and press Save</string>
     <string name="yubikey_neo">YubiKey NEO</string>
     <string name="wrong_password">Incorrect password</string>
+    <string name="default_issuer">Issuer</string>
+    <string name="default_code">012345</string>
+    <string name="default_label">Label</string>
     <string name="copy_to_clipboard">Copy</string>
     <string name="read_hotp">Read a HOTP code</string>
     <string name="delete_cred">Delete credential</string>

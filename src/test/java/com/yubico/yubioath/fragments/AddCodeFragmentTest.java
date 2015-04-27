@@ -39,13 +39,15 @@ import static org.junit.Assert.assertEquals;
 
 import android.net.Uri;
 
+import com.yubico.yubioath.model.UriParser;
+
 @RunWith(RobolectricTestRunner.class)
 public class AddCodeFragmentTest {
-	AddCodeFragment fragment;
+	UriParser u;
 	
 	@Before
 	public void setUp() {
-		fragment = new AddCodeFragment();
+		u = new UriParser();
 	}
 	
 	@Test
@@ -55,7 +57,7 @@ public class AddCodeFragmentTest {
 				"otpauth:///foo:mallory@example.com?secret=kaka"};
 		for(String uri : failingUris) {
 			try {
-				assertEquals("URI " + uri + " did not fail.", false, fragment.parseUri(Uri.parse(uri)));
+				assertEquals("URI " + uri + " did not fail.", false, u.parseUri(Uri.parse(uri)));
 			} catch(RuntimeException e) {
 				System.err.println("Failed at uri: " + uri);
 				throw(e);
@@ -70,7 +72,7 @@ public class AddCodeFragmentTest {
 				"otpauth://hotp/foobar:bob@example.com?secret=blahonga2"};
 		for(String uri : goodUris) {
 			try {
-				assertEquals("URI " + uri + " failed unexpectedly.", true, fragment.parseUri(Uri.parse(uri)));
+				assertEquals("URI " + uri + " failed unexpectedly.", true, u.parseUri(Uri.parse(uri)));
 			} catch(RuntimeException e) {
 				System.err.println("Failed at uri: " + uri);
 				throw(e);

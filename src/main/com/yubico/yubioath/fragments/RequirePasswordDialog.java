@@ -42,8 +42,6 @@ import android.widget.EditText;
 import com.yubico.yubioath.R;
 import com.yubico.yubioath.model.KeyManager;
 
-import java.util.Arrays;
-
 /**
  * Created with IntelliJ IDEA.
  * User: dain
@@ -85,7 +83,7 @@ public class RequirePasswordDialog extends DialogFragment {
         return new AlertDialog.Builder(getActivity())
                 .setTitle(missing ? R.string.password_required : R.string.wrong_password)
                 .setView(view)
-                .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+                .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         String label = editDisplayName.getText().toString().trim();
@@ -95,7 +93,7 @@ public class RequirePasswordDialog extends DialogFragment {
                         keyManager.storeSecret(id, KeyManager.calculateSecret(password, id, false), remember);
                         keyManager.storeSecret(id, KeyManager.calculateSecret(password, id, true), remember);
                     }
-                }).setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+                }).setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         dialog.cancel();

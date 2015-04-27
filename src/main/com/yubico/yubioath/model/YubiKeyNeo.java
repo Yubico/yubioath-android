@@ -176,7 +176,6 @@ public class YubiKeyNeo {
         data[offset++] = CHALLENGE_TAG;
         data[offset++] = (byte) myChallenge.length;
         System.arraycopy(myChallenge, 0, data, offset, myChallenge.length);
-        offset += myChallenge.length;
 
         byte[] resp = isoTag.transceive(data);
 
@@ -271,7 +270,6 @@ public class YubiKeyNeo {
             data[offset++] = IMF_TAG;
             data[offset++] = (byte) counterBytes.length;
             System.arraycopy(counterBytes, 0, data, offset, counterBytes.length);
-            offset += counterBytes.length;
         }
 
         byte[] resp = isoTag.transceive(data);
@@ -308,7 +306,7 @@ public class YubiKeyNeo {
         offset += nameBytes.length;
 
         data[offset++] = CHALLENGE_TAG;
-        data[offset++] = 0;
+        data[offset] = 0;
 
         byte[] resp = requireStatus(send(data), APDU_OK);
         return codeFromTruncated(parseBlock(resp, 0, T_RESPONSE_TAG));
@@ -323,7 +321,7 @@ public class YubiKeyNeo {
         command[offset++] = (byte) (timestamp >> 24);
         command[offset++] = (byte) (timestamp >> 16);
         command[offset++] = (byte) (timestamp >> 8);
-        command[offset++] = (byte) timestamp;
+        command[offset] = (byte) timestamp;
 
         byte[] resp = requireStatus(send(command), APDU_OK);
 
@@ -347,7 +345,7 @@ public class YubiKeyNeo {
                 default:
                     oathCode.put("code", "<invalid code>");
             }
-            Log.d("yubioath", "label: " + oathCode.get("label"));
+            //Log.d("yubioath", "label: " + oathCode.get("label"));
             codes.add(oathCode);
         }
 
