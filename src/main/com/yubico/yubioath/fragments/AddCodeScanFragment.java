@@ -45,8 +45,8 @@ import com.yubico.yubioath.MainActivity;
 import com.yubico.yubioath.R;
 import com.yubico.yubioath.exc.StorageFullException;
 import com.yubico.yubioath.model.KeyManager;
+import com.yubico.yubioath.model.UriParser;
 import com.yubico.yubioath.model.YubiKeyNeo;
-import org.apache.commons.codec.binary.Base32;
 
 import java.io.IOException;
 import java.util.List;
@@ -59,29 +59,27 @@ import java.util.Map;
  * Time: 10:16 AM
  * To change this template use File | Settings | File Templates.
  */
-public class AddCodeFragment extends Fragment implements MainActivity.OnYubiKeyNeoListener {
+public class AddCodeScanFragment extends Fragment implements MainActivity.OnYubiKeyNeoListener {
     private static final String CODE_URI = "codeUri";
-    private String name;
-    private byte[] key;
-    private byte oath_type;
-    private byte algorithm_type;
-    private int digits;
-    private int counter;
+    private UriParser u = new UriParser();
 
-    public static AddCodeFragment newInstance(String uri) {
+    public static AddCodeScanFragment newInstance(String uri) {
         Bundle bundle = new Bundle();
         bundle.putString(CODE_URI, uri);
-        AddCodeFragment fragment = new AddCodeFragment();
+        AddCodeScanFragment fragment = new AddCodeScanFragment();
         fragment.setArguments(bundle);
         return fragment;
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.add_code_fragment, container, false);
+        View view = inflater.inflate(R.layout.add_code_scan_fragment, container, false);
         Uri uri = Uri.parse(getArguments().getString(CODE_URI));
-        if (parseUri(uri)) {
-            ((TextView) view.findViewById(R.id.name)).setText(name);
+
+        u.name = ((EditText) view.findViewById(R.id.name)).getText().toString();
+
+        if (u.parseUri(uri)) {
+            ((TextView) view.findViewById(R.id.name)).setText(u.name);
         } else {
             Toast.makeText(getActivity(), R.string.invalid_barcode, Toast.LENGTH_LONG).show();
             view.post(new Runnable() {
@@ -93,77 +91,6 @@ public class AddCodeFragment extends Fragment implements MainActivity.OnYubiKeyN
         }
 
         return view;
-    }
-
-    protected boolean parseUri(Uri uri) {
-    	String scheme = uri.getScheme();
-        if(!uri.isHierarchical() || scheme == null || !scheme.equals("otpauth")) {
-            return false;
-        }
-
-        String secret = uri.getQueryParameter("secret");
-        if (secret == null || secret.isEmpty()) {
-            return false;
-        }
-        Base32 base32 = new Base32();
-        if(!base32.isInAlphabet(secret.toUpperCase())) {
-        	return false;
-        }
-        key = base32.decode(secret.toUpperCase());
-
-        String path = uri.getPath(); // user name is stored in path...
-        if(path == null || path.isEmpty()) {
-        	return false;
-        }
-        if (path.charAt(0) == '/') {
-            path = path.substring(1);
-        }
-        if (path.length() > 64) {
-            path = path.substring(0, 64);
-        }
-        name = path;
-
-        String typeString = uri.getHost(); // type stored in host, totp/hotp
-        if (typeString.equals("totp")) {
-            oath_type = YubiKeyNeo.TOTP_TYPE;
-        } else if (typeString.equals("hotp")) {
-            oath_type = YubiKeyNeo.HOTP_TYPE;
-        } else {
-            return false;
-        }
-
-        String algorithm = uri.getQueryParameter("algorithm");
-        if (algorithm == null || algorithm.isEmpty() || algorithm.equals("SHA1")) {
-            algorithm_type = YubiKeyNeo.HMAC_SHA1;
-        } else if (algorithm.equals("SHA256")) {
-            algorithm_type = YubiKeyNeo.HMAC_SHA256;
-        } else {
-            return false;
-        }
-
-        String digit_string = uri.getQueryParameter("digits");
-        if (digit_string == null || digit_string.isEmpty()) {
-            digits = 6;
-        } else {
-            try {
-                digits = Integer.parseInt(digit_string);
-            } catch (NumberFormatException e) {
-                return false;
-            }
-        }
-        
-        String counter_string = uri.getQueryParameter("counter");
-        if(counter_string == null || counter_string.isEmpty()) {
-        	counter = 0;
-        } else {
-        	try {
-        		counter = Integer.parseInt(counter_string);
-        	} catch (NumberFormatException e) {
-        		return false;
-        	}
-        }
-
-        return true;
     }
 
     @Override
@@ -179,13 +106,13 @@ public class AddCodeFragment extends Fragment implements MainActivity.OnYubiKeyN
 
     @Override
     public void onYubiKeyNeo(YubiKeyNeo neo) throws IOException {
-        name = ((EditText) getView().findViewById(R.id.name)).getText().toString();
+        u.name = ((EditText) getActivity().findViewById(R.id.name)).getText().toString();
         try {
-            neo.storeCode(name, key, (byte) (oath_type | algorithm_type), digits, counter);
+            neo.storeCode(u.name, u.key, (byte) (u.oath_type | u.algorithm_type), u.digits, u.counter);
             long timestamp = System.currentTimeMillis() / 1000 / 30;
             final List<Map<String, String>> codes = neo.getCodes(timestamp);
             Toast.makeText(getActivity(), R.string.prog_success, Toast.LENGTH_LONG).show();
-            getView().post(new Runnable() {
+            getActivity().getWindow().getDecorView().getRootView().post(new Runnable() {
                 @Override
                 public void run() {
                     final SwipeListFragment fragment = new SwipeListFragment();

@@ -148,7 +148,6 @@ public class MainActivity extends Activity {
                     getString(R.string.yes),
                     getString(R.string.no));
         }
-        return;
     }
 
     private void barcodeScannerNotInstalled(String stringTitle,
@@ -176,7 +175,7 @@ public class MainActivity extends Activity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == SCAN_BARCODE) {
             if (resultCode == RESULT_OK) {
-                openFragment(AddCodeFragment.newInstance(data.getStringExtra("SCAN_RESULT")));
+                openFragment(AddCodeScanFragment.newInstance(data.getStringExtra("SCAN_RESULT")));
             } else {
                 Toast.makeText(this, R.string.scan_failed, Toast.LENGTH_LONG).show();
             }
@@ -192,8 +191,11 @@ public class MainActivity extends Activity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.menu_add_account:
+            case R.id.menu_add_account_scan:
                 scanQRCode();
+                break;
+            case R.id.menu_add_account_manual:
+                openFragment(new AddCodeManualFragment());
                 break;
             case R.id.menu_change_password:
                 openFragment(new SetPasswordFragment());

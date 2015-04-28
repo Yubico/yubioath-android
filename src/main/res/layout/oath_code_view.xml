@@ -30,27 +30,53 @@
   ~ SUCH DAMAGE.
   -->
 
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
                 android:orientation="horizontal"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:padding="12dp"
-                style="@style/activated"
-    >
+                android:baselineAligned="false"
+                style="@style/activated">
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_weight="1">
+
+        <TextView
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/default_issuer"
+            android:visibility="gone"
+            android:id="@+id/issuer"
+            android:textStyle="bold"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/default_code"
+            android:id="@+id/code"
+            android:textAppearance="@android:style/TextAppearance.Large"/>
+
+        <TextView
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/default_label"
+            android:id="@+id/label"/>
+    </LinearLayout>
 
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_alignParentRight="true"
-        android:id="@+id/buttonContainer">
+        android:layout_gravity="center_vertical"
+        android:orientation="horizontal">
 
         <ImageButton
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:contentDescription="@string/read_hotp"
             android:id="@+id/readButton"
-            android:layout_gravity="center_vertical"
             android:src="@drawable/navigation_refresh"
             android:visibility="gone"
             style="?android:attr/actionButtonStyle"/>
@@ -60,27 +86,8 @@
             android:layout_height="wrap_content"
             android:contentDescription="@string/copy_to_clipboard"
             android:id="@+id/copyButton"
-            android:layout_gravity="center_vertical"
             android:src="@drawable/content_copy"
             style="?android:attr/actionButtonStyle"/>
-
     </LinearLayout>
 
-    <TextView
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:text="Label"
-        android:id="@+id/label"
-        android:layout_toLeftOf="@id/buttonContainer"
-        android:layout_gravity="left|top"/>
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="012345"
-        android:id="@+id/code"
-        android:layout_below="@id/label"
-        android:textAppearance="@android:style/TextAppearance.Large"
-        />
-
-</RelativeLayout>
+</LinearLayout>

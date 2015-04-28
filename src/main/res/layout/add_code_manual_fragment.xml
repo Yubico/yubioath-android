@@ -31,43 +31,53 @@
   -->
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:orientation="vertical"
-              android:layout_width="match_parent"
-              android:layout_height="match_parent"
-              android:layout_gravity="center"
-              android:gravity="center_vertical|center_horizontal">
+    android:orientation="vertical"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:padding="16dp">
 
-    <ProgressBar
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/timeRemaining"
-        style="@android:style/Widget.Holo.ProgressBar.Horizontal"
-        android:layout_gravity="center"
-        android:indeterminate="false"
-        android:max="1000"
-        android:rotation="180"
-        android:paddingLeft="12dp"
-        android:paddingRight="12dp"
-        android:paddingTop="2dp"
-        android:paddingBottom="2dp"/>
-
-    <ListView
+    <EditText
         android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:id="@id/android:list"
-        android:choiceMode="singleChoice"/>
+        android:layout_height="wrap_content"
+        android:id="@+id/credential_name"
+        android:hint="@string/enter_credential_name"
+        android:singleLine="true"
+        android:maxLength="64"/>
+
+    <EditText
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/credential_secret"
+        android:singleLine="true"
+        android:hint="@string/enter_secret_key"/>
+
+    <Spinner
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/credential_type"
+        android:entries="@array/credential_type"
+        android:paddingTop="10dp"/>
 
     <LinearLayout
-        android:id="@id/android:empty"
+        android:orientation="horizontal"
         android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:orientation="vertical"
-        android:gravity="center">
+        android:layout_height="wrap_content"
+        android:paddingTop="16dp">
 
-        <TextView
+        <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/swipe_to_list"/>
-    </LinearLayout>
+            android:id="@+id/manual_back"
+            android:layout_gravity="start"
+            android:layout_weight="1"
+            android:text="@string/credential_manual_back"/>
 
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/manual_add"
+            android:layout_gravity="end"
+            android:layout_weight="1"
+            android:text="@string/credential_manual_add"/>
+    </LinearLayout>
 </LinearLayout>

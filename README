@@ -38,6 +38,20 @@ $ mvn package
 
 After building the .apk file can be found in the target directory.
 
+=== Development
+
+Steps how to import the project into the Android Studio:
+
+1. Choose "Import project (Eclipse ADT, Gradle, etc.)" at the Welcome screen
+2. Choose the project location
+3. Choose "Import project from external model" -> "Maven" and press 4 times "Next"
+4. Select "Android API 21" and press "Next" and then "Finish"
+5. Go to "File -> Project Structure..." and select "Modules" in the "Project Settings" panel
+6. In the "Sources" tab, select "src/main/res" and click at "Mart as: Resources"
+7. Select "Facets" in the "Project Settings" panel and add "Android" facet
+8. In the "Structure" tab of the facet, change the path of the "Manifest file" (src/main/AndroidManifest.xml) and the "Resources directory" (src/main/res)
+9. Close the "Project Structure" window and choose "File -> Invalidate Caches / Restart ..."
+
 === Issues
 
 Please report any issues/feature-suggestions in 
