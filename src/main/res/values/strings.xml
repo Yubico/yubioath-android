@@ -60,10 +60,20 @@
     <string name="credential_name">Credential name</string>
     <string name="ok">OK</string>
     <string name="empty_list">Empty credentials list</string>
+    <string name="enter_credential_name">Enter credential name</string>
+    <string name="enter_secret_key">Enter secret key</string>
+    <string-array name="credential_type">
+        <item>Time based (TOTP)</item>
+        <item>Counter based (HOTP)</item>
+    </string-array>
+    <string name="credential_manual_back">Back</string>
+    <string name="credential_manual_add">Add</string>
+    <string name="credential_manual_error">Incomplete credentials</string>
     <string name="save">Save</string>
     <string name="cancel">Cancel</string>
     <string name="close">Close</string>
-    <string name="add_account">Scan new QR-code</string>
+    <string name="add_account_scan">Scan account QR-code</string>
+    <string name="add_account_manual">Add account manually</string>
     <string name="change_password">Change device password</string>
     <string name="password_required">Password required</string>
     <string name="input_required">Enter the missing values, and press Save</string>

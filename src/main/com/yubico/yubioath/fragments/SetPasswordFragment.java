@@ -30,6 +30,7 @@
 
 package com.yubico.yubioath.fragments;
 
+import android.app.Activity;
 import android.app.Fragment;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -85,11 +86,11 @@ public class SetPasswordFragment extends Fragment implements MainActivity.OnYubi
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.cancelPassword:
-                closeKeyboard();
+                closeKeyboard(getActivity());
                 ((MainActivity) getActivity()).openFragment(new SwipeListFragment());
                 break;
             case R.id.savePassword:
-                closeKeyboard();
+                closeKeyboard(getActivity());
                 if (needsPassword) {
                     String oldPass = ((EditText) getView().findViewById(R.id.editOldPassword)).getText().toString();
                     keyManager.storeSecret(id, KeyManager.calculateSecret(oldPass, id, false), false);
@@ -108,10 +109,10 @@ public class SetPasswordFragment extends Fragment implements MainActivity.OnYubi
         }
     }
 
-    private void closeKeyboard() {
-        InputMethodManager inputMethodManager = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
-        if (getActivity().getCurrentFocus() != null) {
-            inputMethodManager.hideSoftInputFromWindow(getActivity().getCurrentFocus().getApplicationWindowToken(), 0);
+    public static void closeKeyboard(Activity activity) {
+        InputMethodManager inputMethodManager = (InputMethodManager) activity.getSystemService(Context.INPUT_METHOD_SERVICE);
+        if (activity.getCurrentFocus() != null) {
+            inputMethodManager.hideSoftInputFromWindow(activity.getCurrentFocus().getApplicationWindowToken(), 0);
         }
     }
 

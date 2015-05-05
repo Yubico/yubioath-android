@@ -33,12 +33,14 @@ package com.yubico.yubioath.fragments;
 import android.app.DialogFragment;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
+import android.content.DialogInterface;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 import com.yubico.yubioath.MainActivity;
@@ -59,7 +61,7 @@ import java.util.Map;
  * Time: 10:16 AM
  * To change this template use File | Settings | File Templates.
  */
-public class AddCodeFragment extends Fragment implements MainActivity.OnYubiKeyNeoListener {
+public class AddAccountFragment extends Fragment implements MainActivity.OnYubiKeyNeoListener, View.OnClickListener {
     private static final String CODE_URI = "codeUri";
     private String name;
     private byte[] key;
@@ -67,32 +69,84 @@ public class AddCodeFragment extends Fragment implements MainActivity.OnYubiKeyN
     private byte algorithm_type;
     private int digits;
     private int counter;
+    private SwipeDialog swipeDialog;
+    private Boolean manualMode;
 
-    public static AddCodeFragment newInstance(String uri) {
+    public static AddAccountFragment newInstance(String uri) {
         Bundle bundle = new Bundle();
         bundle.putString(CODE_URI, uri);
-        AddCodeFragment fragment = new AddCodeFragment();
+        AddAccountFragment fragment = new AddAccountFragment();
         fragment.setArguments(bundle);
         return fragment;
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.add_code_fragment, container, false);
-        Uri uri = Uri.parse(getArguments().getString(CODE_URI));
-        if (parseUri(uri)) {
-            ((TextView) view.findViewById(R.id.name)).setText(name);
+        View view;
+        Bundle args = getArguments();
+
+        if (args == null) {
+            manualMode = true;
+
+            view = inflater.inflate(R.layout.add_code_manual_fragment, container, false);
+            view.findViewById(R.id.manual_back).setOnClickListener(this);
+            view.findViewById(R.id.manual_add).setOnClickListener(this);
         } else {
-            Toast.makeText(getActivity(), R.string.invalid_barcode, Toast.LENGTH_LONG).show();
-            view.post(new Runnable() {
-                @Override
-                public void run() {
-                    ((MainActivity) getActivity()).openFragment(new SwipeListFragment());
-                }
-            });
+            manualMode = false;
+
+            Uri uri = Uri.parse(getArguments().getString(CODE_URI));
+
+            view = inflater.inflate(R.layout.add_code_scan_fragment, container, false);
+            if (parseUri(uri)) {
+                ((TextView) view.findViewById(R.id.name)).setText(name);
+            } else {
+                Toast.makeText(getActivity(), R.string.invalid_barcode, Toast.LENGTH_LONG).show();
+                view.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        ((MainActivity) getActivity()).openFragment(new SwipeListFragment());
+                    }
+                });
+            }
         }
 
         return view;
+    }
+
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.manual_back:
+                SetPasswordFragment.closeKeyboard(getActivity());
+
+                ((MainActivity) getActivity()).openFragment(new SwipeListFragment());
+
+                break;
+            case R.id.manual_add:
+                String name = ((EditText) getActivity().findViewById(R.id.credential_name)).getText().toString();
+                String secret = ((EditText) getActivity().findViewById(R.id.credential_secret)).getText().toString();
+                String type = ((Spinner) getActivity().findViewById(R.id.credential_type)).getSelectedItemId() == 0 ? "totp" : "hotp";
+
+                if (name.length() == 0 || secret.length() == 0) {
+                    Toast.makeText(getActivity(), R.string.credential_manual_error, Toast.LENGTH_LONG).show();
+                } else {
+                    SetPasswordFragment.closeKeyboard(getActivity());
+
+                    Uri uri = Uri.parse("otpauth://" + type + "/" + name + "?secret=" + secret);
+                    parseUri(uri);
+
+                    swipeDialog = new SwipeDialog();
+                    swipeDialog.setOnCancel(new DialogInterface.OnCancelListener() {
+                        @Override
+                        public void onCancel(DialogInterface dialog) {
+                            ((MainActivity) getActivity()).openFragment(new SwipeListFragment());
+                        }
+                    });
+                    swipeDialog.show(getFragmentManager(), "dialog");
+                }
+
+                break;
+        }
     }
 
     protected boolean parseUri(Uri uri) {
@@ -170,6 +224,9 @@ public class AddCodeFragment extends Fragment implements MainActivity.OnYubiKeyN
     public void onPasswordMissing(KeyManager keyManager, byte[] id, boolean missing) {
         FragmentTransaction ft = getFragmentManager().beginTransaction();
         Fragment prev = getFragmentManager().findFragmentByTag("dialog");
+        if (swipeDialog != null) {
+            swipeDialog.dismiss();
+        }
         if (prev != null) {
             ft.remove(prev);
         }
@@ -179,7 +236,16 @@ public class AddCodeFragment extends Fragment implements MainActivity.OnYubiKeyN
 
     @Override
     public void onYubiKeyNeo(YubiKeyNeo neo) throws IOException {
-        name = ((EditText) getView().findViewById(R.id.name)).getText().toString();
+        if (manualMode) {
+            if (swipeDialog == null) {
+                return;
+            }
+
+            swipeDialog.dismiss();
+        } else {
+            name = ((EditText) getView().findViewById(R.id.name)).getText().toString();
+        }
+
         try {
             neo.storeCode(name, key, (byte) (oath_type | algorithm_type), digits, counter);
             long timestamp = System.currentTimeMillis() / 1000 / 30;
@@ -195,6 +261,8 @@ public class AddCodeFragment extends Fragment implements MainActivity.OnYubiKeyN
             });
         } catch (StorageFullException e) {
             Toast.makeText(getActivity(), R.string.storage_full, Toast.LENGTH_LONG).show();
+        } catch (Exception e) {
+            Toast.makeText(getActivity(), R.string.tag_error_retry, Toast.LENGTH_LONG).show();
         }
     }
 }

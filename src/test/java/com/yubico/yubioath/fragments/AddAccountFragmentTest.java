@@ -40,12 +40,12 @@ import static org.junit.Assert.assertEquals;
 import android.net.Uri;
 
 @RunWith(RobolectricTestRunner.class)
-public class AddCodeFragmentTest {
-	AddCodeFragment fragment;
+public class AddAccountFragmentTest {
+	AddAccountFragment fragment;
 	
 	@Before
 	public void setUp() {
-		fragment = new AddCodeFragment();
+		fragment = new AddAccountFragment();
 	}
 	
 	@Test
