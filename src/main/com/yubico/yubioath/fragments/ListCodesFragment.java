@@ -266,12 +266,23 @@ public class ListCodesFragment extends ListFragment implements MainActivity.OnYu
             getListView().setItemChecked(position, actionMode != null && selectedItem == code);
             ((ViewGroup) view).setDescendantFocusability(ViewGroup.FOCUS_BLOCK_DESCENDANTS);
 
+            TextView issuerView = (TextView) view.findViewById(R.id.issuer);
             TextView labelView = (TextView) view.findViewById(R.id.label);
             TextView codeView = (TextView) view.findViewById(R.id.code);
             ImageButton readButton = (ImageButton) view.findViewById(R.id.readButton);
             ImageButton copyButton = (ImageButton) view.findViewById(R.id.copyButton);
 
-            labelView.setText(code.getLabel());
+            String label = code.getLabel();
+            String label_array[] = label.split(":");
+
+            if (label_array.length > 1) {
+                issuerView.setText(label_array[0]);
+                issuerView.setVisibility(View.VISIBLE);
+                labelView.setText(label_array[1]);
+            } else {
+                labelView.setText(label);
+            }
+
             codeView.setText(code.read ? code.getCode() : "<refresh to read>");
             boolean valid = code.hotp && code.read || !code.hotp && !expired;
             codeView.setTextColor(getResources().getColor(valid ? android.R.color.primary_text_dark : android.R.color.secondary_text_light));
