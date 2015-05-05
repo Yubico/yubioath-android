@@ -280,6 +280,7 @@ public class ListCodesFragment extends ListFragment implements MainActivity.OnYu
                 issuerView.setVisibility(View.VISIBLE);
                 labelView.setText(label_array[1]);
             } else {
+                issuerView.setVisibility(View.GONE);
                 labelView.setText(label);
             }
 
