@@ -1,5 +1,10 @@
 yubioath-android NEWS -- History of user-visible changes.     -*- outline -*-
 
+* Version 0.2.0 (unreleased)
+ ** Added the ability to manually add credentials.
+ ** Show issuer in a nicer way.
+ ** Added icons for more resolutions.
+
 * Version 0.1.11 released 2015-02-06
  ** Fix crash when encountering old application data introduced in 0.1.10.
  ** Updated about page URLs.
