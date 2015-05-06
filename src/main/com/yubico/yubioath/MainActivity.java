@@ -124,6 +124,9 @@ public class MainActivity extends Activity {
             dialog.show(ft, "dialog");
         } else if (totpListener != null) {
             Intent intent = getIntent();
+            if (intent.getAction().equals(NfcAdapter.ACTION_NDEF_DISCOVERED)) {
+                onNewIntent(intent);
+            }
             intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
             PendingIntent tagIntent = PendingIntent.getActivity(this, 0, intent, 0);
             IntentFilter iso = new IntentFilter(NfcAdapter.ACTION_TECH_DISCOVERED);
@@ -159,7 +162,6 @@ public class MainActivity extends Activity {
                     getString(R.string.yes),
                     getString(R.string.no));
         }
-        return;
     }
 
     private void barcodeScannerNotInstalled(String stringTitle,
