@@ -67,6 +67,7 @@ public class MainActivity extends Activity {
     private NfcAdapter adapter;
     private KeyManager keyManager;
     private OnYubiKeyNeoListener totpListener;
+    private boolean readOnResume = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -125,8 +126,9 @@ public class MainActivity extends Activity {
             dialog.show(ft, "dialog");
         } else if (totpListener != null) {
             Intent intent = getIntent();
-            if (intent.getAction().equals(NfcAdapter.ACTION_NDEF_DISCOVERED)) {
+            if (readOnResume && intent.getAction().equals(NfcAdapter.ACTION_NDEF_DISCOVERED)) {
                 onNewIntent(intent);
+                readOnResume = false;
             }
             intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
             PendingIntent tagIntent = PendingIntent.getActivity(this, 0, intent, 0);
@@ -232,6 +234,7 @@ public class MainActivity extends Activity {
                 if (yubiKeyNeo.isLocked()) {
                     yubiKeyNeo.unlock();
                 }
+                Log.d("yubioath", "ON NEW INTENT!!!");
                 totpListener.onYubiKeyNeo(yubiKeyNeo);
             } catch (PasswordRequiredException e) {
                 totpListener.onPasswordMissing(keyManager, e.getId(), e.isMissing());

@@ -56,8 +56,8 @@ import java.util.Map;
  */
 public class SwipeListFragment extends Fragment implements MainActivity.OnYubiKeyNeoListener {
     private ListCodesFragment fragment = new ListCodesFragment();
-    private ListCodesFragment emptyFragment1 = new ListCodesFragment();
-    private ListCodesFragment emptyFragment2 = new ListCodesFragment();
+    private DummyListCodesFragment emptyFragment1 = new DummyListCodesFragment();
+    private DummyListCodesFragment emptyFragment2 = new DummyListCodesFragment();
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {

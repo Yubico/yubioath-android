@@ -38,6 +38,7 @@ import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.*;
 import android.view.animation.Animation;
 import android.view.animation.LinearInterpolator;
@@ -141,6 +142,7 @@ public class ListCodesFragment extends ListFragment implements MainActivity.OnYu
 
         switch (state) {
             case READ_LIST:
+                Log.d("yubioath", "READ LIST!!!");
                 List<Map<String, String>> codes = neo.getCodes(timestamp);
                 showCodes(codes);
                 if (codes.size() == 0) {
@@ -148,6 +150,7 @@ public class ListCodesFragment extends ListFragment implements MainActivity.OnYu
                 }
                 break;
             case READ_SELECTED:
+                Log.d("yubioath", "READ HOTP!!!");
                 selectedItem.setCode(neo.readHotpCode(selectedItem.getLabel()));
                 adapter.notifyDataSetChanged();
                 swipeDialog.dismiss();
@@ -254,6 +257,7 @@ public class ListCodesFragment extends ListFragment implements MainActivity.OnYu
             }
         };
         private boolean expired = false;
+        private List<OathCode> codes;
 
         public CodeAdapter(List<OathCode> codes) {
             super(getActivity(), R.layout.oath_code_view, codes);
@@ -264,6 +268,7 @@ public class ListCodesFragment extends ListFragment implements MainActivity.OnYu
             expired = false;
             addAll(codes);
             sort(comparator);
+            this.codes = codes;
         }
 
         @Override
@@ -295,7 +300,7 @@ public class ListCodesFragment extends ListFragment implements MainActivity.OnYu
 
             codeView.setText(code.read ? code.getCode() : "<refresh to read>");
             boolean valid = code.hotp && code.read || !code.hotp && !expired;
-            codeView.setTextColor(getResources().getColor(valid ? android.R.color.primary_text_dark : android.R.color.secondary_text_light));
+            codeView.setTextColor(getResources().getColor(valid ? android.R.color.primary_text_dark : android.R.color.secondary_text_dark));
             readButton.setOnClickListener(code.readAction);
             copyButton.setOnClickListener(code.copyAction);
             readButton.setVisibility(code.hotp ? View.VISIBLE : View.GONE);
@@ -353,6 +358,7 @@ public class ListCodesFragment extends ListFragment implements MainActivity.OnYu
         }
 
         public void setCode(String code) {
+            Log.d("yubioath", "CODE: " + code);
             this.code = code;
             read = code != null;
         }
