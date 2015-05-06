@@ -94,7 +94,7 @@ public class AddAccountFragment extends Fragment implements MainActivity.OnYubiK
         } else {
             manualMode = false;
 
-            Uri uri = Uri.parse(getArguments().getString(CODE_URI));
+            Uri uri = Uri.parse(getArguments().getString(CODE_URI).trim());
 
             view = inflater.inflate(R.layout.add_code_scan_fragment, container, false);
             if (parseUri(uri)) {
