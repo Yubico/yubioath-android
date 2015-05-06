@@ -101,6 +101,7 @@ public class YubiKeyNeo {
     private final KeyManager keyManager;
     private final IsoDep isoTag;
     private final byte[] id;
+    private byte[] challenge = null;
 
     public YubiKeyNeo(KeyManager keyManager, IsoDep isoTag) throws IOException, AppletSelectException {
         this.keyManager = keyManager;
@@ -122,8 +123,7 @@ public class YubiKeyNeo {
         id = parseBlock(resp, offset, NAME_TAG);
         offset += id.length + 2;
         if (resp.length - offset - 4 > 0) {
-            byte[] challenge = parseBlock(resp, offset, CHALLENGE_TAG);
-            unlock(challenge);
+            challenge = parseBlock(resp, offset, CHALLENGE_TAG);
         }
     }
 
@@ -139,7 +139,11 @@ public class YubiKeyNeo {
         keyManager.setDisplayName(id, name);
     }
 
-    private void unlock(byte[] challenge) throws IOException, PasswordRequiredException {
+    public boolean isLocked() {
+        return challenge != null;
+    }
+
+    public void unlock() throws IOException, PasswordRequiredException {
         Set<byte[]> secrets = keyManager.getSecrets(id);
 
         if (secrets.isEmpty()) {
@@ -149,6 +153,7 @@ public class YubiKeyNeo {
         for(byte[] secret : secrets) {
             if(doUnlock(challenge, secret)) {
                 keyManager.setOnlySecret(id, secret);
+                challenge = null;
                 return;
             }
         }
@@ -347,7 +352,6 @@ public class YubiKeyNeo {
                 default:
                     oathCode.put("code", "<invalid code>");
             }
-            Log.d("yubioath", "label: " + oathCode.get("label"));
             codes.add(oathCode);
         }
 

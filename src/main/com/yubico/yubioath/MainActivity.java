@@ -228,6 +228,9 @@ public class MainActivity extends Activity {
             YubiKeyNeo yubiKeyNeo = null;
             try {
                 yubiKeyNeo = new YubiKeyNeo(keyManager, IsoDep.get(tag));
+                if(yubiKeyNeo.isLocked()) {
+                    yubiKeyNeo.unlock();
+                }
                 totpListener.onYubiKeyNeo(yubiKeyNeo);
             } catch (PasswordRequiredException e) {
                 totpListener.onPasswordMissing(keyManager, e.getId(), e.isMissing());

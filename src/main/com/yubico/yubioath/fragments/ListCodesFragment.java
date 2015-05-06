@@ -38,6 +38,7 @@ import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.*;
 import android.view.animation.Animation;
 import android.view.animation.LinearInterpolator;
@@ -74,6 +75,7 @@ public class ListCodesFragment extends ListFragment implements MainActivity.OnYu
     private int state = READ_LIST;
     private OathCode selectedItem;
     private SwipeDialog swipeDialog;
+    private DialogFragment needsPassword = null;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -121,6 +123,10 @@ public class ListCodesFragment extends ListFragment implements MainActivity.OnYu
         if(initialCodes != null) {
             showCodes(initialCodes);
             initialCodes = null;
+        } else if(needsPassword != null) {
+            FragmentTransaction ft = getFragmentManager().beginTransaction();
+            needsPassword.show(ft, "dialog");
+            needsPassword = null;
         }
     }
 
@@ -188,13 +194,17 @@ public class ListCodesFragment extends ListFragment implements MainActivity.OnYu
 
     @Override
     public void onPasswordMissing(KeyManager keyManager, byte[] id, boolean missing) {
-        FragmentTransaction ft = getFragmentManager().beginTransaction();
-        Fragment prev = getFragmentManager().findFragmentByTag("dialog");
-        if (prev != null) {
-            ft.remove(prev);
-        }
         DialogFragment dialog = RequirePasswordDialog.newInstance(keyManager, id, missing);
-        dialog.show(ft, "dialog");
+        if(isAdded()) {
+            FragmentTransaction ft = getFragmentManager().beginTransaction();
+            Fragment prev = getFragmentManager().findFragmentByTag("dialog");
+            if (prev != null) {
+                ft.remove(prev);
+            }
+            dialog.show(ft, "dialog");
+        } else {  //If we're not yet added, we need to wait for that before prompting.
+            needsPassword = dialog;
+        }
     }
 
     private void readHotp(OathCode code) {
