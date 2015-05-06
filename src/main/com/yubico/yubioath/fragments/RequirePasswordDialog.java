@@ -42,8 +42,6 @@ import android.widget.EditText;
 import com.yubico.yubioath.R;
 import com.yubico.yubioath.model.KeyManager;
 
-import java.util.Arrays;
-
 /**
  * Created with IntelliJ IDEA.
  * User: dain

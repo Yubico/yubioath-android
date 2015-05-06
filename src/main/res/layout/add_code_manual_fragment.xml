@@ -42,21 +42,21 @@
         android:id="@+id/credential_name"
         android:hint="@string/enter_credential_name"
         android:singleLine="true"
-        android:maxLength="64"/>
+        android:maxLength="64" />
 
     <EditText
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:id="@+id/credential_secret"
         android:singleLine="true"
-        android:hint="@string/enter_secret_key"/>
+        android:hint="@string/enter_secret_key" />
 
     <Spinner
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/credential_type"
         android:entries="@array/credential_type"
-        android:paddingTop="10dp"/>
+        android:paddingTop="10dp" />
 
     <LinearLayout
         android:orientation="horizontal"
@@ -70,7 +70,7 @@
             android:id="@+id/manual_back"
             android:layout_gravity="start"
             android:layout_weight="1"
-            android:text="@string/credential_manual_back"/>
+            android:text="@string/credential_manual_back" />
 
         <Button
             android:layout_width="wrap_content"
@@ -78,6 +78,6 @@
             android:id="@+id/manual_add"
             android:layout_gravity="end"
             android:layout_weight="1"
-            android:text="@string/credential_manual_add"/>
+            android:text="@string/credential_manual_add" />
     </LinearLayout>
 </LinearLayout>

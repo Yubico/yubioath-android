@@ -31,18 +31,18 @@
   -->
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:orientation="vertical"
-              android:layout_width="match_parent"
-              android:layout_height="match_parent"
-              android:layout_gravity="center"
-              android:gravity="center_vertical"
-              android:padding="16dp">
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_gravity="center"
+    android:gravity="center_vertical"
+    android:padding="16dp">
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/credential_name"
-        android:layout_gravity="left|top"/>
+        android:layout_gravity="left|top" />
 
     <EditText
         android:layout_width="fill_parent"
@@ -51,7 +51,7 @@
         android:inputType="text"
         android:maxLength="64"
         android:text=""
-        android:layout_gravity="left|top"/>
+        android:layout_gravity="left|top" />
 
     <LinearLayout
         android:orientation="vertical"
@@ -65,8 +65,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/swipe_to_put"
-            android:layout_gravity="center"
-            />
+            android:layout_gravity="center" />
 
     </LinearLayout>
 </LinearLayout>

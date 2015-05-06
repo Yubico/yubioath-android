@@ -87,23 +87,23 @@ public class AboutFragment extends Fragment implements MainActivity.OnYubiKeyNeo
             //Do nothing
         }
 
-        TextView aboutText = (TextView)view.findViewById(R.id.aboutView);
+        TextView aboutText = (TextView) view.findViewById(R.id.aboutView);
         aboutText.setText(Html.fromHtml(getString(R.string.about_text, version)));
         aboutText.setMovementMethod(LinkMovementMethod.getInstance());
 
-        Button clearDataButton = (Button)view.findViewById(R.id.clearData);
+        Button clearDataButton = (Button) view.findViewById(R.id.clearData);
         clearDataButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 String message;
-                if(--clearCounter > 0) {
+                if (--clearCounter > 0) {
                     message = getString(R.string.clear_countdown, clearCounter);
                 } else {
                     keyManager.clearAll();
                     clearCounter = 5;
                     message = getString(R.string.data_cleared);
                 }
-                if(toast != null) {
+                if (toast != null) {
                     toast.cancel();
                 }
                 toast = Toast.makeText(getActivity(), message, Toast.LENGTH_SHORT);

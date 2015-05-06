@@ -38,7 +38,6 @@ import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.*;
 import android.view.animation.Animation;
 import android.view.animation.LinearInterpolator;
@@ -68,7 +67,7 @@ public class ListCodesFragment extends ListFragment implements MainActivity.OnYu
     private static final int DELETE_SELECTED = 2;
 
     private final TimeoutAnimation timeoutAnimation = new TimeoutAnimation();
-    private List<Map<String,String>> initialCodes;
+    private List<Map<String, String>> initialCodes;
     private CodeAdapter adapter;
     private ProgressBar timeoutBar;
     private ActionMode actionMode;
@@ -120,10 +119,10 @@ public class ListCodesFragment extends ListFragment implements MainActivity.OnYu
             }
         });
 
-        if(initialCodes != null) {
+        if (initialCodes != null) {
             showCodes(initialCodes);
             initialCodes = null;
-        } else if(needsPassword != null) {
+        } else if (needsPassword != null) {
             FragmentTransaction ft = getFragmentManager().beginTransaction();
             needsPassword.show(ft, "dialog");
             needsPassword = null;
@@ -135,7 +134,7 @@ public class ListCodesFragment extends ListFragment implements MainActivity.OnYu
         //If less than 10 seconds remain until we'd get the next OTP, skip ahead.
         long timestamp = (System.currentTimeMillis() / 1000 + 10) / 30;
 
-        if(swipeDialog == null || !swipeDialog.isAdded()) {
+        if (swipeDialog == null || !swipeDialog.isAdded()) {
             //If the swipeDialog has been dismissed we ignore the state and just list the OTPs.
             state = READ_LIST;
         }
@@ -166,7 +165,7 @@ public class ListCodesFragment extends ListFragment implements MainActivity.OnYu
     }
 
     public void showCodes(List<Map<String, String>> codeMap) {
-        if(adapter == null) {
+        if (adapter == null) {
             initialCodes = codeMap;
             return;
         }
@@ -195,7 +194,7 @@ public class ListCodesFragment extends ListFragment implements MainActivity.OnYu
     @Override
     public void onPasswordMissing(KeyManager keyManager, byte[] id, boolean missing) {
         DialogFragment dialog = RequirePasswordDialog.newInstance(keyManager, id, missing);
-        if(isAdded()) {
+        if (isAdded()) {
             FragmentTransaction ft = getFragmentManager().beginTransaction();
             Fragment prev = getFragmentManager().findFragmentByTag("dialog");
             if (prev != null) {

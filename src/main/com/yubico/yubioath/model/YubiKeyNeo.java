@@ -31,7 +31,6 @@
 package com.yubico.yubioath.model;
 
 import android.nfc.tech.IsoDep;
-import android.util.Log;
 import com.yubico.yubioath.exc.*;
 
 import javax.crypto.Mac;
@@ -150,8 +149,8 @@ public class YubiKeyNeo {
             throw new PasswordRequiredException("Password is missing!", id, true);
         }
 
-        for(byte[] secret : secrets) {
-            if(doUnlock(challenge, secret)) {
+        for (byte[] secret : secrets) {
+            if (doUnlock(challenge, secret)) {
                 keyManager.setOnlySecret(id, secret);
                 challenge = null;
                 return;
@@ -210,7 +209,7 @@ public class YubiKeyNeo {
         if (secret.length == 0) {
             unsetLockCode();
             return;
-        } else if(keyManager.getSecrets(id).contains(secret)) {
+        } else if (keyManager.getSecrets(id).contains(secret)) {
             return;
         }
 

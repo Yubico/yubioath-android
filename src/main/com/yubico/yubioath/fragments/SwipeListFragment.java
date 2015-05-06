@@ -76,7 +76,7 @@ public class SwipeListFragment extends Fragment implements MainActivity.OnYubiKe
 
             @Override
             public void onPageScrollStateChanged(int state) {
-                if(state == 0 && pager.getCurrentItem() != 1) {
+                if (state == 0 && pager.getCurrentItem() != 1) {
                     fragment.showCodes(new ArrayList<Map<String, String>>());
                     pager.setCurrentItem(1, false);
                 }
@@ -110,7 +110,7 @@ public class SwipeListFragment extends Fragment implements MainActivity.OnYubiKe
 
         @Override
         public Fragment getItem(int position) {
-            switch(position) {
+            switch (position) {
                 case 0:
                     return emptyFragment1;
                 case 1:

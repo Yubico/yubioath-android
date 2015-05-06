@@ -36,5 +36,5 @@
         android:orderInCategory="100"
         android:showAsAction="always"
         android:icon="@drawable/content_discard"
-        android:title="@string/delete_cred"/>
+        android:title="@string/delete_cred" />
 </menu>

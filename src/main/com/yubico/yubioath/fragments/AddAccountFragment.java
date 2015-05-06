@@ -150,8 +150,8 @@ public class AddAccountFragment extends Fragment implements MainActivity.OnYubiK
     }
 
     protected boolean parseUri(Uri uri) {
-    	String scheme = uri.getScheme();
-        if(!uri.isHierarchical() || scheme == null || !scheme.equals("otpauth")) {
+        String scheme = uri.getScheme();
+        if (!uri.isHierarchical() || scheme == null || !scheme.equals("otpauth")) {
             return false;
         }
 
@@ -160,14 +160,14 @@ public class AddAccountFragment extends Fragment implements MainActivity.OnYubiK
             return false;
         }
         Base32 base32 = new Base32();
-        if(!base32.isInAlphabet(secret.toUpperCase())) {
-        	return false;
+        if (!base32.isInAlphabet(secret.toUpperCase())) {
+            return false;
         }
         key = base32.decode(secret.toUpperCase());
 
         String path = uri.getPath(); // user name is stored in path...
-        if(path == null || path.isEmpty()) {
-        	return false;
+        if (path == null || path.isEmpty()) {
+            return false;
         }
         if (path.charAt(0) == '/') {
             path = path.substring(1);
@@ -205,16 +205,16 @@ public class AddAccountFragment extends Fragment implements MainActivity.OnYubiK
                 return false;
             }
         }
-        
+
         String counter_string = uri.getQueryParameter("counter");
-        if(counter_string == null || counter_string.isEmpty()) {
-        	counter = 0;
+        if (counter_string == null || counter_string.isEmpty()) {
+            counter = 0;
         } else {
-        	try {
-        		counter = Integer.parseInt(counter_string);
-        	} catch (NumberFormatException e) {
-        		return false;
-        	}
+            try {
+                counter = Integer.parseInt(counter_string);
+            } catch (NumberFormatException e) {
+                return false;
+            }
         }
 
         return true;

@@ -31,12 +31,11 @@
   -->
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:orientation="vertical"
-              android:layout_width="match_parent"
-              android:layout_height="match_parent"
-              android:layout_gravity="center"
-              android:gravity="center_vertical|center_horizontal"
-    >
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_gravity="center"
+    android:gravity="center_vertical|center_horizontal">
 
     <ProgressBar
         android:layout_width="match_parent"
@@ -50,14 +49,13 @@
         android:paddingLeft="12dp"
         android:paddingRight="12dp"
         android:paddingTop="2dp"
-        android:paddingBottom="2dp"/>
+        android:paddingBottom="2dp" />
 
     <ListView
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
         android:id="@id/android:list"
-        android:choiceMode="singleChoice"
-        />
+        android:choiceMode="singleChoice" />
 
     <LinearLayout
         android:id="@id/android:empty"
@@ -70,8 +68,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/swipe_to_list"
-            />
+            android:text="@string/swipe_to_list" />
 
     </LinearLayout>
 </LinearLayout>

@@ -48,7 +48,8 @@ import com.yubico.yubioath.exc.AppletSelectException;
 import com.yubico.yubioath.exc.PasswordRequiredException;
 import com.yubico.yubioath.exc.UnsupportedAppletException;
 import com.yubico.yubioath.fragments.*;
-import com.yubico.yubioath.model.*;
+import com.yubico.yubioath.model.KeyManager;
+import com.yubico.yubioath.model.YubiKeyNeo;
 
 import java.io.IOException;
 
@@ -81,10 +82,10 @@ public class MainActivity extends Activity {
             Toast.makeText(this, R.string.no_nfc, Toast.LENGTH_LONG).show();
             finish();
         } else {
-        	SharedPreferences preferences = getSharedPreferences(NEO_STORE, Context.MODE_PRIVATE);
-        	keyManager = new KeyManager(preferences);
+            SharedPreferences preferences = getSharedPreferences(NEO_STORE, Context.MODE_PRIVATE);
+            keyManager = new KeyManager(preferences);
 
-        	openFragment(new SwipeListFragment());
+            openFragment(new SwipeListFragment());
         }
     }
 
@@ -92,7 +93,7 @@ public class MainActivity extends Activity {
     public void onBackPressed() {
         FragmentManager fragmentManager = getFragmentManager();
         Fragment fragment = fragmentManager.findFragmentByTag(SwipeListFragment.class.getName());
-        if(fragment == null) {
+        if (fragment == null) {
             openFragment(new SwipeListFragment());
         } else {
             super.onBackPressed();
@@ -114,7 +115,7 @@ public class MainActivity extends Activity {
     public void onResume() {
         super.onResume();
 
-        if(!adapter.isEnabled()) {
+        if (!adapter.isEnabled()) {
             FragmentTransaction ft = getFragmentManager().beginTransaction();
             Fragment prev = getFragmentManager().findFragmentByTag("dialog");
             if (prev != null) {
@@ -228,7 +229,7 @@ public class MainActivity extends Activity {
             YubiKeyNeo yubiKeyNeo = null;
             try {
                 yubiKeyNeo = new YubiKeyNeo(keyManager, IsoDep.get(tag));
-                if(yubiKeyNeo.isLocked()) {
+                if (yubiKeyNeo.isLocked()) {
                     yubiKeyNeo.unlock();
                 }
                 totpListener.onYubiKeyNeo(yubiKeyNeo);

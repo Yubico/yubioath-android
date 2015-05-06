@@ -32,7 +32,6 @@ package com.yubico.yubioath.model;
 
 import android.content.SharedPreferences;
 import android.util.Base64;
-import android.util.Log;
 
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
@@ -40,7 +39,10 @@ import java.nio.charset.Charset;
 import java.security.Key;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Created with IntelliJ IDEA.
@@ -64,7 +66,7 @@ public class KeyManager {
     public Set<byte[]> getSecrets(byte[] id) {
         String key = KEY + bytes2string(id);
         Object value = store.getAll().get(key);
-        if(value instanceof String) { //Workaround for old data being stored as a String instead of a Set<String>.
+        if (value instanceof String) { //Workaround for old data being stored as a String instead of a Set<String>.
             Set<String> set = new HashSet<String>();
             set.add((String) value);
             store.edit().putStringSet(key, set).apply();
@@ -74,7 +76,7 @@ public class KeyManager {
 
     private Set<String> getMem(String key) {
         Set<String> existing = memStore.get(key);
-        if(existing == null) {
+        if (existing == null) {
             existing = new HashSet<String>();
             memStore.put(key, existing);
         }
@@ -148,11 +150,11 @@ public class KeyManager {
                 legacyFactory = factory;
                 factory = null;
                 char[] pwChars = password.toCharArray();
-                if(!legacy) { // Android < 4.4 only uses the lowest 8 bits of each character, so fix the char[].
+                if (!legacy) { // Android < 4.4 only uses the lowest 8 bits of each character, so fix the char[].
                     byte[] pwBytes = password.getBytes(Charset.forName("UTF-8"));
                     pwChars = new char[pwBytes.length];
-                    for(int i=0; i<pwBytes.length; i++) {
-                        pwChars[i] = (char)pwBytes[i];
+                    for (int i = 0; i < pwBytes.length; i++) {
+                        pwChars[i] = (char) pwBytes[i];
                     }
                 }
                 return doCalculateSecret(legacyFactory, pwChars, id);
@@ -171,7 +173,7 @@ public class KeyManager {
         } catch (InvalidKeySpecException e) {
             throw new RuntimeException(e);
         } finally {
-            if(keyspec != null) {
+            if (keyspec != null) {
                 keyspec.clearPassword();
             }
         }
@@ -187,7 +189,7 @@ public class KeyManager {
 
     private static Set<byte[]> strings2bytes(Set<String> strings) {
         Set<byte[]> bytes = new HashSet<byte[]>();
-        for(String string : strings) {
+        for (String string : strings) {
             bytes.add(string2bytes(string));
         }
         return bytes;
