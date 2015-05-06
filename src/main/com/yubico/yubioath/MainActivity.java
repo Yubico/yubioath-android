@@ -89,6 +89,17 @@ public class MainActivity extends Activity {
     }
 
     @Override
+    public void onBackPressed() {
+        FragmentManager fragmentManager = getFragmentManager();
+        Fragment fragment = fragmentManager.findFragmentByTag(SwipeListFragment.class.getName());
+        if(fragment == null) {
+            openFragment(new SwipeListFragment());
+        } else {
+            super.onBackPressed();
+        }
+    }
+
+    @Override
     public View onCreateView(String name, Context context, AttributeSet attrs) {
         return super.onCreateView(name, context, attrs);
     }
@@ -130,7 +141,7 @@ public class MainActivity extends Activity {
 
         FragmentManager fragmentManager = getFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        fragmentTransaction.replace(R.id.fragment_container, fragment);
+        fragmentTransaction.replace(R.id.fragment_container, fragment, fragment.getClass().getName());
         fragmentTransaction.commit();
     }
 
