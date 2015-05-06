@@ -51,6 +51,7 @@
         <activity
             android:name="com.yubico.yubioath.MainActivity"
             android:label="@string/app_name"
+            android:launchMode="singleTask"
             android:configChanges="keyboardHidden|orientation|screenSize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
