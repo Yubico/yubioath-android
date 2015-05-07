@@ -66,9 +66,8 @@
         <item>Time based (TOTP)</item>
         <item>Counter based (HOTP)</item>
     </string-array>
-    <string name="credential_manual_back">Back</string>
-    <string name="credential_manual_add">Add</string>
     <string name="credential_manual_error">Incomplete credentials</string>
+    <string name="add">Add</string>
     <string name="save">Save</string>
     <string name="cancel">Cancel</string>
     <string name="close">Close</string>

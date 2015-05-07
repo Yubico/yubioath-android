@@ -70,7 +70,7 @@
             android:id="@+id/manual_back"
             android:layout_gravity="start"
             android:layout_weight="1"
-            android:text="@string/credential_manual_back" />
+            android:text="@string/cancel" />
 
         <Button
             android:layout_width="wrap_content"
@@ -78,6 +78,6 @@
             android:id="@+id/manual_add"
             android:layout_gravity="end"
             android:layout_weight="1"
-            android:text="@string/credential_manual_add" />
+            android:text="@string/add" />
     </LinearLayout>
 </LinearLayout>
