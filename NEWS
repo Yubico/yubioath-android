@@ -1,6 +1,4 @@
-yubioath-android NEWS -- History of user-visible changes.     -*- outline -*-
-
-* Version 0.2.0 (unreleased)
+* Version 1.0.0 released 2015-05-07
  ** Automatically start application on YubiKey tap.
  ** Added the ability to manually add credentials.
  ** Show issuer in a nicer way.
