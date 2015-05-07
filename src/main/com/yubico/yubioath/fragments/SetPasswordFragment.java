@@ -130,7 +130,6 @@ public class SetPasswordFragment extends Fragment implements MainActivity.OnYubi
             this.keyManager = keyManager;
             needsPassword = true;
             needsId = false;
-            ((EditText) getView().findViewById(R.id.editDisplayName)).setText(R.string.yubikey_neo);
             getView().findViewById(R.id.requiresPassword).setVisibility(View.VISIBLE);
         } else {
             //Wrong (old) password, try again.
@@ -152,13 +151,10 @@ public class SetPasswordFragment extends Fragment implements MainActivity.OnYubi
 
         if (needsId) {
             id = neo.getId();
-            ((EditText) getView().findViewById(R.id.editDisplayName)).setText(neo.getDisplayName(getString(R.string.yubikey_neo)));
             needsId = false;
         } else {
-            String label = ((EditText) getView().findViewById(R.id.editDisplayName)).getText().toString().trim();
             String newPass = ((EditText) getView().findViewById(R.id.editNewPassword)).getText().toString();
             boolean remember = ((CheckBox) getView().findViewById(R.id.rememberPassword)).isChecked();
-            neo.setDisplayName(label);
             try {
                 neo.setLockCode(newPass, remember);
                 ((MainActivity) getActivity()).openFragment(new SwipeListFragment());

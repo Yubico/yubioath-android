@@ -53,7 +53,6 @@ import java.util.Set;
  */
 public class KeyManager {
     private static final String KEY = "key_";
-    private static final String NAME = "name_";
 
     private final SharedPreferences store;
     private final Map<String, Set<String>> memStore;
@@ -111,16 +110,6 @@ public class KeyManager {
         boolean remember = store.contains(KEY + bytes2string(id));
         doStoreSecret(id, new byte[0], true); // Clear memory
         doStoreSecret(id, secret, remember);
-    }
-
-    public String getDisplayName(byte[] id, String defaultName) {
-        return store.getString(NAME + bytes2string(id), defaultName);
-    }
-
-    public void setDisplayName(byte[] id, String name) {
-        SharedPreferences.Editor editor = store.edit();
-        editor.putString(NAME + bytes2string(id), name);
-        editor.apply();
     }
 
     public void clearAll() {

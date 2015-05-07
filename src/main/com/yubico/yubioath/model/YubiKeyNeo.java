@@ -130,14 +130,6 @@ public class YubiKeyNeo {
         return id;
     }
 
-    public String getDisplayName(String defaultName) {
-        return keyManager.getDisplayName(id, defaultName);
-    }
-
-    public void setDisplayName(String name) {
-        keyManager.setDisplayName(id, name);
-    }
-
     public boolean isLocked() {
         return challenge != null;
     }
