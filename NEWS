@@ -1,3 +1,6 @@
+* Version 1.0.1 released 2015-05-19
+ ** Fix crash when launching app from NFC with no credentials loaded.
+
 * Version 1.0.0 released 2015-05-07
  ** Automatically start application on YubiKey tap.
  ** Added the ability to manually add credentials.

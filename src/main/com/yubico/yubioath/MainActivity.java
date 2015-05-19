@@ -37,6 +37,7 @@ import android.nfc.NfcAdapter;
 import android.nfc.Tag;
 import android.nfc.tech.IsoDep;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.Menu;
@@ -234,7 +235,6 @@ public class MainActivity extends Activity {
                 if (yubiKeyNeo.isLocked()) {
                     yubiKeyNeo.unlock();
                 }
-                Log.d("yubioath", "ON NEW INTENT!!!");
                 totpListener.onYubiKeyNeo(yubiKeyNeo);
             } catch (PasswordRequiredException e) {
                 totpListener.onPasswordMissing(keyManager, e.getId(), e.isMissing());

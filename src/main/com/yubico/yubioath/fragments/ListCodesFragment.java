@@ -30,15 +30,12 @@
 
 package com.yubico.yubioath.fragments;
 
-import android.app.DialogFragment;
-import android.app.Fragment;
-import android.app.FragmentTransaction;
-import android.app.ListFragment;
+import android.app.*;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.os.Bundle;
-import android.util.Log;
+import android.os.Handler;
 import android.view.*;
 import android.view.animation.Animation;
 import android.view.animation.LinearInterpolator;
@@ -142,15 +139,21 @@ public class ListCodesFragment extends ListFragment implements MainActivity.OnYu
 
         switch (state) {
             case READ_LIST:
-                Log.d("yubioath", "READ LIST!!!");
                 List<Map<String, String>> codes = neo.getCodes(timestamp);
                 showCodes(codes);
                 if (codes.size() == 0) {
-                    Toast.makeText(getActivity(), R.string.empty_list, Toast.LENGTH_LONG).show();
+                    new Handler().postDelayed(new Runnable() { //Give the app some time to get the activity ready.
+                        @Override
+                        public void run() {
+                            Activity activity = getActivity();
+                            if(activity != null) {
+                                Toast.makeText(activity, R.string.empty_list, Toast.LENGTH_LONG).show();
+                            }
+                        }
+                    }, 100);
                 }
                 break;
             case READ_SELECTED:
-                Log.d("yubioath", "READ HOTP!!!");
                 selectedItem.setCode(neo.readHotpCode(selectedItem.getLabel()));
                 adapter.notifyDataSetChanged();
                 swipeDialog.dismiss();
@@ -358,7 +361,6 @@ public class ListCodesFragment extends ListFragment implements MainActivity.OnYu
         }
 
         public void setCode(String code) {
-            Log.d("yubioath", "CODE: " + code);
             this.code = code;
             read = code != null;
         }
