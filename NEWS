@@ -1,4 +1,4 @@
-* Version 1.0.2 unreleased
+* Version 1.0.2 released 2015-05-25
  ** Support secrets over 64 bytes in length.
 
 * Version 1.0.1 released 2015-05-19
