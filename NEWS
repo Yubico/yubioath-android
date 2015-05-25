@@ -1,3 +1,6 @@
+* Version 1.0.2 unreleased
+ ** Support secrets over 64 bytes in length.
+
 * Version 1.0.1 released 2015-05-19
  ** Fix crash when launching app from NFC with no credentials loaded.
 

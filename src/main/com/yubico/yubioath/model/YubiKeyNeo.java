@@ -37,6 +37,7 @@ import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import java.io.IOException;
 import java.security.InvalidKeyException;
+import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.*;
@@ -237,6 +238,9 @@ public class YubiKeyNeo {
     public void storeCode(String name, byte[] key, byte type, int digits, int counter) throws IOException {
         byte[] nameBytes = name.getBytes();
         byte[] counterBytes = null;
+        if(key.length > 64) {
+            key = sha1(key);
+        }
         int length = PUT_COMMAND.length + 2 + nameBytes.length + 4 + key.length;
         if (counter > 0) {
             length += 6;
@@ -400,6 +404,15 @@ public class YubiKeyNeo {
             return block;
         } else {
             throw new IOException("Require block type: " + identifier + ", got: " + data[offset]);
+        }
+    }
+
+    private static byte[] sha1(byte[] data) {
+        try {
+            MessageDigest md = MessageDigest.getInstance("SHA1");
+            return md.digest(data);
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
         }
     }
 
