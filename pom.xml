@@ -33,7 +33,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.yubico.yubioath</groupId>
     <artifactId>yubioath</artifactId>
-    <version>1.0.2</version>
+    <version>1.0.3-SNAPSHOT</version>
     <packaging>apk</packaging>
     <name>Yubico Authenticator</name>
     <properties>
@@ -44,7 +44,7 @@
         <url>scm:git:git://github.com/Yubico/yubioath-android.git</url>
         <connection>scm:git:git://github.com/Yubico/yubioath-android.git</connection>
         <developerConnection>scm:git:ssh://git@github.com/Yubico/yubioath-android.git</developerConnection>
-      <tag>yubioath-1.0.2</tag>
+      <tag>HEAD</tag>
   </scm>
 
     <repositories>
