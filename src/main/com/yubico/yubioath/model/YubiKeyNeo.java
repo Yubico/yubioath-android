@@ -30,7 +30,6 @@
 
 package com.yubico.yubioath.model;
 
-import android.nfc.tech.IsoDep;
 import com.yubico.yubioath.exc.*;
 
 import javax.crypto.Mac;
@@ -41,6 +40,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.*;
+import nordpol.IsoCard;
 
 /**
  * Created with IntelliJ IDEA.
@@ -99,11 +99,11 @@ public class YubiKeyNeo {
 
 
     private final KeyManager keyManager;
-    private final IsoDep isoTag;
+    private final IsoCard isoTag;
     private final byte[] id;
     private byte[] challenge = null;
 
-    public YubiKeyNeo(KeyManager keyManager, IsoDep isoTag) throws IOException, AppletSelectException {
+    public YubiKeyNeo(KeyManager keyManager, IsoCard isoTag) throws IOException, AppletSelectException {
         this.keyManager = keyManager;
         this.isoTag = isoTag;
 

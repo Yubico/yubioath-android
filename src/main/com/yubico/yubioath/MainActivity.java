@@ -33,17 +33,20 @@ package com.yubico.yubioath;
 import android.app.*;
 import android.content.*;
 import android.net.Uri;
-import android.nfc.NfcAdapter;
 import android.nfc.Tag;
 import android.nfc.tech.IsoDep;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
+import nordpol.android.TagDispatcher;
+import nordpol.android.AndroidCard;
+import nordpol.android.OnDiscoveredTagListener;
 import com.yubico.yubioath.exc.AppletMissingException;
 import com.yubico.yubioath.exc.AppletSelectException;
 import com.yubico.yubioath.exc.PasswordRequiredException;
@@ -61,14 +64,13 @@ import java.io.IOException;
  * Time: 10:43 AM
  * To change this template use File | Settings | File Templates.
  */
-public class MainActivity extends Activity {
+public class MainActivity extends Activity implements OnDiscoveredTagListener {
     private static final int SCAN_BARCODE = 1;
     private static final String NEO_STORE = "NEO_STORE";
 
-    private NfcAdapter adapter;
+    private TagDispatcher tagDispatcher;
     private KeyManager keyManager;
     private OnYubiKeyNeoListener totpListener;
-    private boolean readOnResume = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -79,16 +81,10 @@ public class MainActivity extends Activity {
 
         setContentView(R.layout.main_activity);
 
-        adapter = NfcAdapter.getDefaultAdapter(this);
-        if (adapter == null) {
-            Toast.makeText(this, R.string.no_nfc, Toast.LENGTH_LONG).show();
-            finish();
-        } else {
-            SharedPreferences preferences = getSharedPreferences(NEO_STORE, Context.MODE_PRIVATE);
-            keyManager = new KeyManager(preferences);
+        SharedPreferences preferences = getSharedPreferences(NEO_STORE, Context.MODE_PRIVATE);
+        keyManager = new KeyManager(preferences);
 
-            openFragment(new SwipeListFragment());
-        }
+        openFragment(new SwipeListFragment());
     }
 
     @Override
@@ -109,15 +105,14 @@ public class MainActivity extends Activity {
 
     public void onPause() {
         super.onPause();
-        if (totpListener != null) {
-            adapter.disableForegroundDispatch(this);
-        }
+        tagDispatcher.disableExclusiveNfc();
     }
 
     public void onResume() {
         super.onResume();
-
-        if (!adapter.isEnabled()) {
+        tagDispatcher = TagDispatcher.get(this, this, false);
+        switch(tagDispatcher.enableExclusiveNfc()) {
+        case AVAILABLE_DISABLED:
             FragmentTransaction ft = getFragmentManager().beginTransaction();
             Fragment prev = getFragmentManager().findFragmentByTag("dialog");
             if (prev != null) {
@@ -125,17 +120,10 @@ public class MainActivity extends Activity {
             }
             DialogFragment dialog = new EnableNfcDialog();
             dialog.show(ft, "dialog");
-        } else if (totpListener != null) {
-            Intent intent = getIntent();
-            if (readOnResume && intent.getAction().equals(NfcAdapter.ACTION_NDEF_DISCOVERED)) {
-                onNewIntent(intent);
-                readOnResume = false;
-            }
-            intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
-            PendingIntent tagIntent = PendingIntent.getActivity(this, 0, intent, 0);
-            IntentFilter iso = new IntentFilter(NfcAdapter.ACTION_TECH_DISCOVERED);
-            adapter.enableForegroundDispatch(this, tagIntent, new IntentFilter[]{iso},
-                    new String[][]{new String[]{IsoDep.class.getName()}});
+            break;
+        case NOT_AVAILABLE:
+            Toast.makeText(this, R.string.no_nfc, Toast.LENGTH_LONG).show();
+            finish();
         }
     }
 
@@ -226,40 +214,50 @@ public class MainActivity extends Activity {
     }
 
     @Override
-    protected void onNewIntent(Intent intent) {
-        Tag tag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
-        if (tag != null && totpListener != null) {
-            YubiKeyNeo yubiKeyNeo = null;
-            try {
-                yubiKeyNeo = new YubiKeyNeo(keyManager, IsoDep.get(tag));
-                if (yubiKeyNeo.isLocked()) {
-                    yubiKeyNeo.unlock();
-                }
-                totpListener.onYubiKeyNeo(yubiKeyNeo);
-            } catch (PasswordRequiredException e) {
-                totpListener.onPasswordMissing(keyManager, e.getId(), e.isMissing());
-            } catch (IOException e) {
-                Toast.makeText(this, R.string.tag_error, Toast.LENGTH_SHORT).show();
-                Log.e("yubioath", "IOException in handler", e);
-            } catch (AppletMissingException e) {
-                Toast.makeText(this, R.string.applet_missing, Toast.LENGTH_SHORT).show();
-                Log.e("yubioath", "AppletMissingException in handler", e);
-            } catch (UnsupportedAppletException e) {
-                Toast.makeText(this, R.string.unsupported_applet_version, Toast.LENGTH_SHORT).show();
-                Log.e("yubioath", "UnsupportedAppletException in handler", e);
-            } catch (AppletSelectException e) {
-                Toast.makeText(this, R.string.tag_error, Toast.LENGTH_SHORT).show();
-                Log.e("yubioath", "AppletSelectException in handler", e);
-            } finally {
-                if (yubiKeyNeo != null) {
-                    try {
-                        yubiKeyNeo.close();
-                    } catch (IOException e) {
-                        Toast.makeText(this, R.string.tag_error, Toast.LENGTH_SHORT).show();
-                    }
-                }
+    public void tagDiscovered(final Tag tag) {
+        //Run in UI thread
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
+            @Override
+            public void run() {
+              if (totpListener != null) {
+                  YubiKeyNeo yubiKeyNeo = null;
+                  try {
+                      yubiKeyNeo = new YubiKeyNeo(keyManager, AndroidCard.get(tag));
+                      if (yubiKeyNeo.isLocked()) {
+                          yubiKeyNeo.unlock();
+                      }
+                      totpListener.onYubiKeyNeo(yubiKeyNeo);
+                  } catch (PasswordRequiredException e) {
+                      totpListener.onPasswordMissing(keyManager, e.getId(), e.isMissing());
+                  } catch (IOException e) {
+                      Toast.makeText(MainActivity.this, R.string.tag_error, Toast.LENGTH_SHORT).show();
+                      Log.e("yubioath", "IOException in handler", e);
+                  } catch (AppletMissingException e) {
+                      Toast.makeText(MainActivity.this, R.string.applet_missing, Toast.LENGTH_SHORT).show();
+                      Log.e("yubioath", "AppletMissingException in handler", e);
+                  } catch (UnsupportedAppletException e) {
+                      Toast.makeText(MainActivity.this, R.string.unsupported_applet_version, Toast.LENGTH_SHORT).show();
+                      Log.e("yubioath", "UnsupportedAppletException in handler", e);
+                  } catch (AppletSelectException e) {
+                      Toast.makeText(MainActivity.this, R.string.tag_error, Toast.LENGTH_SHORT).show();
+                      Log.e("yubioath", "AppletSelectException in handler", e);
+                  } finally {
+                      if (yubiKeyNeo != null) {
+                          try {
+                              yubiKeyNeo.close();
+                          } catch (IOException e) {
+                              Toast.makeText(MainActivity.this, R.string.tag_error, Toast.LENGTH_SHORT).show();
+                          }
+                      }
+                  }
+              }
             }
-        }
+        });
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        tagDispatcher.interceptIntent(intent);
     }
 
     public interface OnYubiKeyNeoListener {
