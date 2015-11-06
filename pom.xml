@@ -90,7 +90,7 @@
         <dependency>
             <groupId>com.fidesmo</groupId>
             <artifactId>nordpol-android</artifactId>
-            <version>0.1.7</version>
+            <version>0.1.8</version>
             <type>aar</type>
         </dependency>
     </dependencies>
