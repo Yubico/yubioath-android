@@ -123,7 +123,7 @@
                 <artifactId>android-maven-plugin</artifactId>
                 <configuration>
                     <sdk>
-                        <platform>21</platform>
+                        <platform>23</platform>
                     </sdk>
                     <proguard>
                         <skip>false</skip>
