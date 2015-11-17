@@ -1,3 +1,8 @@
+* Version 1.0.3 released 2015-11-17
+ ** Use Nordpol library to improve NFC communication (should improve experience
+    on S5/S6).
+ ** Use App Links Verification on Android >= 6.0.
+
 * Version 1.0.2 released 2015-05-25
  ** Support secrets over 64 bytes in length.
 
