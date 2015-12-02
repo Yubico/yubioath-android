@@ -71,6 +71,7 @@ public class MainActivity extends Activity implements OnDiscoveredTagListener {
     private TagDispatcher tagDispatcher;
     private KeyManager keyManager;
     private OnYubiKeyNeoListener totpListener;
+    private boolean readOnResume = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -111,6 +112,10 @@ public class MainActivity extends Activity implements OnDiscoveredTagListener {
     public void onResume() {
         super.onResume();
         tagDispatcher = TagDispatcher.get(this, this, false);
+        if (readOnResume) { // On activity creation, check if there is a Tag in the intent
+            tagDispatcher.interceptIntent(getIntent());
+            readOnResume = false; // Don't check a second time (onNewIntent will be called)
+        }
         switch(tagDispatcher.enableExclusiveNfc()) {
         case AVAILABLE_DISABLED:
             FragmentTransaction ft = getFragmentManager().beginTransaction();
