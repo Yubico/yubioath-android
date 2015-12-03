@@ -376,11 +376,7 @@ public class YubiKeyNeo {
     }
 
     private static void checkVersion(byte[] version) throws UnsupportedAppletException {
-        byte major = version[0];
-
-        if (major > 0) {
-            throw new UnsupportedAppletException(version);
-        }
+        // All versions currently
     }
 
     private static boolean compareStatus(byte[] apdu, byte[] status) {
