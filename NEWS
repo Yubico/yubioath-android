@@ -1,3 +1,9 @@
+* Version 1.0.4 unreleased
+ ** Fix bug preventing codes from being displayed immediately when launched
+    from tap.
+ ** Fix "Unsupported applet version" error on newer YubiKeys.
+ ** Fix sporadic crashes on launch.
+
 * Version 1.0.3 released 2015-11-17
  ** Use Nordpol library to improve NFC communication (should improve experience
     on S5/S6).
