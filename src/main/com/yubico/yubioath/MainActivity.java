@@ -86,6 +86,8 @@ public class MainActivity extends Activity implements OnDiscoveredTagListener {
         keyManager = new KeyManager(preferences);
 
         openFragment(new SwipeListFragment());
+
+        tagDispatcher = TagDispatcher.get(this, this, false);
     }
 
     @Override
@@ -111,7 +113,7 @@ public class MainActivity extends Activity implements OnDiscoveredTagListener {
 
     public void onResume() {
         super.onResume();
-        tagDispatcher = TagDispatcher.get(this, this, false);
+
         if (readOnResume) { // On activity creation, check if there is a Tag in the intent
             tagDispatcher.interceptIntent(getIntent());
             readOnResume = false; // Don't check a second time (onNewIntent will be called)
