@@ -87,7 +87,14 @@ public class MainActivity extends Activity implements OnDiscoveredTagListener {
 
         openFragment(new SwipeListFragment());
 
-        tagDispatcher = TagDispatcher.get(this, this, false);
+        /* Set up Nordpol in the following manner:
+         * - opt out of NFC unavailable handling
+         * - opt out of disabled sounds
+         * - dispatch on UI thread
+         * - opt out of broadcom workaround (this is only available in reader mode)
+         * - opt out of reader mode completely
+         */
+        tagDispatcher = TagDispatcher.get(this, this, false, false, true, false, true);
     }
 
     @Override
