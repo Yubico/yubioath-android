@@ -1,11 +1,8 @@
 language: android
 android:
   components:
-    - build-tools-19.0.2
+    - build-tools-23.0.2
     - android-23
-    - extra-android-m2repository
     - extra-android-support
   licenses:
     - android-sdk-license-.+
-after_success:
-  - COVERALLS=true mvn clean test jacoco:report coveralls:report
