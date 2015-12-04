@@ -1,8 +1,12 @@
 To make a new release:
 
-* bump versionCode and versionName in AndroidManifest.xml
+* bump versionCode and versionName in app/build.gradle
 * update NEWS
-* make sure everything is commited
-* mvn release:prepare release:perform -Darguments=-Dsign.storepass=$smart_card_pin
+* make sure everything is commited and make a signed tag
+* ./gradlew assembleRelease
+* sign the apk using jarsigner:
+jarsigner -digestalg SHA1 -sigalg MD5withRSA -verbose -providerClass sun.security.pkcs11.SunPKCS11 -providerArg /etc/pkcs11_java.cfg -keystore NONE -storetype PKCS11 app.apk "Certificate for PIV Authentication"
+* zipalign the signed apk:
+zipalign -v 4 unaligned.apk aligned.apk
 * if happy with the release: git push && git push --tags
 * copy APK to site, create signature, publish.
