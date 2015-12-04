@@ -37,24 +37,24 @@
     <string name="barcode_scanner_not_found">Barcode scanner not found, do you want to install it?</string>
     <string name="invalid_barcode">The scanned barcode is invalid</string>
     <string name="scan_failed">Barcode scanning failed</string>
-    <string name="swipe">Tap your YubiKey NEO</string>
-    <string name="swipe_and_hold">Tap and hold your YubiKey NEO</string>
-    <string name="swipe_to_list">Tap your YubiKey NEO to view credentials</string>
-    <string name="swipe_to_put">Tap your YubiKey NEO to store</string>
+    <string name="swipe">Tap your YubiKey</string>
+    <string name="swipe_and_hold">Tap and hold your YubiKey</string>
+    <string name="swipe_to_list">Tap your YubiKey to view credentials</string>
+    <string name="swipe_to_put">Tap your YubiKey to store</string>
     <string name="totp">Oath TOTP</string>
     <string name="copy">Copy to clipboard</string>
     <string name="copied">Code copied to clipboard</string>
     <string name="prog_success">Credential added!</string>
-    <string name="prog_fail">Failed to program the YubiKey NEO</string>
+    <string name="prog_fail">Failed to program the YubiKey</string>
     <string name="version">Version</string>
     <string name="tag_error">Error in YubiKey communication!</string>
     <string name="tag_error_retry">Error in YubiKey communication! Try again.</string>
     <string name="nfc_off">NFC is disabled!</string>
     <string name="no_nfc">This device seems to not support NFC</string>
     <string name="enable_nfc">Enable NFC</string>
-    <string name="unsupported_applet_version">Unsupported applet version on NEO, make sure this app is up to date!
+    <string name="unsupported_applet_version">Unsupported YubiKey version, make sure this app is up to date!
     </string>
-    <string name="applet_missing">Yubico Authenticator applet not installed on NEO!</string>
+    <string name="applet_missing">Yubico Authenticator functionality not available on device!</string>
     <string name="credentials">Credentials</string>
     <string name="load_failed">Failed loading credentials</string>
     <string name="credential_name">Credential name</string>
@@ -76,7 +76,7 @@
     <string name="change_password">Change device password</string>
     <string name="password_required">Password required</string>
     <string name="input_required">Enter the missing values, and press Save</string>
-    <string name="yubikey_neo">YubiKey NEO</string>
+    <string name="yubikey">YubiKey</string>
     <string name="wrong_password">Incorrect password</string>
     <string name="copy_to_clipboard">Copy</string>
     <string name="read_hotp">Read a HOTP code</string>
@@ -93,7 +93,7 @@
     <string name="clear_data">Clear stored passwords</string>
     <string name="clear_countdown">Press %1$d times more to clear...</string>
     <string name="data_cleared">Stored passwords cleared!</string>
-    <string name="storage_full">YubiKey NEO storage is full!</string>
+    <string name="storage_full">YubiKey OATH storage is full!</string>
     <string name="about">About</string>
     <string name="about_text"><![CDATA[
 <p><b>About</b><br/>
@@ -104,9 +104,9 @@ Version: %1$s</p>
 <br/><a href="https://github.com/Yubico/yubioath-android/">Source code</a><br/>
 <br/><a href="http://www.youtube.com/watch?v=W7if0FW12D0">Demo video</a></p>
 
-<p>Yubico Authenticator requires a YubiKey NEO with the <a href="https://developers.yubico.com/ykneo-oath/">ykneo-oath applet</a> loaded.</p>
+<p>Yubico Authenticator requires an NFC capable YubiKey with OATH functionality.</p>
 
-<p>Copyright 2013, Yubico<br/>
+<p>Copyright Yubico<br/>
 <a href="http://www.yubico.com/">http://www.yubico.com/</a></p>]]></string>
 
 </resources>
