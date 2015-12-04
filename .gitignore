@@ -1,3 +1,9 @@
+.gradle
+/local.properties
+.DS_Store
+/build
+/captures
+
 #IntelliJ IDEA
 .idea/
 *.iml
@@ -6,10 +12,3 @@
 .classpath
 .project
 .settings/
-
-#Build artifacts
-bin/
-gen/
-libs/
-proguard-project.txt
-target/
