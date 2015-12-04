@@ -30,29 +30,30 @@
   ~ SUCH DAMAGE.
   -->
 
-<menu xmlns:android="http://schemas.android.com/apk/res/android">
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
         android:id="@+id/menu_add_account_scan"
         android:orderInCategory="100"
-        android:showAsAction="never"
+        app:showAsAction="never"
         android:title="@string/add_account_scan" />
 
     <item
         android:id="@+id/menu_add_account_manual"
         android:orderInCategory="200"
-        android:showAsAction="never"
+        app:showAsAction="never"
         android:title="@string/add_account_manual" />
 
     <item
         android:id="@+id/menu_change_password"
         android:orderInCategory="300"
-        android:showAsAction="never"
+        app:showAsAction="never"
         android:title="@string/change_password" />
 
     <item
         android:id="@+id/menu_about"
         android:orderInCategory="400"
-        android:showAsAction="never"
+        app:showAsAction="never"
         android:title="@string/about" />
 
 </menu>

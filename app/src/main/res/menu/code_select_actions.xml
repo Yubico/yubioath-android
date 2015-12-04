@@ -30,11 +30,12 @@
   ~ SUCH DAMAGE.
   -->
 
-<menu xmlns:android="http://schemas.android.com/apk/res/android">
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
         android:id="@+id/delete"
-        android:orderInCategory="100"
-        android:showAsAction="always"
         android:icon="@drawable/content_discard"
-        android:title="@string/delete_cred" />
+        android:orderInCategory="100"
+        android:title="@string/delete_cred"
+        app:showAsAction="always" />
 </menu>
