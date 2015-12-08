@@ -21,6 +21,12 @@ android {
     lintOptions {
         abortOnError false
     }
+    dexOptions {
+        jumboMode true
+    }
+    packagingOptions {
+        exclude 'META-INF/LICENSE.txt'
+    }
 }
 
 repositories {
