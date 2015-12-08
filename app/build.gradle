@@ -8,8 +8,8 @@ android {
         applicationId "com.yubico.yubioath"
         minSdkVersion 14
         targetSdkVersion 23
-        versionCode 26
-        versionName "1.0.3"
+        versionCode 27
+        versionName "1.0.4"
     }
     buildTypes {
         release {

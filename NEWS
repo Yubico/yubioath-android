@@ -1,4 +1,4 @@
-* Version 1.0.4 unreleased
+* Version 1.0.4 released 2015-12-08
  ** Fix bug preventing codes from being displayed immediately when launched
     from tap.
  ** Fix "Unsupported applet version" error on newer YubiKeys.
