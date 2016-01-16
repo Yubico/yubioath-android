@@ -21,12 +21,6 @@ android {
     lintOptions {
         abortOnError false
     }
-    dexOptions {
-        jumboMode true
-    }
-    packagingOptions {
-        exclude 'META-INF/LICENSE.txt'
-    }
 }
 
 repositories {
@@ -40,5 +34,5 @@ dependencies {
     testCompile 'junit:junit:4.12'
     compile 'com.android.support:appcompat-v7:23.1.1'
     compile 'commons-codec:commons-codec:1.5'
-    compile 'com.fidesmo:nordpol-android:0.1.8'
+    compile group: 'com.fidesmo', name: 'nordpol-android', version: '0.1.12', ext: 'aar', transitive: true
 }

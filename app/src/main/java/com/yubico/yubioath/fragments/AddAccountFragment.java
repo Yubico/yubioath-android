@@ -187,9 +187,9 @@ public class AddAccountFragment extends Fragment implements MainActivity.OnYubiK
         }
 
         String algorithm = uri.getQueryParameter("algorithm");
-        if (algorithm == null || algorithm.isEmpty() || algorithm.equals("SHA1")) {
+        if (algorithm == null || algorithm.isEmpty() || algorithm.toUpperCase().equals("SHA1")) {
             algorithm_type = YubiKeyNeo.HMAC_SHA1;
-        } else if (algorithm.equals("SHA256")) {
+        } else if (algorithm.toUpperCase().equals("SHA256")) {
             algorithm_type = YubiKeyNeo.HMAC_SHA256;
         } else {
             return false;
