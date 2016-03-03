@@ -26,17 +26,12 @@ To view codes, just start the app and swipe your YubiKey NEO.
 
 === Building
 
-The "Android Support Repository" part of the android SDK needs to be installed
-to build this project.
-
-Make sure to set the environment variable ANDROID_HOME before running mvn.
-
-This project uses maven3 for building, so to build:
+This project uses gradle for building, so to build:
 
 [source, sh]
-$ mvn package
+$ ./gradlew assemble
 
-After building the .apk file can be found in the target directory.
+After building the .apk file can be found in the app/build/outputs/apk/ directory.
 
 === Issues
 

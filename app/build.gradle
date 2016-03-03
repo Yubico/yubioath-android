@@ -6,7 +6,7 @@ android {
 
     defaultConfig {
         applicationId "com.yubico.yubioath"
-        minSdkVersion 14
+        minSdkVersion 15
         targetSdkVersion 23
         versionCode 27
         versionName "1.0.4"
@@ -23,16 +23,10 @@ android {
     }
 }
 
-repositories {
-    maven {
-        url 'http://releases.marmeladburk.fidesmo.com'
-    }
-}
-
 dependencies {
     testCompile 'org.robolectric:robolectric:3.0'
     testCompile 'junit:junit:4.12'
     compile 'com.android.support:appcompat-v7:23.1.1'
     compile 'commons-codec:commons-codec:1.5'
-    compile group: 'com.fidesmo', name: 'nordpol-android', version: '0.1.12', ext: 'aar', transitive: true
+    compile group: 'com.fidesmo', name: 'nordpol-android', version: '0.1.18', ext: 'aar', transitive: true
 }
