@@ -1,3 +1,7 @@
+* Version 1.0.5 (unreleased)
+ ** Made algorithm check case insensitive (needed for FreeIPA).
+ ** Minor tweaks to NFC handling (Nordpol library).
+
 * Version 1.0.4 released 2015-12-08
  ** Fix bug preventing codes from being displayed immediately when launched
     from tap.
