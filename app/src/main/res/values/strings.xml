@@ -74,6 +74,7 @@
     <string name="add_account_scan">Scan account QR-code</string>
     <string name="add_account_manual">Add account manually</string>
     <string name="change_password">Change device password</string>
+    <string name="allow_rotation">Allow rotation</string>
     <string name="password_required">Password required</string>
     <string name="input_required">Enter the missing values, and press Save</string>
     <string name="yubikey">YubiKey</string>
