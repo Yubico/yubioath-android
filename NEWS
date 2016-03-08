@@ -1,6 +1,7 @@
-* Version 1.0.5 (unreleased)
+* Version 1.0.5 released 2016-03-08
  ** Made algorithm check case insensitive (needed for FreeIPA).
- ** Minor tweaks to NFC handling (Nordpol library).
+ ** Minor tweaks to NFC handling (Nordpol library). App now requires Android ASK level 15.
+ ** Support for displaying Steam Mobile Authenticator codes (no support for importing such a credential).
 
 * Version 1.0.4 released 2015-12-08
  ** Fix bug preventing codes from being displayed immediately when launched
