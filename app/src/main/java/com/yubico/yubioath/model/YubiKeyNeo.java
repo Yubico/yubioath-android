@@ -336,10 +336,17 @@ public class YubiKeyNeo {
             offset += hashBytes.length + 2;
 
             Map<String, String> oathCode = new HashMap<String, String>();
-            oathCode.put("label", new String(name));
+            String credentialName = new String(name);
+            oathCode.put("label", credentialName);
             switch (responseType) {
                 case T_RESPONSE_TAG:
-                    oathCode.put("code", codeFromTruncated(hashBytes));
+                    String code;
+                    if(credentialName.startsWith("Steam:")) {
+                        code = steamCodeFromTruncated(hashBytes);
+                    } else {
+                        code = codeFromTruncated(hashBytes);
+                    }
+                    oathCode.put("code", code);
                     break;
                 case NO_RESPONSE_TAG:
                     oathCode.put("code", null);
@@ -429,5 +436,17 @@ public class YubiKeyNeo {
         int num_digits = data[0];
         int code = (data[1] << 24) | ((data[2] & 0xff) << 16) | ((data[3] & 0xff) << 8) | (data[4] & 0xff);
         return String.format("%0" + num_digits + "d", code % MOD[num_digits]);
+    }
+
+    private static String STEAM_CHARS = "23456789BCDFGHJKMNPQRTVWXY";
+
+    private static String steamCodeFromTruncated(byte[] data) {
+        int code = (data[1] << 24) | ((data[2] & 0xff) << 16) | ((data[3] & 0xff) << 8) | (data[4] & 0xff);
+        StringBuilder buf = new StringBuilder();
+        for(int i=0; i<5; i++) {
+            buf.append(STEAM_CHARS.charAt(code % STEAM_CHARS.length()));
+            code /= STEAM_CHARS.length();
+        }
+        return buf.toString();
     }
 }
