@@ -77,6 +77,14 @@ public class ListCodesFragment extends ListFragment implements MainActivity.OnYu
     private OathCode selectedItem;
     private SwipeDialog swipeDialog;
     private DialogFragment needsPassword = null;
+    private long startTime = 0;
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        setRetainInstance(true);
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -90,10 +98,29 @@ public class ListCodesFragment extends ListFragment implements MainActivity.OnYu
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        swipeDialog = new SwipeDialog();
+        if(savedInstanceState != null) {
+            //Correct timer
+            long now = System.currentTimeMillis();
+            if(now - startTime < 30000) {
+                timeoutAnimation.setStartOffset(startTime - now);
+                timeoutBar.startAnimation(timeoutAnimation);
+            } else {
+                timeoutBar.clearAnimation();
+                timeoutBar.setProgress(0);
+            }
+            if(selectedItem != null) { //Deselect selected item as it doesn't keep well.
+                if(actionMode != null) {
+                    actionMode.finish();
+                }
+                getListView().setItemChecked(adapter.getPosition(selectedItem), false);
+                selectedItem = null;
+            }
+        } else {
+            swipeDialog = new SwipeDialog();
 
-        adapter = new CodeAdapter(new ArrayList<OathCode>());
-        setListAdapter(adapter);
+            adapter = new CodeAdapter(new ArrayList<OathCode>());
+            setListAdapter(adapter);
+        }
 
         getListView().setChoiceMode(ListView.CHOICE_MODE_SINGLE);
         getListView().setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -195,9 +222,13 @@ public class ListCodesFragment extends ListFragment implements MainActivity.OnYu
         adapter.setAll(codes);
 
         if (hasTimeout) {
+            timeoutAnimation.setStartOffset(0);
+            startTime = System.currentTimeMillis();
             timeoutBar.startAnimation(timeoutAnimation);
         } else {
-            timeoutAnimation.setStartTime(0);
+            startTime = 0;
+            timeoutBar.clearAnimation();
+            timeoutBar.setProgress(0);
         }
     }
 

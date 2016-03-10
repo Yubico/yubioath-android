@@ -62,7 +62,12 @@ public class MainActivity extends AppCompatActivity implements OnDiscoveredTagLi
         SharedPreferences preferences = getSharedPreferences(NEO_STORE, Context.MODE_PRIVATE);
         keyManager = new KeyManager(preferences);
 
-        openFragment(new SwipeListFragment());
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        Fragment fragment = fragmentManager.findFragmentByTag(SwipeListFragment.class.getName());
+        if(fragment == null) {
+            fragment = new SwipeListFragment();
+        }
+        openFragment(fragment);
 
         /* Set up Nordpol in the following manner:
          * - opt out of NFC unavailable handling

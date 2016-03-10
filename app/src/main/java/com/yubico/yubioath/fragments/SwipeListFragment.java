@@ -35,6 +35,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.ViewPager;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -58,6 +59,13 @@ public class SwipeListFragment extends Fragment implements MainActivity.OnYubiKe
     private ListCodesFragment fragment = new ListCodesFragment();
     private DummyListCodesFragment emptyFragment1 = new DummyListCodesFragment();
     private DummyListCodesFragment emptyFragment2 = new DummyListCodesFragment();
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        setRetainInstance(true);
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
