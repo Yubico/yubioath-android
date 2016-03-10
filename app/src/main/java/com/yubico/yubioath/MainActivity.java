@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.ActivityInfo;
 import android.net.Uri;
 import android.nfc.Tag;
 import android.os.Handler;
@@ -44,9 +45,11 @@ import nordpol.android.TagDispatcher;
 public class MainActivity extends AppCompatActivity implements OnDiscoveredTagListener {
     private static final int SCAN_BARCODE = 1;
     private static final String NEO_STORE = "NEO_STORE";
+    private static final String ALLOW_ROTATION_SHARED_PREF = "ALLOW_ROTATION";
 
     private TagDispatcher tagDispatcher;
     private KeyManager keyManager;
+    private SharedPreferences preferences;
     private OnYubiKeyNeoListener totpListener;
     private boolean readOnResume = true;
 
@@ -59,7 +62,7 @@ public class MainActivity extends AppCompatActivity implements OnDiscoveredTagLi
 
         setContentView(R.layout.main_activity);
 
-        SharedPreferences preferences = getSharedPreferences(NEO_STORE, Context.MODE_PRIVATE);
+        preferences = getSharedPreferences(NEO_STORE, Context.MODE_PRIVATE);
         keyManager = new KeyManager(preferences);
 
         FragmentManager fragmentManager = getSupportFragmentManager();
@@ -173,6 +176,24 @@ public class MainActivity extends AppCompatActivity implements OnDiscoveredTagLi
         downloadDialog.show();
     }
 
+    private boolean getSavedAllowRotation(){
+        return preferences.getBoolean(ALLOW_ROTATION_SHARED_PREF, true);
+    }
+
+    private void implementAllowRotation(MenuItem item, boolean value){
+        item.setChecked(value);
+        if (value){
+            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
+        } else {
+            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        }
+    }
+
+    private void setAllowRotation(MenuItem item, boolean value){
+        preferences.edit().putBoolean(ALLOW_ROTATION_SHARED_PREF, value).commit();
+        implementAllowRotation(item, value);
+    }
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == SCAN_BARCODE) {
@@ -191,6 +212,13 @@ public class MainActivity extends AppCompatActivity implements OnDiscoveredTagLi
     }
 
     @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        super.onPrepareOptionsMenu(menu);
+        implementAllowRotation(menu.findItem(R.id.menu_allow_rotation), getSavedAllowRotation());
+        return true;
+    }
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.menu_add_account_scan:
@@ -201,6 +229,9 @@ public class MainActivity extends AppCompatActivity implements OnDiscoveredTagLi
                 break;
             case R.id.menu_change_password:
                 openFragment(new SetPasswordFragment());
+                break;
+            case R.id.menu_allow_rotation:
+                setAllowRotation(item, !item.isChecked());
                 break;
             case R.id.menu_about:
                 openFragment(AboutFragment.newInstance(keyManager));

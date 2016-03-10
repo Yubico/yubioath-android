@@ -51,6 +51,12 @@
         android:title="@string/change_password" />
 
     <item
+        android:id="@+id/menu_allow_rotation"
+        android:orderInCategory="250"
+        android:checkable="true"
+        android:title="@string/allow_rotation" />
+
+    <item
         android:id="@+id/menu_about"
         android:orderInCategory="400"
         app:showAsAction="never"
