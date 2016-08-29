@@ -47,7 +47,7 @@
     <EditText
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/name"
+        android:id="@+id/qr_credential_name"
         android:inputType="text"
         android:maxLength="64"
         android:text=""

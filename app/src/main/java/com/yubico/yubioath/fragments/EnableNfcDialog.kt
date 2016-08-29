@@ -28,17 +28,16 @@
  * SUCH DAMAGE.
  */
 
-package com.yubico.yubioath.fragments;
+package com.yubico.yubioath.fragments
 
-import android.app.AlertDialog;
-import android.app.Dialog;
-import android.content.DialogInterface;
-import android.content.Intent;
-import android.os.Build;
-import android.os.Bundle;
-import android.support.v4.app.DialogFragment;
+import android.app.AlertDialog
+import android.app.Dialog
+import android.content.Intent
+import android.os.Build
+import android.os.Bundle
+import android.support.v4.app.DialogFragment
 
-import com.yubico.yubioath.R;
+import com.yubico.yubioath.R
 
 /**
  * Created with IntelliJ IDEA.
@@ -47,28 +46,23 @@ import com.yubico.yubioath.R;
  * Time: 1:45 PM
  * To change this template use File | Settings | File Templates.
  */
-public class EnableNfcDialog extends DialogFragment {
-    @Override
-    public Dialog onCreateDialog(Bundle savedInstanceState) {
-        setCancelable(false);
+class EnableNfcDialog : DialogFragment() {
+    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
+        isCancelable = false
 
-        return new AlertDialog.Builder(getActivity())
-                .setTitle(R.string.nfc_off)
-                .setPositiveButton(R.string.enable_nfc, new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
-                        String action = android.provider.Settings.ACTION_WIRELESS_SETTINGS;
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-                            action = android.provider.Settings.ACTION_NFC_SETTINGS;
-                        }
-                        Intent settings = new Intent(action);
-                        startActivity(settings);
-                        dialog.dismiss();
-                    }
-                }).setNegativeButton(R.string.close, new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
-                        dialog.dismiss();
-                        getActivity().finish();
-                    }
-                }).create();
+        return AlertDialog.Builder(activity).apply {
+            setTitle(R.string.nfc_off)
+            setPositiveButton(R.string.enable_nfc) { dialog, which ->
+                startActivity(Intent(when {
+                    Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN -> android.provider.Settings.ACTION_NFC_SETTINGS
+                    else -> android.provider.Settings.ACTION_WIRELESS_SETTINGS
+                }))
+                dialog.dismiss()
+            }
+            setNegativeButton(R.string.close) { dialog, which ->
+                dialog.dismiss()
+                activity.finish()
+            }
+        }.create()
     }
 }

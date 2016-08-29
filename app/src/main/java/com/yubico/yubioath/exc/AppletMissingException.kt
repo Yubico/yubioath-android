@@ -28,7 +28,7 @@
  * SUCH DAMAGE.
  */
 
-package com.yubico.yubioath.exc;
+package com.yubico.yubioath.exc
 
 /**
  * Created with IntelliJ IDEA.
@@ -37,8 +37,4 @@ package com.yubico.yubioath.exc;
  * Time: 4:26 PM
  * To change this template use File | Settings | File Templates.
  */
-public class AppletMissingException extends AppletSelectException {
-    public AppletMissingException() {
-        super("Yubico Authenticator applet missing!");
-    }
-}
+class AppletMissingException : AppletSelectException("Yubico Authenticator applet missing!")

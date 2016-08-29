@@ -28,47 +28,15 @@
  * SUCH DAMAGE.
  */
 
-package com.yubico.yubioath.fragments;
+package com.yubico.yubioath.exc
 
-import android.app.AlertDialog;
-import android.app.Dialog;
-import android.content.DialogInterface;
-import android.os.Bundle;
-import android.support.v4.app.DialogFragment;
-
-import com.yubico.yubioath.R;
+import java.io.IOException
 
 /**
  * Created with IntelliJ IDEA.
  * User: dain
- * Date: 8/26/13
- * Time: 4:20 PM
+ * Date: 9/4/13
+ * Time: 10:12 AM
  * To change this template use File | Settings | File Templates.
  */
-public class SwipeDialog extends DialogFragment {
-    private DialogInterface.OnCancelListener onCancel;
-
-    @Override
-    public Dialog onCreateDialog(Bundle savedInstanceState) {
-        return new AlertDialog.Builder(getActivity())
-                .setTitle(R.string.swipe)
-                .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        dialog.cancel();
-                    }
-                }).create();
-    }
-
-    public void setOnCancel(DialogInterface.OnCancelListener onCancel) {
-        this.onCancel = onCancel;
-    }
-
-    @Override
-    public void onCancel(DialogInterface dialog) {
-        super.onCancel(dialog);
-        if (onCancel != null) {
-            onCancel.onCancel(dialog);
-        }
-    }
-}
+class StorageFullException(message: String) : IOException(message)

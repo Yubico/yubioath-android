@@ -28,19 +28,40 @@
  * SUCH DAMAGE.
  */
 
-package com.yubico.yubioath.exc;
+package com.yubico.yubioath.fragments
 
-import java.io.IOException;
+import android.app.AlertDialog
+import android.app.Dialog
+import android.content.DialogInterface
+import android.os.Bundle
+import android.support.v4.app.DialogFragment
+
+import com.yubico.yubioath.R
 
 /**
  * Created with IntelliJ IDEA.
  * User: dain
- * Date: 9/4/13
- * Time: 10:12 AM
+ * Date: 8/26/13
+ * Time: 4:20 PM
  * To change this template use File | Settings | File Templates.
  */
-public class StorageFullException extends IOException {
-    public StorageFullException(String message) {
-        super(message);
+class SwipeDialog : DialogFragment() {
+    private var onCancelHandler: ((DialogInterface?) -> Unit)? = null
+
+    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
+        return AlertDialog.Builder(activity).apply {
+            setTitle(R.string.swipe)
+            setNegativeButton(R.string.cancel) { dialog, which -> dialog.cancel() }
+        }.create()
+    }
+
+    fun setOnCancel(func: (DialogInterface?) -> Unit) {
+        onCancelHandler = func
+    }
+
+    override fun onCancel(dialog: DialogInterface?) {
+        super.onCancel(dialog)
+
+        onCancelHandler?.invoke(dialog)
     }
 }
