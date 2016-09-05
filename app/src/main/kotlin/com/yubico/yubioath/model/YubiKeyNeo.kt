@@ -31,17 +31,16 @@
 package com.yubico.yubioath.model
 
 import com.yubico.yubioath.exc.*
-
-import javax.crypto.Mac
-import javax.crypto.spec.SecretKeySpec
+import nordpol.IsoCard
+import java.io.ByteArrayOutputStream
+import java.io.Closeable
 import java.io.IOException
 import java.security.MessageDigest
 import java.security.NoSuchAlgorithmException
 import java.security.SecureRandom
 import java.util.*
-import nordpol.IsoCard
-import java.io.ByteArrayOutputStream
-import java.io.Closeable
+import javax.crypto.Mac
+import javax.crypto.spec.SecretKeySpec
 
 /**
  * Created with IntelliJ IDEA.
@@ -217,6 +216,8 @@ constructor(private val keyManager: KeyManager, private val isoTag: IsoCard) : C
 
             val oathCode = HashMap<String, String>()
             val credentialName = String(name)
+            if(credentialName.startsWith("_hidden:")) continue
+
             oathCode.put("label", credentialName)
             when (responseType) {
                 T_RESPONSE_TAG -> {

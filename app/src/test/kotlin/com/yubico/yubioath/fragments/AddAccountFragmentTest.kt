@@ -30,19 +30,13 @@
 
 package com.yubico.yubioath.fragments
 
+import com.yubico.yubioath.BuildConfig
+import com.yubico.yubioath.model.CredentialData
+import org.junit.Assert.fail
 import org.junit.Test
-import org.junit.Before
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricGradleTestRunner
 import org.robolectric.annotation.Config
-
-import org.junit.Assert.assertEquals
-import org.junit.Assert.fail
-
-import android.net.Uri
-
-import com.yubico.yubioath.BuildConfig
-import com.yubico.yubioath.model.CredentialData
 
 @RunWith(RobolectricGradleTestRunner::class)
 @Config(constants = BuildConfig::class, sdk = intArrayOf(21))

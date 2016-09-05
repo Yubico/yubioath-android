@@ -40,17 +40,17 @@ import android.view.*
 import android.view.animation.Animation
 import android.view.animation.LinearInterpolator
 import android.view.animation.Transformation
-import android.widget.*
+import android.widget.ArrayAdapter
+import android.widget.ListView
 import com.yubico.yubioath.MainActivity
 import com.yubico.yubioath.R
 import com.yubico.yubioath.model.KeyManager
 import com.yubico.yubioath.model.YubiKeyNeo
-
-import java.io.IOException
-import java.util.ArrayList
 import kotlinx.android.synthetic.main.list_codes_fragment.*
 import kotlinx.android.synthetic.main.oath_code_view.view.*
 import org.jetbrains.anko.*
+import java.io.IOException
+import java.util.*
 
 /**
  * Created with IntelliJ IDEA.
@@ -308,11 +308,11 @@ class ListCodesFragment : ListFragment(), MainActivity.OnYubiKeyNeoListener, Act
     }
 
     private class CodeAdapterViewHolder(val view: View) {
-        val issuerView = view.issuer
-        val labelView = view.label
-        val codeView = view.code
-        val readButton = view.readButton
-        val copyButton = view.copyButton
+        val issuerView = view.issuer!!
+        val labelView = view.label!!
+        val codeView = view.code!!
+        val readButton = view.readButton!!
+        val copyButton = view.copyButton!!
     }
 
     private inner class TimeoutAnimation : Animation() {

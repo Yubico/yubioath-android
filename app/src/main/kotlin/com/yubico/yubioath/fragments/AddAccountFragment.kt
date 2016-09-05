@@ -30,32 +30,23 @@
 
 package com.yubico.yubioath.fragments
 
-import android.content.DialogInterface
-import android.net.Uri
 import android.os.Bundle
-import android.support.v4.app.DialogFragment
 import android.support.v4.app.Fragment
-import android.support.v4.app.FragmentTransaction
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.EditText
-import android.widget.Spinner
-import android.widget.TextView
-import android.widget.Toast
 import com.yubico.yubioath.MainActivity
 import com.yubico.yubioath.R
 import com.yubico.yubioath.exc.StorageFullException
 import com.yubico.yubioath.model.CredentialData
 import com.yubico.yubioath.model.KeyManager
 import com.yubico.yubioath.model.YubiKeyNeo
-
-import java.io.IOException
-
-import org.jetbrains.anko.*
 import kotlinx.android.synthetic.main.add_code_manual_fragment.*
+import kotlinx.android.synthetic.main.add_code_manual_fragment.view.*
 import kotlinx.android.synthetic.main.add_code_scan_fragment.*
+import kotlinx.android.synthetic.main.add_code_scan_fragment.view.*
+import org.jetbrains.anko.*
 
 /**
  * Created with IntelliJ IDEA.

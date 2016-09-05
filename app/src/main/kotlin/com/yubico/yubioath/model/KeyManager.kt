@@ -32,12 +32,10 @@ package com.yubico.yubioath.model
 
 import android.content.SharedPreferences
 import android.util.Base64
-
+import java.security.NoSuchAlgorithmException
+import java.util.*
 import javax.crypto.SecretKeyFactory
 import javax.crypto.spec.PBEKeySpec
-import java.security.NoSuchAlgorithmException
-import java.util.HashMap
-import java.util.HashSet
 
 /**
  * Created with IntelliJ IDEA.

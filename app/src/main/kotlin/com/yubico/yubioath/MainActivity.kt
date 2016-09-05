@@ -7,34 +7,26 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.nfc.Tag
+import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.support.v7.app.AppCompatActivity
-import android.os.Bundle
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.WindowManager
 import android.widget.Toast
-
 import com.yubico.yubioath.exc.AppletMissingException
 import com.yubico.yubioath.exc.AppletSelectException
 import com.yubico.yubioath.exc.PasswordRequiredException
 import com.yubico.yubioath.exc.UnsupportedAppletException
-import com.yubico.yubioath.fragments.AboutFragment
-import com.yubico.yubioath.fragments.AddAccountFragment
-import com.yubico.yubioath.fragments.EnableNfcDialog
-import com.yubico.yubioath.fragments.SetPasswordFragment
-import com.yubico.yubioath.fragments.SwipeListFragment
+import com.yubico.yubioath.fragments.*
 import com.yubico.yubioath.model.KeyManager
 import com.yubico.yubioath.model.YubiKeyNeo
-
-import java.io.IOException
-
 import nordpol.android.AndroidCard
 import nordpol.android.OnDiscoveredTagListener
 import nordpol.android.TagDispatcher
-
 import org.jetbrains.anko.*
+import java.io.IOException
 
 class MainActivity : AppCompatActivity(), OnDiscoveredTagListener {
 

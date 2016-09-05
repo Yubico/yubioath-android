@@ -41,8 +41,7 @@ import android.view.ViewGroup
 import com.yubico.yubioath.MainActivity
 import com.yubico.yubioath.R
 import kotlinx.android.synthetic.main.swipe_list_fragment.view.*
-
-import java.util.ArrayList
+import java.util.*
 
 /**
  * Created with IntelliJ IDEA.

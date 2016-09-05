@@ -41,10 +41,9 @@ import com.yubico.yubioath.MainActivity
 import com.yubico.yubioath.R
 import com.yubico.yubioath.model.KeyManager
 import com.yubico.yubioath.model.YubiKeyNeo
-
-import java.io.IOException
-import org.jetbrains.anko.*
 import kotlinx.android.synthetic.main.set_password_fragment.view.*
+import org.jetbrains.anko.*
+import java.io.IOException
 
 /**
  * Created with IntelliJ IDEA.
