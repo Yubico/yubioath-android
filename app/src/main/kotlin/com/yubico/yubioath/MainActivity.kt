@@ -143,10 +143,10 @@ class MainActivity : AppCompatActivity(), OnDiscoveredTagListener {
         }.show()
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent) {
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         if (requestCode == SCAN_BARCODE) {
             if (resultCode == Activity.RESULT_OK) {
-                openFragment(AddAccountFragment.newInstance(data.getStringExtra("SCAN_RESULT")))
+                openFragment(AddAccountFragment.newInstance(data!!.getStringExtra("SCAN_RESULT")))
             } else {
                 longToast(R.string.scan_failed)
             }

@@ -35,8 +35,8 @@ import nordpol.IsoCard
 import java.io.ByteArrayOutputStream
 import java.io.Closeable
 import java.io.IOException
+import java.nio.ByteBuffer
 import java.security.MessageDigest
-import java.security.NoSuchAlgorithmException
 import java.security.SecureRandom
 import java.util.*
 import javax.crypto.Mac
@@ -156,9 +156,10 @@ constructor(private val keyManager: KeyManager, private val isoTag: IsoCard) : C
 
     @Throws(IOException::class)
     fun storeCode(name: String, key: ByteArray, type: Byte, digits: Int, counter: Int) {
+        val algorithm = (HMAC_MASK.toInt() and type.toInt()).toByte()
         val data = apdu(PUT_INS) {
             tlv(NAME_TAG, name.toByteArray())
-            tlv(KEY_TAG, byteArrayOf(type, digits.toByte()) + if(key.size > 64) sha1(key) else key)
+            tlv(KEY_TAG, byteArrayOf(type, digits.toByte()) + hmacShortenKey(key, algorithm))
             if(counter >= 0) add(IMF_TAG, 4,
                     counter.ushr(24),
                     counter.ushr(16),
@@ -172,6 +173,16 @@ constructor(private val keyManager: KeyManager, private val isoTag: IsoCard) : C
         } else {
             requireStatus(resp, APDU_OK)
         }
+    }
+
+    private fun hmacShortenKey(key: ByteArray, algorithm: Byte):ByteArray {
+        val md = MessageDigest.getInstance(when(algorithm) {
+            HMAC_SHA1 -> "SHA1"
+            HMAC_SHA256 -> "SHA256"
+            else -> throw IllegalArgumentException("Unsupported HMAC algorithm")
+        })
+        val blockSize = 64 //Block size is 64 for SHA1 and SHA256
+        return if (key.size > blockSize) md.digest(key) else key
     }
 
     @Throws(IOException::class)
@@ -197,12 +208,7 @@ constructor(private val keyManager: KeyManager, private val isoTag: IsoCard) : C
         val codes = ArrayList<Map<String, String>>()
 
         val data = apdu(CALCULATE_ALL_INS, p2=1) {
-            add(CHALLENGE_TAG, 4,
-                    timestamp.shr(24),
-                    timestamp.shr(16),
-                    timestamp.shr(8),
-                    timestamp
-            )
+            tlv(CHALLENGE_TAG, ByteBuffer.allocate(8).putLong(timestamp).array())
         }
         val resp = requireStatus(send(data), APDU_OK)
 
@@ -214,9 +220,9 @@ constructor(private val keyManager: KeyManager, private val isoTag: IsoCard) : C
             val hashBytes = parseBlock(resp, offset, responseType)
             offset += hashBytes.size + 2
 
-            val oathCode = HashMap<String, String>()
             val credentialName = String(name)
             if(credentialName.startsWith("_hidden:")) continue
+            val oathCode = HashMap<String, String>()
 
             oathCode.put("label", credentialName)
             when (responseType) {
@@ -331,41 +337,33 @@ constructor(private val keyManager: KeyManager, private val isoTag: IsoCard) : C
             }
         }
 
-        private fun sha1(data: ByteArray): ByteArray {
-            try {
-                val md = MessageDigest.getInstance("SHA1")
-                return md.digest(data)
-            } catch (e: NoSuchAlgorithmException) {
-                throw RuntimeException(e)
-            }
-
-        }
-
         private fun hmacSha1(key: ByteArray, data: ByteArray): ByteArray {
-            val mac = Mac.getInstance("HmacSHA1")
-            val secret = SecretKeySpec(key, mac.algorithm)
-            mac.init(secret)
-            return mac.doFinal(data)
+            return Mac.getInstance("HmacSHA1").apply {
+                init(SecretKeySpec(key, algorithm))
+            }.doFinal(data)
         }
 
         private fun codeFromTruncated(data: ByteArray): String {
-            val intData = data.map { it.toInt() }.toIntArray()  //Bitwise operations require ints.
-            val num_digits = intData[0]
-            val code = (intData[1] shl 24) or ((intData[2] and 0xff) shl 16) or ((intData[3] and 0xff) shl 8) or (intData[4] and 0xff)
-            return String.format("%0" + num_digits + "d", code % MOD[num_digits])
+            with(ByteBuffer.wrap(data)) {
+                val num_digits = get().toInt()
+                val code = int
+                return String.format("%0" + num_digits + "d", code % MOD[num_digits])
+            }
         }
 
         private val STEAM_CHARS = "23456789BCDFGHJKMNPQRTVWXY"
 
         private fun steamCodeFromTruncated(data: ByteArray): String {
-            val intData = data.map { it.toInt() }.toIntArray()  //Bitwise operations require ints.
-            var code = (intData[1] shl 24) or ((intData[2] and 0xff) shl 16) or ((intData[3] and 0xff) shl 8) or (intData[4] and 0xff)
-            val buf = StringBuilder()
-            for (i in 0..4) {
-                buf.append(STEAM_CHARS[code % STEAM_CHARS.length])
-                code /= STEAM_CHARS.length
+            with(ByteBuffer.wrap(data)) {
+                get()  //Ignore stored length for Steam
+                var code = int
+                return StringBuilder().apply {
+                    for (i in 0..4) {
+                        append(STEAM_CHARS[code % STEAM_CHARS.length])
+                        code /= STEAM_CHARS.length
+                    }
+                }.toString()
             }
-            return buf.toString()
         }
 
         private fun ByteArrayOutputStream.tlv(tag: Byte, data: ByteArray) {
