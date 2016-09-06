@@ -27,5 +27,7 @@
 -dontwarn nordpol.android.**
 
 -dontwarn kotlin.**
+
+# These are only needed for Anko 0.9.0, and should be removed when Anko 0.9.1 is out.
 -keep class org.jetbrains.anko.internals.** { *; }
 -dontwarn org.jetbrains.anko.internals.**
