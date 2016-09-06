@@ -103,7 +103,7 @@ class AboutFragment : Fragment(), MainActivity.OnYubiKeyNeoListener {
     }
 
     override fun onYubiKeyNeo(neo: YubiKeyNeo) {
-        val timestamp = System.currentTimeMillis() / 1000 / 30
+        val timestamp = (System.currentTimeMillis() / 1000 + 10) / 30
         val codes = neo.getCodes(timestamp)
         activity.runOnUiThread {
             val fragment = SwipeListFragment()

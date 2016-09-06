@@ -154,7 +154,7 @@ class AddAccountFragment : Fragment(), MainActivity.OnYubiKeyNeoListener {
             data?.apply {
                 try {
                     neo.storeCode(name, key, (oath_type.toInt() or algorithm_type.toInt()).toByte(), digits, counter)
-                    val timestamp = System.currentTimeMillis() / 1000 / 30
+                    val timestamp = (System.currentTimeMillis() / 1000 + 10) / 30
                     val codes = neo.getCodes(timestamp)
                     longToast(R.string.prog_success)
                     runOnUiThread {
