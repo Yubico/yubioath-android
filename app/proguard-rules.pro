@@ -25,3 +25,7 @@
 # Don't warn about those in case this app is linking against an older
 # platform version.  We know about them, and they are safe.
 -dontwarn nordpol.android.**
+
+-dontwarn kotlin.**
+-keep class org.jetbrains.anko.internals.** { *; }
+-dontwarn org.jetbrains.anko.internals.**
