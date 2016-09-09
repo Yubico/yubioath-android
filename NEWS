@@ -1,5 +1,5 @@
-* Version 1.1.0 (beta)
- ** Retain codes on screen rotate.
+* Version 1.1.0 released 2016-09-09
+ ** Retain codes on screen rotation.
 
 * Version 1.0.5 released 2016-03-08
  ** Made algorithm check case insensitive (needed for FreeIPA).
