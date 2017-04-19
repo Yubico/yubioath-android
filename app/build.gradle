@@ -3,15 +3,15 @@ apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
 
 android {
-    compileSdkVersion 24
-    buildToolsVersion "24.0.2"
+    compileSdkVersion 25
+    buildToolsVersion "25.0.2"
 
     defaultConfig {
         applicationId "com.yubico.yubioath"
         minSdkVersion 15
-        targetSdkVersion 24
-        versionCode 29
-        versionName "1.1.0"
+        targetSdkVersion 25
+        versionCode 30
+        versionName "1.2.0"
     }
     buildTypes {
         release {
@@ -34,11 +34,11 @@ dependencies {
     testCompile 'junit:junit:4.12'
     testCompile 'org.mockito:mockito-core:2.1.0-beta.121'
     compile 'commons-codec:commons-codec:1.5'
-    compile 'com.android.support:appcompat-v7:24.2.0'
-    compile group: 'com.fidesmo', name: 'nordpol-android', version: '0.1.20', ext: 'aar', transitive: true
+    compile 'com.android.support:appcompat-v7:25.3.1'
+    compile group: 'com.fidesmo', name: 'nordpol-android', version: '0.1.21', ext: 'aar', transitive: true
     compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
-    compile 'org.jetbrains.anko:anko-common:0.9'
-    compile 'org.jetbrains.anko:anko-sdk23:0.9'
+    compile 'org.jetbrains.anko:anko-common:0.9.1'
+    compile 'org.jetbrains.anko:anko-sdk15:0.9.1'
 }
 repositories {
     mavenCentral()

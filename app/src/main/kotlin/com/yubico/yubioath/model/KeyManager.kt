@@ -58,7 +58,7 @@ class KeyManager(private val store: SharedPreferences) {
         val key = KEY + bytes2string(id)
 
         with(store.edit()) {
-            if (secret.size > 0) {
+            if (secret.isNotEmpty()) {
                 val value = bytes2string(secret)
                 val secrets = getMem(key)
                 secrets.add(value)
@@ -99,12 +99,12 @@ class KeyManager(private val store: SharedPreferences) {
 
         @JvmStatic
         fun calculateSecret(password: String, id: ByteArray, legacy: Boolean): ByteArray {
-            if (password.length == 0) {
+            if (password.isEmpty()) {
                 return ByteArray(0)
             }
 
             val factory: SecretKeyFactory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1")
-            val legacyFactory: SecretKeyFactory
+            var legacyFactory: SecretKeyFactory
             try {
                 legacyFactory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1And8bit")
                 return doCalculateSecret(if (legacy) legacyFactory else factory, password.toCharArray(), id)
@@ -113,9 +113,7 @@ class KeyManager(private val store: SharedPreferences) {
                 legacyFactory = factory
 
                 // Android < 4.4 only uses the lowest 8 bits of each character, so fix the char[].
-                val pwChars = if(legacy) password.toCharArray() else password.toByteArray(Charsets.UTF_8).map {
-                    it.toChar()
-                }.toCharArray()
+                val pwChars = if(legacy) password.toCharArray() else password.toByteArray(Charsets.UTF_8).map(Byte::toChar).toCharArray()
                 return doCalculateSecret(legacyFactory, pwChars, id)
             }
         }

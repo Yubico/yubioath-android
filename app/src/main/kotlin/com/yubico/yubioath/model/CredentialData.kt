@@ -8,13 +8,13 @@ import org.apache.commons.codec.binary.Base32
  */
 
 class CredentialData(uriString:String) {
-    var uri: Uri = Uri.parse(uriString)
-    var key:ByteArray
+    val uri: Uri = Uri.parse(uriString)
+    val key:ByteArray
     var name:String
-    var oath_type:Byte
-    var algorithm_type:Byte
-    var digits:Int
-    var counter:Int
+    val oath_type:Byte
+    val algorithm_type:Byte
+    val digits:Int
+    val counter:Int
 
     init {
         val scheme = uri.scheme

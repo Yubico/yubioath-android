@@ -1,5 +1,6 @@
 package com.yubico.yubioath
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.AlertDialog
 import android.content.ActivityNotFoundException
@@ -22,6 +23,7 @@ import com.yubico.yubioath.exc.UnsupportedAppletException
 import com.yubico.yubioath.fragments.*
 import com.yubico.yubioath.model.KeyManager
 import com.yubico.yubioath.model.YubiKeyNeo
+import com.yubico.yubioath.transport.NfcBackend
 import nordpol.android.AndroidCard
 import nordpol.android.OnDiscoveredTagListener
 import nordpol.android.TagDispatcher
@@ -72,11 +74,13 @@ class MainActivity : AppCompatActivity(), OnDiscoveredTagListener {
         }
     }
 
+    @SuppressLint("NewApi")
     public override fun onPause() {
         super.onPause()
         tagDispatcher.disableExclusiveNfc()
     }
 
+    @SuppressLint("NewApi")
     public override fun onResume() {
         super.onResume()
 
@@ -179,7 +183,7 @@ class MainActivity : AppCompatActivity(), OnDiscoveredTagListener {
         runOnUiThread {
             totpListener?.apply {
                 try {
-                    YubiKeyNeo(keyManager, AndroidCard.get(tag)).use {
+                    YubiKeyNeo(keyManager, NfcBackend(AndroidCard.get(tag))).use {
                         if(it.isLocked()) {
                             it.unlock()
                         }

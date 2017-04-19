@@ -31,7 +31,8 @@
 package com.yubico.yubioath.model
 
 import com.yubico.yubioath.exc.*
-import nordpol.IsoCard
+import com.yubico.yubioath.transport.ApduError
+import com.yubico.yubioath.transport.Backend
 import java.io.ByteArrayOutputStream
 import java.io.Closeable
 import java.io.IOException
@@ -51,28 +52,26 @@ import javax.crypto.spec.SecretKeySpec
  */
 
 class YubiKeyNeo @Throws(IOException::class, AppletSelectException::class)
-constructor(private val keyManager: KeyManager, private val isoTag: IsoCard) : Closeable {
+constructor(private val keyManager: KeyManager, private val card: Backend) : Closeable {
     val id: ByteArray
     private var challenge: ByteArray = ByteArray(0)
 
     init {
-        isoTag.connect()
-        isoTag.timeout = 3000
-        val resp = isoTag.transceive(SELECT_COMMAND)
-        if (!compareStatus(resp, APDU_OK)) {
+        try {
+            val resp = card.sendApdu(0xa4.toByte(), 0x04, 0, AID)
+            var offset = 0
+            val version = parseBlock(resp, offset, VERSION_TAG)
+            offset += version.size + 2
+
+            checkVersion(version)
+
+            id = parseBlock(resp, offset, NAME_TAG)
+            offset += id.size + 2
+            if (resp.size - offset - 4 > 0) {
+                challenge = parseBlock(resp, offset, CHALLENGE_TAG)
+            }
+        } catch (e:ApduError) {
             throw AppletMissingException()
-        }
-
-        var offset = 0
-        val version = parseBlock(resp, offset, VERSION_TAG)
-        offset += version.size + 2
-
-        checkVersion(version)
-
-        id = parseBlock(resp, offset, NAME_TAG)
-        offset += id.size + 2
-        if (resp.size - offset - 4 > 0) {
-            challenge = parseBlock(resp, offset, CHALLENGE_TAG)
         }
     }
 
@@ -105,34 +104,24 @@ constructor(private val keyManager: KeyManager, private val isoTag: IsoCard) : C
         random.nextBytes(myChallenge)
         val myResponse = hmacSha1(secret, myChallenge)
 
-        val data = apdu(VALIDATE_INS) {
-            tlv(RESPONSE_TAG, response)
-            tlv(CHALLENGE_TAG, myChallenge)
-        }
-
-        val resp = send(data)
-
-        if (compareStatus(resp, APDU_OK)) {
+        try {
+            val resp = send(VALIDATE_INS, data= tlv(RESPONSE_TAG, response) + tlv(CHALLENGE_TAG, myChallenge))
             return Arrays.equals(myResponse, parseBlock(resp, 0, RESPONSE_TAG))
+        } catch(e: ApduError) {
+            return false
         }
-
-        return false
     }
 
     @Throws(IOException::class)
     private fun unsetLockCode() {
-        val data = apdu(SET_CODE_INS) {
-            tlv(KEY_TAG, byteArrayOf())
-        }
-
-        requireStatus(send(data), APDU_OK)
+        send(SET_CODE_INS, data= tlv(KEY_TAG))
         keyManager.storeSecret(id, ByteArray(0), true)
     }
 
     @Throws(IOException::class)
     fun setLockCode(code: String, remember: Boolean) {
         val secret = KeyManager.calculateSecret(code, id, false)
-        if (secret.size == 0) {
+        if (secret.isEmpty()) {
             unsetLockCode()
             return
         } else if (keyManager.getSecrets(id).contains(secret)) {
@@ -144,34 +133,28 @@ constructor(private val keyManager: KeyManager, private val isoTag: IsoCard) : C
         random.nextBytes(challenge)
         val response = hmacSha1(secret, challenge)
 
-        val data = apdu(SET_CODE_INS) {
-            tlv(KEY_TAG, byteArrayOf((TOTP_TYPE.toInt() or HMAC_SHA1.toInt()).toByte()) + secret)
-            tlv(CHALLENGE_TAG, challenge)
-            tlv(RESPONSE_TAG, response)
-        }
-
-        requireStatus(send(data), APDU_OK)
+        send(SET_CODE_INS, data=
+        tlv(KEY_TAG, byteArrayOf((TOTP_TYPE.toInt() or HMAC_SHA1.toInt()).toByte()) + secret)
+                + tlv(CHALLENGE_TAG, challenge)
+                + tlv(RESPONSE_TAG, response))
         keyManager.setOnlySecret(id, secret)
     }
 
     @Throws(IOException::class)
     fun storeCode(name: String, key: ByteArray, type: Byte, digits: Int, counter: Int) {
         val algorithm = (HMAC_MASK.toInt() and type.toInt()).toByte()
-        val data = apdu(PUT_INS) {
-            tlv(NAME_TAG, name.toByteArray())
-            tlv(KEY_TAG, byteArrayOf(type, digits.toByte()) + hmacShortenKey(key, algorithm))
-            if(counter >= 0) add(IMF_TAG, 4,
-                    counter.ushr(24),
-                    counter.ushr(16),
-                    counter.ushr(8),
-                    counter)
-        }
 
-        val resp = send(data)
-        if (compareStatus(resp, APDU_FILE_FULL)) {
-            throw StorageFullException("No more room for OATH credentials!")
-        } else {
-            requireStatus(resp, APDU_OK)
+        try {
+            val imf = if (counter >= 0) {
+                ByteBuffer.allocate(6).put(IMF_TAG).put(4).putInt(counter).array()
+            } else byteArrayOf()
+            send(PUT_INS, data= tlv(NAME_TAG, name.toByteArray()) + tlv(KEY_TAG, byteArrayOf(type, digits.toByte()) + hmacShortenKey(key, algorithm)  + imf))
+        } catch (e:ApduError) {
+            if (e.status == APDU_FILE_FULL) {
+                throw StorageFullException("No more room for OATH credentials!")
+            } else {
+                throw e
+            }
         }
     }
 
@@ -187,19 +170,12 @@ constructor(private val keyManager: KeyManager, private val isoTag: IsoCard) : C
 
     @Throws(IOException::class)
     fun deleteCode(name: String) {
-        val data = apdu(DELETE_INS) {
-            tlv(NAME_TAG, name.toByteArray())
-        }
-        requireStatus(send(data), APDU_OK)
+        send(DELETE_INS, data= tlv(NAME_TAG, name.toByteArray()))
     }
 
     @Throws(IOException::class)
     fun readHotpCode(name: String): String {
-        val data = apdu(CALCULATE_INS, p2=1) {
-            tlv(NAME_TAG, name.toByteArray())
-            tlv(CHALLENGE_TAG, byteArrayOf())
-        }
-        val resp = requireStatus(send(data), APDU_OK)
+        val resp = send(CALCULATE_INS, p2=1, data= tlv(NAME_TAG, name.toByteArray()) + tlv(CHALLENGE_TAG))
         return codeFromTruncated(parseBlock(resp, 0, T_RESPONSE_TAG))
     }
 
@@ -207,13 +183,10 @@ constructor(private val keyManager: KeyManager, private val isoTag: IsoCard) : C
     fun getCodes(timestamp: Long): List<Map<String, String>> {
         val codes = ArrayList<Map<String, String>>()
 
-        val data = apdu(CALCULATE_ALL_INS, p2=1) {
-            tlv(CHALLENGE_TAG, ByteBuffer.allocate(8).putLong(timestamp).array())
-        }
-        val resp = requireStatus(send(data), APDU_OK)
+        val resp = send(CALCULATE_ALL_INS, p2=1, data= tlv(CHALLENGE_TAG, ByteBuffer.allocate(8).putLong(timestamp).array()))
 
         var offset = 0
-        while (resp[offset] == NAME_TAG) {
+        while (offset < resp.size && resp[offset] == NAME_TAG) {
             val name = parseBlock(resp, offset, NAME_TAG)
             offset += name.size + 2
             val responseType = resp[offset]
@@ -245,27 +218,37 @@ constructor(private val keyManager: KeyManager, private val isoTag: IsoCard) : C
     }
 
     @Throws(IOException::class)
-    private fun send(command: ByteArray): ByteArray {
-        var resp = isoTag.transceive(command)
+    private fun send(ins:Byte, p1:Byte=0, p2:Byte=0, data:ByteArray=byteArrayOf()): ByteArray {
         val buf = ByteArrayOutputStream(2048)
 
-        while (resp[resp.size - 2] == APDU_DATA_REMAINING_SW1) {
-            buf.write(resp, 0, resp.size - 2)
-            resp = isoTag.transceive(SEND_REMAINING_COMMAND)
+        var resp:ByteArray = byteArrayOf()
+        try {
+            resp = card.sendApdu(ins, p1, p2, data)
+        } catch (e1:ApduError) {
+            var error:ApduError = e1
+            while(error.sw1 == APDU_DATA_REMAINING_SW1) {
+                buf.write(error.data)
+                try {
+                    resp = card.sendApdu(SEND_REMAINING_INS, 0, 0, byteArrayOf())
+                    break
+                } catch (e2:ApduError) {
+                    error = e2
+                }
+            }
         }
-
         buf.write(resp)
+
         return buf.toByteArray()
     }
 
     @Throws(IOException::class)
     override fun close() {
-        isoTag.close()
+        card.close()
     }
 
     companion object {
         private val APDU_OK = byteArrayOf(0x90.toByte(), 0x00)
-        private val APDU_FILE_FULL = byteArrayOf(0x6a.toByte(), 0x84.toByte())
+        private val APDU_FILE_FULL:Short = 0x6a84.toShort()
         const private val APDU_DATA_REMAINING_SW1 = 0x61.toByte()
 
         const private val NAME_TAG: Byte = 0x71
@@ -301,7 +284,7 @@ constructor(private val keyManager: KeyManager, private val isoTag: IsoCard) : C
 
         //APDU CL INS P1 P2 L ...
         //DATA 00  00 00 00 00 ...
-        private val SELECT_COMMAND = byteArrayOf(0x00, 0xa4.toByte(), 0x04, 0x00, 0x08, 0xa0.toByte(), 0x00, 0x00, 0x05, 0x27, 0x21, 0x01, 0x01)
+        private val AID = byteArrayOf(0xa0.toByte(), 0x00, 0x00, 0x05, 0x27, 0x21, 0x01, 0x01)
         private val SEND_REMAINING_COMMAND = byteArrayOf(0x00, SEND_REMAINING_INS, 0x00, 0x00, 0x00)
 
         private val MOD = intArrayOf(1, 10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000)
@@ -313,16 +296,6 @@ constructor(private val keyManager: KeyManager, private val isoTag: IsoCard) : C
 
         private fun compareStatus(apdu: ByteArray, status: ByteArray): Boolean {
             return apdu[apdu.size - 2] == status[0] && apdu[apdu.size - 1] == status[1]
-        }
-
-        @Throws(IOException::class)
-        private fun requireStatus(apdu: ByteArray, status: ByteArray): ByteArray {
-            if (!compareStatus(apdu, status)) {
-                val expected = "%02x%02x".format(0xff and status[0].toInt(), 0xff and status[1].toInt()).toUpperCase()
-                val actual = "%02x%02x".format(0xff and apdu[apdu.size - 2].toInt(), 0xff and apdu[apdu.size - 1].toInt()).toUpperCase()
-                throw IOException("Require APDU status: $expected, got $actual")
-            }
-            return apdu
         }
 
         @Throws(IOException::class)
@@ -366,21 +339,6 @@ constructor(private val keyManager: KeyManager, private val isoTag: IsoCard) : C
             }
         }
 
-        private fun ByteArrayOutputStream.tlv(tag: Byte, data: ByteArray) {
-            write(tag.toInt())
-            write(data.size)
-            write(data)
-        }
-        private fun ByteArrayOutputStream.add(vararg values: Number) {
-            for(v in values) write(v.toInt())
-        }
-        private fun apdu(ins:Byte, p1: Byte = 0, p2: Byte = 0, func: ByteArrayOutputStream.() -> Unit): ByteArray {
-            return ByteArrayOutputStream().apply {
-                add(0, ins, p1, p2, 0)
-                func()
-            }.toByteArray().apply {
-                set(4, (size - 5).toByte())  // Fix length field
-            }
-        }
+        private fun tlv(tag:Byte, data:ByteArray = byteArrayOf()): ByteArray = byteArrayOf(tag, data.size.toByte()) + data
     }
 }
