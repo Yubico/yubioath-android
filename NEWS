@@ -1,3 +1,7 @@
+* Version 1.2.0 unreleased
+ ** Embedded QR scanner to avoid relying on third party app.
+ ** Experimental USB support.
+
 * Version 1.1.0 released 2016-09-09
  ** Retain codes on screen rotation.
 
