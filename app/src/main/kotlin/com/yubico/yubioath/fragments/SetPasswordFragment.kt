@@ -40,7 +40,7 @@ import android.view.ViewGroup
 import com.yubico.yubioath.MainActivity
 import com.yubico.yubioath.R
 import com.yubico.yubioath.model.KeyManager
-import com.yubico.yubioath.model.YubiKeyNeo
+import com.yubico.yubioath.model.YubiKeyOath
 import kotlinx.android.synthetic.main.set_password_fragment.view.*
 import org.jetbrains.anko.*
 import java.io.IOException
@@ -121,7 +121,7 @@ class SetPasswordFragment : Fragment(), MainActivity.OnYubiKeyNeoListener {
         }
     }
 
-    override fun onYubiKeyNeo(neo: YubiKeyNeo) {
+    override fun onYubiKeyNeo(oath: YubiKeyOath) {
         if (!swipeDialog.isAdded) {
             activity.toast(R.string.input_required)
             return
@@ -130,13 +130,13 @@ class SetPasswordFragment : Fragment(), MainActivity.OnYubiKeyNeoListener {
         swipeDialog.dismiss()
 
         if (needsId) {
-            deviceId = neo.id
+            deviceId = oath.id
             needsId = false
         } else view?.let {
             val newPass = it.editNewPassword.text.toString()
             val remember = it.rememberPassword.isChecked
             try {
-                neo.setLockCode(newPass, remember)
+                oath.setLockCode(newPass, remember)
                 (activity as MainActivity).openFragment(SwipeListFragment())
                 activity.toast(R.string.password_updated)
             } catch (e: IOException) {

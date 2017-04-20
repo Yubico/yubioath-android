@@ -74,7 +74,9 @@ class SwipeListFragment(val current:ListCodesFragment = ListCodesFragment()) : F
 
                     override fun onPageScrollStateChanged(state: Int) {
                         if (state == 0 && currentItem != 1) {
-                            current.showCodes(ArrayList<Map<String, String>>())
+                            if(!(activity as MainActivity).checkForUsbDevice()) {
+                                current.showCodes(ArrayList<Map<String, String>>(), 0)
+                            }
                             setCurrentItem(1, false)
                         }
 

@@ -18,7 +18,7 @@ import org.robolectric.annotation.Config
  */
 @RunWith(RobolectricGradleTestRunner::class)
 @Config(constants = BuildConfig::class, sdk = intArrayOf(21))
-class YubiKeyNeoTest {
+class YubiKeyOathTest {
 
     @Test
     fun testParsingKnownResponse() {
@@ -27,7 +27,7 @@ class YubiKeyNeoTest {
         Mockito.`when`(tagMock.transceive(Mockito.any(ByteArray::class.java))).thenReturn(
                 byteArrayOf(0x79, 3, 0, 0, 0, 0x71, 0, 0x90.toByte(), 0x00),  //SELECT
                 byteArrayOf(0x71, 3, 'f'.toByte(), 'o'.toByte(), '0'.toByte(), 0x76, 5, 8, 0x41, 0x39, 0x7e, 0xea.toByte(), 0x90.toByte(), 0x00)) // CALCULATE_ALL
-        val key = YubiKeyNeo(keyManager, NfcBackend(tagMock))
+        val key = YubiKeyOath(keyManager, NfcBackend(tagMock))
         val codes = key.getCodes(59 / 30)
         Assert.assertEquals("94287082", codes[0]["code"])
     }
@@ -39,7 +39,7 @@ class YubiKeyNeoTest {
         Mockito.`when`(tagMock.transceive(Mockito.any(ByteArray::class.java))).thenReturn(
                 byteArrayOf(0x79, 3, 0, 0, 0, 0x71, 0, 0x90.toByte(), 0x00),  //SELECT
                 byteArrayOf(0x90.toByte(), 0x00)) // CALCULATE_ALL
-        val key = YubiKeyNeo(keyManager, NfcBackend(tagMock))
+        val key = YubiKeyOath(keyManager, NfcBackend(tagMock))
         Mockito.verify(tagMock).transceive(Mockito.any(ByteArray::class.java))
 
         key.getCodes(1)

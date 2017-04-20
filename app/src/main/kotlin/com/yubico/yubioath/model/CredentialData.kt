@@ -39,14 +39,14 @@ class CredentialData(uriString:String) {
         }
 
         oath_type = when(uri.host.toLowerCase()) {
-            "totp" -> YubiKeyNeo.TOTP_TYPE
-            "hotp" -> YubiKeyNeo.HOTP_TYPE
+            "totp" -> YubiKeyOath.TOTP_TYPE
+            "hotp" -> YubiKeyOath.HOTP_TYPE
             else -> throw IllegalArgumentException("Invalid or missing OATH algorithm")
         }
 
         algorithm_type = when(uri.getQueryParameter("algorithm").orEmpty().toLowerCase()) {
-            "", "sha1" -> YubiKeyNeo.HMAC_SHA1  //This is the default value
-            "sha256" -> YubiKeyNeo.HMAC_SHA256
+            "", "sha1" -> YubiKeyOath.HMAC_SHA1  //This is the default value
+            "sha256" -> YubiKeyOath.HMAC_SHA256
             else -> throw IllegalArgumentException("Invalid or missing HMAC algorithm")
         }
 

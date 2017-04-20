@@ -42,7 +42,7 @@ import android.widget.Toast
 import com.yubico.yubioath.MainActivity
 import com.yubico.yubioath.R
 import com.yubico.yubioath.model.KeyManager
-import com.yubico.yubioath.model.YubiKeyNeo
+import com.yubico.yubioath.model.YubiKeyOath
 import kotlinx.android.synthetic.main.about_fragment.view.*
 
 /**
@@ -101,12 +101,10 @@ class AboutFragment : Fragment(), MainActivity.OnYubiKeyNeoListener {
         dialog.show(ft, "dialog")
     }
 
-    override fun onYubiKeyNeo(neo: YubiKeyNeo) {
-        val timestamp = (System.currentTimeMillis() / 1000 + 10) / 30
-        val codes = neo.getCodes(timestamp)
+    override fun onYubiKeyNeo(oath: YubiKeyOath) {
         activity.runOnUiThread {
             val fragment = SwipeListFragment()
-            fragment.current.showCodes(codes)
+            fragment.current.onYubiKeyNeo(oath)
             (activity as MainActivity).openFragment(fragment)
         }
     }

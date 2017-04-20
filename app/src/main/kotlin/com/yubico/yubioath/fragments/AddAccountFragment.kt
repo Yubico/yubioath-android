@@ -31,6 +31,7 @@
 package com.yubico.yubioath.fragments
 
 import android.os.Bundle
+import android.os.Handler
 import android.support.v4.app.Fragment
 import android.util.Log
 import android.view.LayoutInflater
@@ -41,7 +42,7 @@ import com.yubico.yubioath.R
 import com.yubico.yubioath.exc.StorageFullException
 import com.yubico.yubioath.model.CredentialData
 import com.yubico.yubioath.model.KeyManager
-import com.yubico.yubioath.model.YubiKeyNeo
+import com.yubico.yubioath.model.YubiKeyOath
 import kotlinx.android.synthetic.main.add_code_manual_fragment.*
 import kotlinx.android.synthetic.main.add_code_manual_fragment.view.*
 import kotlinx.android.synthetic.main.add_code_scan_fragment.*
@@ -88,6 +89,11 @@ class AddAccountFragment : Fragment(), MainActivity.OnYubiKeyNeoListener {
         return data?.let {
             manualMode = false
 
+            Handler().postDelayed(//Give the app some time to get the fragment ready.
+                    {
+                        (activity as MainActivity).checkForUsbDevice()
+                    }, 100)
+
             inflater!!.inflate(R.layout.add_code_scan_fragment, container, false).apply {
                 qr_credential_name.setText(it.name)
             }
@@ -109,7 +115,7 @@ class AddAccountFragment : Fragment(), MainActivity.OnYubiKeyNeoListener {
                 val secret = credential_secret.text.toString()
                 val type = if (credential_type.selectedItemId == 0.toLong()) "totp" else "hotp"
 
-                if (name.length == 0 || secret.length == 0) {
+                if (name.isEmpty() || secret.isEmpty()) {
                     activity.longToast(R.string.credential_manual_error)
                 } else {
                     SetPasswordFragment.closeKeyboard(activity)
@@ -120,6 +126,7 @@ class AddAccountFragment : Fragment(), MainActivity.OnYubiKeyNeoListener {
                         setOnCancel { (activity as MainActivity).openFragment(SwipeListFragment()) }
                         show(this@AddAccountFragment.fragmentManager, "dialog")
                     }
+                    (activity as MainActivity).checkForUsbDevice()
                 }
             }
         }
@@ -138,8 +145,7 @@ class AddAccountFragment : Fragment(), MainActivity.OnYubiKeyNeoListener {
         dialog.show(ft, "dialog")
     }
 
-
-    override fun onYubiKeyNeo(neo: YubiKeyNeo) {
+    override fun onYubiKeyNeo(oath: YubiKeyOath) {
         if (manualMode) {
             if (swipeDialog == null) {
                 return
@@ -153,13 +159,11 @@ class AddAccountFragment : Fragment(), MainActivity.OnYubiKeyNeoListener {
         with(activity as MainActivity) {
             data?.apply {
                 try {
-                    neo.storeCode(name, key, (oath_type.toInt() or algorithm_type.toInt()).toByte(), digits, counter)
-                    val timestamp = (System.currentTimeMillis() / 1000 + 10) / 30
-                    val codes = neo.getCodes(timestamp)
+                    oath.storeCode(name, key, (oath_type.toInt() or algorithm_type.toInt()).toByte(), digits, counter)
                     longToast(R.string.prog_success)
                     runOnUiThread {
                         val fragment = SwipeListFragment()
-                        fragment.current.showCodes(codes)
+                        fragment.current.onYubiKeyNeo(oath)
                         openFragment(fragment)
                     }
                 } catch (e: StorageFullException) {

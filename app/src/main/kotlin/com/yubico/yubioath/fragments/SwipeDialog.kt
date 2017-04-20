@@ -35,6 +35,7 @@ import android.app.Dialog
 import android.content.DialogInterface
 import android.os.Bundle
 import android.support.v4.app.DialogFragment
+import com.yubico.yubioath.MainActivity
 
 import com.yubico.yubioath.R
 
@@ -49,10 +50,13 @@ class SwipeDialog : DialogFragment() {
     private var onCancelHandler: ((DialogInterface?) -> Unit)? = null
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
+        val checkUsb = (activity as MainActivity)::checkForUsbDevice
         return AlertDialog.Builder(activity).apply {
             setTitle(R.string.swipe)
             setNegativeButton(R.string.cancel) { dialog, which -> dialog.cancel() }
-        }.create()
+        }.create().apply {
+            setOnShowListener { checkUsb() }
+        }
     }
 
     fun setOnCancel(func: (DialogInterface?) -> Unit) {

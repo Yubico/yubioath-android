@@ -36,6 +36,7 @@ import android.os.Bundle
 import android.os.Handler
 import android.support.v4.app.DialogFragment
 import android.support.v4.app.ListFragment
+import android.util.Log
 import android.view.*
 import android.view.animation.Animation
 import android.view.animation.LinearInterpolator
@@ -45,7 +46,7 @@ import android.widget.ListView
 import com.yubico.yubioath.MainActivity
 import com.yubico.yubioath.R
 import com.yubico.yubioath.model.KeyManager
-import com.yubico.yubioath.model.YubiKeyNeo
+import com.yubico.yubioath.model.YubiKeyOath
 import kotlinx.android.synthetic.main.list_codes_fragment.*
 import kotlinx.android.synthetic.main.oath_code_view.view.*
 import org.jetbrains.anko.*
@@ -69,6 +70,7 @@ class ListCodesFragment : ListFragment(), MainActivity.OnYubiKeyNeoListener, Act
 
     private val timeoutAnimation = TimeoutAnimation()
     private var initialCodes: List<Map<String, String>> = emptyList()
+    private var initialTimestamp:Long = 0
     private lateinit var adapter: CodeAdapter
     private lateinit var swipeDialog: SwipeDialog
     private var actionMode: ActionMode? = null
@@ -130,7 +132,7 @@ class ListCodesFragment : ListFragment(), MainActivity.OnYubiKeyNeoListener, Act
         }
 
         if (initialCodes.isNotEmpty()) {
-            showCodes(initialCodes)
+            showCodes(initialCodes, initialTimestamp)
             initialCodes = emptyList()
         } else needsPassword?.let {
             val ft = fragmentManager.beginTransaction()
@@ -140,9 +142,15 @@ class ListCodesFragment : ListFragment(), MainActivity.OnYubiKeyNeoListener, Act
     }
 
     @Throws(IOException::class)
-    override fun onYubiKeyNeo(neo: YubiKeyNeo) {
-        //If less than 10 seconds remain until we'd get the next OTP, skip ahead.
-        val timestamp = (System.currentTimeMillis() / 1000 + 10) / 30
+    override fun onYubiKeyNeo(oath: YubiKeyOath) {
+        val now = System.currentTimeMillis()
+        val timestamp = if (oath.persistent) {
+            now / 30000
+        } else {
+            //If less than 10 seconds remain until we'd get the next OTP, skip ahead.
+            (now / 1000 + 10) / 30
+        }
+        val timerStart = if (oath.persistent) timestamp * 30000 else now
 
         if (activity == null || !swipeDialog.isAdded) {
             //If the swipeDialog isn't shown we ignore the state and just list the OTPs.
@@ -151,9 +159,9 @@ class ListCodesFragment : ListFragment(), MainActivity.OnYubiKeyNeoListener, Act
 
         when (state) {
             READ_LIST -> {
-                val codes = neo.getCodes(timestamp)
-                showCodes(codes)
-                if (codes.size == 0) {
+                val codes = oath.getCodes(timestamp)
+                showCodes(codes, timerStart)
+                if (codes.isEmpty()) {
                     Handler().postDelayed(//Give the app some time to get the activity ready.
                             {
                                 activity?.longToast(R.string.empty_list)
@@ -162,7 +170,7 @@ class ListCodesFragment : ListFragment(), MainActivity.OnYubiKeyNeoListener, Act
             }
             READ_SELECTED -> {
                 selectedItem?.let {
-                    it.code = neo.readHotpCode(it.label)
+                    it.code = oath.readHotpCode(it.label)
                     adapter.notifyDataSetChanged()
                 }
                 swipeDialog.dismiss()
@@ -170,20 +178,21 @@ class ListCodesFragment : ListFragment(), MainActivity.OnYubiKeyNeoListener, Act
             }
             DELETE_SELECTED -> {
                 selectedItem?.let {
-                    neo.deleteCode(it.label)
+                    oath.deleteCode(it.label)
                     selectedItem = null
                 }
                 swipeDialog.dismiss()
                 activity?.toast(R.string.deleted)
-                showCodes(neo.getCodes(timestamp))
+                showCodes(oath.getCodes(timestamp), timerStart)
                 state = READ_LIST
             }
         }
     }
 
-    fun showCodes(codeMap: List<Map<String, String>>) {
+    fun showCodes(codeMap: List<Map<String, String>>, timestamp: Long) {
         if (activity == null) {
             initialCodes = codeMap
+            initialTimestamp = timestamp
             return
         }
 
@@ -200,13 +209,15 @@ class ListCodesFragment : ListFragment(), MainActivity.OnYubiKeyNeoListener, Act
         adapter.setAll(codes)
 
         if (hasTimeout) {
-            timeoutAnimation.startOffset = 0
-            startTime = System.currentTimeMillis()
-            timeoutBar.startAnimation(timeoutAnimation)
+            val animationOffset = timestamp - System.currentTimeMillis()
+            Log.d("yubioath", "Timeout animation offset: " + animationOffset)
+            timeoutAnimation.startOffset = animationOffset
+            startTime = timestamp
+            timeoutBar?.startAnimation(timeoutAnimation)
         } else {
             startTime = 0
-            timeoutBar.clearAnimation()
-            timeoutBar.progress = 0
+            timeoutBar?.clearAnimation()
+            timeoutBar?.progress = 0
         }
     }
 
@@ -326,6 +337,7 @@ class ListCodesFragment : ListFragment(), MainActivity.OnYubiKeyNeoListener, Act
                 override fun onAnimationEnd(animation: Animation) {
                     adapter.expired = true
                     adapter.notifyDataSetChanged()
+                    (activity as MainActivity)?.checkForUsbDevice()
                 }
             })
         }
@@ -337,14 +349,9 @@ class ListCodesFragment : ListFragment(), MainActivity.OnYubiKeyNeoListener, Act
     }
 
     inner class OathCode(val label: String, var code: String) {
-        var hotp: Boolean
+        var hotp = code.isEmpty()
         val isRead: Boolean
             get() = !code.isEmpty()
-
-        init {
-            hotp = code.isEmpty()
-        }
-
 
         fun copyToClipboard() {
             if (isRead) {

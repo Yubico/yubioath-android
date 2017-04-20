@@ -30,6 +30,7 @@
 
 package com.yubico.yubioath.model
 
+import android.util.Log
 import com.yubico.yubioath.exc.*
 import com.yubico.yubioath.transport.ApduError
 import com.yubico.yubioath.transport.Backend
@@ -51,14 +52,16 @@ import javax.crypto.spec.SecretKeySpec
  * To change this template use File | Settings | File Templates.
  */
 
-class YubiKeyNeo @Throws(IOException::class, AppletSelectException::class)
-constructor(private val keyManager: KeyManager, private val card: Backend) : Closeable {
+class YubiKeyOath @Throws(IOException::class, AppletSelectException::class)
+constructor(private val keyManager: KeyManager, private val backend: Backend) : Closeable {
+    val persistent = backend.persistent
+
     val id: ByteArray
     private var challenge: ByteArray = ByteArray(0)
 
     init {
         try {
-            val resp = card.sendApdu(0xa4.toByte(), 0x04, 0, AID)
+            val resp = send(0xa4.toByte(), 0x04, 0, AID)
             var offset = 0
             val version = parseBlock(resp, offset, VERSION_TAG)
             offset += version.size + 2
@@ -71,6 +74,7 @@ constructor(private val keyManager: KeyManager, private val card: Backend) : Clo
                 challenge = parseBlock(resp, offset, CHALLENGE_TAG)
             }
         } catch (e:ApduError) {
+            Log.e("yubioath", "error selecting", e)
             throw AppletMissingException()
         }
     }
@@ -221,34 +225,29 @@ constructor(private val keyManager: KeyManager, private val card: Backend) : Clo
     private fun send(ins:Byte, p1:Byte=0, p2:Byte=0, data:ByteArray=byteArrayOf()): ByteArray {
         val buf = ByteArrayOutputStream(2048)
 
-        var resp:ByteArray = byteArrayOf()
-        try {
-            resp = card.sendApdu(ins, p1, p2, data)
-        } catch (e1:ApduError) {
-            var error:ApduError = e1
-            while(error.sw1 == APDU_DATA_REMAINING_SW1) {
-                buf.write(error.data)
-                try {
-                    resp = card.sendApdu(SEND_REMAINING_INS, 0, 0, byteArrayOf())
-                    break
-                } catch (e2:ApduError) {
-                    error = e2
-                }
+        var resp = splitApduResponse(backend.sendApdu(byteArrayOf(0, ins, p1, p2, data.size.toByte()) + data))
+
+        while (resp.status != APDU_OK) {
+            if(resp.status.shr(8).toByte() == APDU_DATA_REMAINING_SW1) {
+                buf.write(resp.data)
+                resp = splitApduResponse(backend.sendApdu(byteArrayOf(0, SEND_REMAINING_INS, 0, 0)))
+            } else {
+                throw ApduError(resp.data, resp.status)
             }
         }
-        buf.write(resp)
+        buf.write(resp.data)
 
         return buf.toByteArray()
     }
 
     @Throws(IOException::class)
     override fun close() {
-        card.close()
+        backend.close()
     }
 
     companion object {
-        private val APDU_OK = byteArrayOf(0x90.toByte(), 0x00)
-        private val APDU_FILE_FULL:Short = 0x6a84.toShort()
+        const private val APDU_OK = 0x9000
+        const private val APDU_FILE_FULL = 0x6a84
         const private val APDU_DATA_REMAINING_SW1 = 0x61.toByte()
 
         const private val NAME_TAG: Byte = 0x71
@@ -281,11 +280,7 @@ constructor(private val keyManager: KeyManager, private val card: Backend) : Clo
         const val HOTP_TYPE: Byte = 0x10
         const val TOTP_TYPE: Byte = 0x20
 
-
-        //APDU CL INS P1 P2 L ...
-        //DATA 00  00 00 00 00 ...
         private val AID = byteArrayOf(0xa0.toByte(), 0x00, 0x00, 0x05, 0x27, 0x21, 0x01, 0x01)
-        private val SEND_REMAINING_COMMAND = byteArrayOf(0x00, SEND_REMAINING_INS, 0x00, 0x00, 0x00)
 
         private val MOD = intArrayOf(1, 10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000)
 
@@ -340,5 +335,13 @@ constructor(private val keyManager: KeyManager, private val card: Backend) : Clo
         }
 
         private fun tlv(tag:Byte, data:ByteArray = byteArrayOf()): ByteArray = byteArrayOf(tag, data.size.toByte()) + data
+
+        private data class Response(val data:ByteArray, val status: Int)
+
+        private fun splitApduResponse(resp:ByteArray): Response {
+            return Response(
+                    resp.copyOfRange(0, resp.size - 2),
+                    ((0xff and resp[resp.size - 2].toInt()) shl 8) or (0xff and resp[resp.size - 1].toInt()))
+        }
     }
 }

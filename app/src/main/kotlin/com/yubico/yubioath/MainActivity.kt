@@ -1,14 +1,13 @@
 package com.yubico.yubioath
 
 import android.annotation.SuppressLint
-import android.app.Activity
-import android.app.AlertDialog
-import android.content.ActivityNotFoundException
-import android.content.Context
-import android.content.Intent
-import android.net.Uri
+import android.app.PendingIntent
+import android.content.*
+import android.hardware.usb.UsbDevice
+import android.hardware.usb.UsbManager
 import android.nfc.Tag
 import android.os.Bundle
+import android.os.Handler
 import android.support.v4.app.Fragment
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
@@ -16,27 +15,32 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.WindowManager
 import android.widget.Toast
+import com.google.zxing.integration.android.IntentIntegrator
 import com.yubico.yubioath.exc.AppletMissingException
 import com.yubico.yubioath.exc.AppletSelectException
 import com.yubico.yubioath.exc.PasswordRequiredException
 import com.yubico.yubioath.exc.UnsupportedAppletException
 import com.yubico.yubioath.fragments.*
 import com.yubico.yubioath.model.KeyManager
-import com.yubico.yubioath.model.YubiKeyNeo
+import com.yubico.yubioath.model.YubiKeyOath
+import com.yubico.yubioath.transport.UsbBackend
 import com.yubico.yubioath.transport.NfcBackend
 import nordpol.android.AndroidCard
 import nordpol.android.OnDiscoveredTagListener
 import nordpol.android.TagDispatcher
+import nordpol.android.TagDispatcherBuilder
 import org.jetbrains.anko.*
 import java.io.IOException
 
 class MainActivity : AppCompatActivity(), OnDiscoveredTagListener {
 
     companion object {
-        const private val SCAN_BARCODE = 1
         const private val NEO_STORE = "NEO_STORE"
     }
 
+    private val ACTION_USB_PERMISSION = "com.android.example.USB_PERMISSION"
+
+    private lateinit var usbManager: UsbManager
     private lateinit var tagDispatcher: TagDispatcher
     private lateinit var keyManager: KeyManager
     private var totpListener: OnYubiKeyNeoListener? = null
@@ -50,6 +54,7 @@ class MainActivity : AppCompatActivity(), OnDiscoveredTagListener {
 
         setContentView(R.layout.main_activity)
 
+        usbManager = getSystemService(Context.USB_SERVICE) as UsbManager
         keyManager = KeyManager(getSharedPreferences(NEO_STORE, Context.MODE_PRIVATE))
 
         when(supportFragmentManager.findFragmentByTag(SwipeListFragment::class.java.name)) {
@@ -64,7 +69,56 @@ class MainActivity : AppCompatActivity(), OnDiscoveredTagListener {
          * - opt out of broadcom workaround (this is only available in reader mode)
          * - opt out of reader mode completely
          */
-        tagDispatcher = TagDispatcher.get(this, this, false, false, true, false, true)
+        tagDispatcher = TagDispatcherBuilder(this, this).enableReaderMode(false).build()
+        //tagDispatcher = TagDispatcher.get(this, this, false, false, true, false, true)
+
+        checkForUsbDevice()
+    }
+
+    fun checkForUsbDevice():Boolean {
+        usbManager.deviceList.values.find { UsbBackend.isSupported(it) }?.let {
+            if(usbManager.hasPermission(it)) {
+                useUsbDevice(it)
+            } else {
+                val mPermissionIntent = PendingIntent.getBroadcast(this, 0, Intent(ACTION_USB_PERMISSION), 0)
+                usbManager.requestPermission(it, mPermissionIntent)
+            }
+            return true
+        }
+        return false
+    }
+
+    private fun useUsbDevice(device:UsbDevice) {
+        totpListener?.apply {
+            try {
+                YubiKeyOath(keyManager, UsbBackend.connect(usbManager, device)).use {
+                    if(it.isLocked()) {
+                        it.unlock()
+                    }
+                    onYubiKeyNeo(it)
+                }
+            } catch (e: PasswordRequiredException) {
+                onPasswordMissing(keyManager, e.id, e.isMissing)
+            } catch (e: IOException) {
+                toast(R.string.tag_error)
+                Log.e("yubioath", "IOException in handler", e)
+            } catch (e: AppletMissingException) {
+                toast(R.string.applet_missing)
+                Log.e("yubioath", "AppletMissingException in handler", e)
+            } catch (e: UnsupportedAppletException) {
+                toast(R.string.unsupported_applet_version)
+                Log.e("yubioath", "UnsupportedAppletException in handler", e)
+            } catch (e: AppletSelectException) {
+                toast(R.string.tag_error)
+                Log.e("yubioath", "AppletSelectException in handler", e)
+            }
+            return
+        }
+
+        Log.d("yubioath", "exists? " + supportFragmentManager.findFragmentByTag(SwipeListFragment::class.java.name))
+        val fragment = supportFragmentManager.findFragmentByTag(SwipeListFragment::class.java.name) as SwipeListFragment? ?: SwipeListFragment()
+        fragment.current.onYubiKeyNeo(YubiKeyOath(keyManager, UsbBackend.connect(usbManager, device)))
+        openFragment(fragment)
     }
 
     override fun onBackPressed() {
@@ -72,6 +126,7 @@ class MainActivity : AppCompatActivity(), OnDiscoveredTagListener {
             null -> openFragment(SwipeListFragment())
             else -> super.onBackPressed()
         }
+        Handler().postDelayed({ checkForUsbDevice() }, 10)
     }
 
     @SuppressLint("NewApi")
@@ -115,46 +170,15 @@ class MainActivity : AppCompatActivity(), OnDiscoveredTagListener {
     }
 
     private fun scanQRCode() {
-        try {
-            startActivityForResult(Intent("com.google.zxing.client.android.SCAN").apply {
-                putExtra("SCAN_MODE", "QR_CODE_MODE")
-                putExtra("SAVE_HISTORY", false)
-            }, SCAN_BARCODE)
-        } catch (e: ActivityNotFoundException) {
-            barcodeScannerNotInstalled(
-                    getString(R.string.warning),
-                    getString(R.string.barcode_scanner_not_found),
-                    getString(R.string.yes),
-                    getString(R.string.no))
-        }
-
-    }
-
-    private fun barcodeScannerNotInstalled(stringTitle: String,
-                                           stringMessage: String, stringButtonYes: String, stringButtonNo: String) {
-        AlertDialog.Builder(this).apply {
-            setTitle(stringTitle)
-            setMessage(stringMessage)
-            setPositiveButton(stringButtonYes) { dialog, i ->
-                startActivity(Intent(
-                        Intent.ACTION_VIEW,
-                        Uri.parse("market://search?q=pname:com.google.zxing.client.android"))
-                )
-            }
-            setNegativeButton(stringButtonNo) { dialog, i ->
-                dialog.cancel()
-            }
-        }.show()
+        IntentIntegrator(this).setDesiredBarcodeFormats(IntentIntegrator.QR_CODE_TYPES).initiateScan()
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        if (requestCode == SCAN_BARCODE) {
-            if (resultCode == Activity.RESULT_OK) {
-                openFragment(AddAccountFragment.newInstance(data!!.getStringExtra("SCAN_RESULT")))
-            } else {
-                longToast(R.string.scan_failed)
-            }
+        IntentIntegrator.parseActivityResult(requestCode, resultCode, data)?.contents?.let {
+            openFragment(AddAccountFragment.newInstance(it))
+            return
         }
+        longToast(R.string.scan_failed)
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -183,7 +207,7 @@ class MainActivity : AppCompatActivity(), OnDiscoveredTagListener {
         runOnUiThread {
             totpListener?.apply {
                 try {
-                    YubiKeyNeo(keyManager, NfcBackend(AndroidCard.get(tag))).use {
+                    YubiKeyOath(keyManager, NfcBackend(AndroidCard.get(tag))).use {
                         if(it.isLocked()) {
                             it.unlock()
                         }
@@ -214,7 +238,7 @@ class MainActivity : AppCompatActivity(), OnDiscoveredTagListener {
 
     interface OnYubiKeyNeoListener {
         @Throws(IOException::class)
-        fun onYubiKeyNeo(neo: YubiKeyNeo)
+        fun onYubiKeyNeo(oath: YubiKeyOath)
 
         fun onPasswordMissing(manager: KeyManager, id: ByteArray, missing: Boolean)
     }
