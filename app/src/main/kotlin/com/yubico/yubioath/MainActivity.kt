@@ -3,6 +3,7 @@ package com.yubico.yubioath
 import android.annotation.SuppressLint
 import android.app.PendingIntent
 import android.content.*
+import android.content.pm.PackageManager
 import android.hardware.usb.UsbDevice
 import android.hardware.usb.UsbManager
 import android.nfc.NfcAdapter
@@ -39,7 +40,7 @@ class MainActivity : AppCompatActivity(), OnDiscoveredTagListener {
     private lateinit var state: StateFragment
 
     private lateinit var usbManager: UsbManager
-    private lateinit var tagDispatcher: TagDispatcher
+    private var tagDispatcher: TagDispatcher? = null
     private var totpListener: OnYubiKeyNeoListener? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -61,15 +62,9 @@ class MainActivity : AppCompatActivity(), OnDiscoveredTagListener {
             else -> Unit
         }
 
-        /* Set up Nordpol in the following manner:
-         * - opt out of NFC unavailable handling
-         * - opt out of disabled sounds
-         * - dispatch on UI thread
-         * - opt out of broadcom workaround (this is only available in reader mode)
-         * - opt out of reader mode completely
-         */
-        tagDispatcher = TagDispatcherBuilder(this, this).enableReaderMode(false).build()
-        //tagDispatcher = TagDispatcher.get(this, this, false, false, true, false, true)
+        if(packageManager.hasSystemFeature(PackageManager.FEATURE_NFC)) {
+            tagDispatcher = TagDispatcherBuilder(this, this).enableReaderMode(false).build()
+        }
     }
 
     fun checkForUsbDevice():Boolean {
@@ -90,15 +85,14 @@ class MainActivity : AppCompatActivity(), OnDiscoveredTagListener {
     }
 
     private fun useOath(oath:YubiKeyOath) {
-        if(oath.isLocked()) {
-            oath.unlock()
-        }
-
         val listener = totpListener ?: (supportFragmentManager.findFragmentByTag(SwipeListFragment::class.java.name) as SwipeListFragment)?.current ?: SwipeListFragment().apply {
             openFragment(this)
         }.current
 
         try {
+            if(oath.isLocked()) {
+                oath.unlock()
+            }
             listener.onYubiKeyNeo(oath)
         } catch (e: PasswordRequiredException) {
             listener.onPasswordMissing(state.keyManager, e.id, e.isMissing)
@@ -128,7 +122,7 @@ class MainActivity : AppCompatActivity(), OnDiscoveredTagListener {
     @SuppressLint("NewApi")
     public override fun onPause() {
         super.onPause()
-        tagDispatcher.disableExclusiveNfc()
+        tagDispatcher?.disableExclusiveNfc()
     }
 
     @SuppressLint("NewApi")
@@ -137,10 +131,10 @@ class MainActivity : AppCompatActivity(), OnDiscoveredTagListener {
 
         if(intent.action == NfcAdapter.ACTION_NDEF_DISCOVERED && !state.ndefConsumed) {
             state.ndefConsumed = true
-            tagDispatcher.interceptIntent(intent)
+            tagDispatcher?.interceptIntent(intent)
         }
         
-        when (tagDispatcher.enableExclusiveNfc()) {
+        when (tagDispatcher?.enableExclusiveNfc()) {
             TagDispatcher.NfcStatus.AVAILABLE_DISABLED -> {
                 with(supportFragmentManager) {
                     beginTransaction().let { transaction ->
@@ -194,11 +188,16 @@ class MainActivity : AppCompatActivity(), OnDiscoveredTagListener {
     }
 
     override fun tagDiscovered(tag: Tag) {
-        useOath(YubiKeyOath(state.keyManager, NfcBackend(AndroidCard.get(tag))))
+        try {
+            useOath(YubiKeyOath(state.keyManager, NfcBackend(AndroidCard.get(tag))))
+        } catch (e: IOException) {
+            toast(R.string.tag_error)
+            Log.e("yubioath", "IOException in handler", e)
+        }
     }
 
     override fun onNewIntent(intent: Intent) {
-        tagDispatcher.interceptIntent(intent)
+        tagDispatcher?.interceptIntent(intent)
     }
 
     interface OnYubiKeyNeoListener {

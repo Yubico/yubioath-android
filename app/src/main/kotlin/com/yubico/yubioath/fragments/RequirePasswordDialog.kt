@@ -34,6 +34,7 @@ import android.app.AlertDialog
 import android.app.Dialog
 import android.os.Bundle
 import android.support.v4.app.DialogFragment
+import com.yubico.yubioath.MainActivity
 import com.yubico.yubioath.R
 import com.yubico.yubioath.model.KeyManager
 import kotlinx.android.synthetic.main.require_password_dialog.view.*
@@ -79,6 +80,7 @@ class RequirePasswordDialog : DialogFragment() {
                     val remember = it.rememberPassword.isChecked
                     keyManager.storeSecret(id, KeyManager.calculateSecret(password, id, false), remember)
                     keyManager.storeSecret(id, KeyManager.calculateSecret(password, id, true), remember)
+                    (activity as MainActivity).checkForUsbDevice()
                 }
                 setNegativeButton(R.string.cancel) { dialog, which ->
                     dialog.cancel()

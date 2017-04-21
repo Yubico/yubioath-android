@@ -210,7 +210,6 @@ class ListCodesFragment : ListFragment(), MainActivity.OnYubiKeyNeoListener, Act
 
         if (hasTimeout) {
             val animationOffset = timestamp - System.currentTimeMillis()
-            Log.d("yubioath", "Timeout animation offset: " + animationOffset)
             timeoutAnimation.startOffset = animationOffset
             startTime = timestamp
             timeoutBar?.startAnimation(timeoutAnimation)
