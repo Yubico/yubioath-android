@@ -89,11 +89,6 @@ class AddAccountFragment : Fragment(), MainActivity.OnYubiKeyNeoListener {
         return data?.let {
             manualMode = false
 
-            Handler().postDelayed(//Give the app some time to get the fragment ready.
-                    {
-                        (activity as MainActivity).checkForUsbDevice()
-                    }, 100)
-
             inflater!!.inflate(R.layout.add_code_scan_fragment, container, false).apply {
                 qr_credential_name.setText(it.name)
             }
@@ -101,6 +96,11 @@ class AddAccountFragment : Fragment(), MainActivity.OnYubiKeyNeoListener {
             manual_back.setOnClickListener { onClick(it) }
             manual_add.setOnClickListener { onClick(it) }
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        (activity as MainActivity).checkForUsbDevice()
     }
 
     private fun onClick(v: View) {
