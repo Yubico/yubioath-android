@@ -149,7 +149,7 @@ constructor(private val keyManager: KeyManager, private val backend: Backend) : 
         val algorithm = (HMAC_MASK.toInt() and type.toInt()).toByte()
 
         try {
-            val imf = if (counter >= 0) {
+            val imf = if (counter > 0) {
                 ByteBuffer.allocate(6).put(IMF_TAG).put(4).putInt(counter).array()
             } else byteArrayOf()
             send(PUT_INS, data= tlv(NAME_TAG, name.toByteArray()) + tlv(KEY_TAG, byteArrayOf(type, digits.toByte()) + hmacShortenKey(key, algorithm)  + imf))

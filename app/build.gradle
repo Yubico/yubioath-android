@@ -30,9 +30,9 @@ android {
 }
 
 dependencies {
-    testCompile 'org.robolectric:robolectric:3.0'
+    testCompile 'org.robolectric:robolectric:3.3.2'
     testCompile 'junit:junit:4.12'
-    testCompile 'org.mockito:mockito-core:2.1.0-beta.121'
+    testCompile 'org.mockito:mockito-core:2.7.22'
     compile 'commons-codec:commons-codec:1.5'
     compile 'com.android.support:appcompat-v7:25.3.1'
     compile group: 'com.fidesmo', name: 'nordpol-android', version: '0.1.21', ext: 'aar', transitive: true
