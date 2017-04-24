@@ -189,7 +189,7 @@ constructor(private val keyManager: KeyManager, private val backend: Backend) : 
         val codes = ArrayList<Map<String, String>>()
         while (resp.hasRemaining()) {
             val name = String(resp.parseTlv(NAME_TAG))
-            val respType = resp.array()[resp.position()]  // Peek
+            val respType = resp.slice().get()  // Peek
             val hashBytes = resp.parseTlv(respType)
 
             if(name.startsWith("_hidden:")) continue
@@ -213,25 +213,22 @@ constructor(private val keyManager: KeyManager, private val backend: Backend) : 
     @Throws(IOException::class)
     private fun send(ins: Byte, p1: Byte = 0, p2: Byte = 0, data: ByteBuffer.() -> Unit = {}): ByteBuffer {
         val apdu = ByteBuffer.allocate(256).put(0).put(ins).put(p1).put(p2).put(0).apply(data).let {
-            val len = it.position()
-            it.position(4)
-            it.put((len - 5).toByte())
-            it.array().copyOfRange(0, len)
+            it.put(4, (it.position() - 5).toByte()).array().copyOfRange(0, it.position())
         }
         var resp = splitApduResponse(backend.sendApdu(apdu))
 
-        val buf = ByteArrayOutputStream(2048)
+        val buf = ByteBuffer.allocate(2048)
         while (resp.status != APDU_OK) {
             if (resp.status.shr(8).toByte() == APDU_DATA_REMAINING_SW1) {
-                buf.write(resp.data)
+                buf.put(resp.data)
                 resp = splitApduResponse(backend.sendApdu(byteArrayOf(0, SEND_REMAINING_INS, 0, 0)))
             } else {
                 throw ApduError(resp.data, resp.status)
             }
         }
-        buf.write(resp.data)
+        buf.put(resp.data)
 
-        return ByteBuffer.wrap(buf.toByteArray())
+        return buf.apply { limit(position()).rewind() }
     }
 
     @Throws(IOException::class)
