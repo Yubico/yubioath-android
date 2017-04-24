@@ -64,7 +64,7 @@ class SwipeListFragment(val current:ListCodesFragment = ListCodesFragment()) : F
         return inflater!!.inflate(R.layout.swipe_list_fragment, container, false).apply {
             with(pager) {
                 offscreenPageLimit = 0
-                adapter = ListAdapter(fragmentManager)
+                adapter = ListAdapter(childFragmentManager)
                 addOnPageChangeListener(object : ViewPager.OnPageChangeListener {
                     override fun onPageScrolled(position: Int, positionOffset: Float, positionOffsetPixels: Int) {
                     }

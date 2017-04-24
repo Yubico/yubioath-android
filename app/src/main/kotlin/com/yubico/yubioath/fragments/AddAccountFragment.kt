@@ -31,7 +31,6 @@
 package com.yubico.yubioath.fragments
 
 import android.os.Bundle
-import android.os.Handler
 import android.support.v4.app.Fragment
 import android.util.Log
 import android.view.LayoutInflater
@@ -42,6 +41,7 @@ import com.yubico.yubioath.R
 import com.yubico.yubioath.exc.StorageFullException
 import com.yubico.yubioath.model.CredentialData
 import com.yubico.yubioath.model.KeyManager
+import com.yubico.yubioath.model.OathType
 import com.yubico.yubioath.model.YubiKeyOath
 import kotlinx.android.synthetic.main.add_code_manual_fragment.*
 import kotlinx.android.synthetic.main.add_code_manual_fragment.view.*
@@ -113,7 +113,7 @@ class AddAccountFragment : Fragment(), MainActivity.OnYubiKeyNeoListener {
             R.id.manual_add -> {
                 val name = credential_name.text.toString()
                 val secret = credential_secret.text.toString()
-                val type = if (credential_type.selectedItemId == 0.toLong()) "totp" else "hotp"
+                val type = if (credential_type.selectedItemId == 0.toLong()) OathType.TOTP else OathType.HOTP
 
                 if (name.isEmpty() || secret.isEmpty()) {
                     activity.longToast(R.string.credential_manual_error)
@@ -159,7 +159,10 @@ class AddAccountFragment : Fragment(), MainActivity.OnYubiKeyNeoListener {
         with(activity as MainActivity) {
             data?.apply {
                 try {
-                    oath.storeCode(name, key, (oath_type.toInt() or algorithm_type.toInt()).toByte(), digits, counter)
+                    when(oath_type) {
+                        OathType.HOTP -> oath.storeHotp(name, key, algorithm_type, digits, counter)
+                        OathType.TOTP -> oath.storeTotp(name, key, algorithm_type, digits)
+                    }
                     longToast(R.string.prog_success)
                     runOnUiThread {
                         val fragment = SwipeListFragment()

@@ -11,9 +11,9 @@ class CredentialData(uriString:String) {
     val uri: Uri = Uri.parse(uriString)
     val key:ByteArray
     var name:String
-    val oath_type:Byte
-    val algorithm_type:Byte
-    val digits:Int
+    val oath_type:OathType
+    val algorithm_type:Algorithm
+    val digits:Byte
     val counter:Int
 
     init {
@@ -39,14 +39,15 @@ class CredentialData(uriString:String) {
         }
 
         oath_type = when(uri.host.toLowerCase()) {
-            "totp" -> YubiKeyOath.TOTP_TYPE
-            "hotp" -> YubiKeyOath.HOTP_TYPE
+            "totp" -> OathType.TOTP
+            "hotp" -> OathType.HOTP
             else -> throw IllegalArgumentException("Invalid or missing OATH algorithm")
         }
 
         algorithm_type = when(uri.getQueryParameter("algorithm").orEmpty().toLowerCase()) {
-            "", "sha1" -> YubiKeyOath.HMAC_SHA1  //This is the default value
-            "sha256" -> YubiKeyOath.HMAC_SHA256
+            "", "sha1" -> Algorithm.SHA1  //This is the default value
+            "sha256" -> Algorithm.SHA256
+            "sha512" -> Algorithm.SHA512
             else -> throw IllegalArgumentException("Invalid or missing HMAC algorithm")
         }
 
@@ -54,7 +55,7 @@ class CredentialData(uriString:String) {
             if(isNullOrEmpty()) {
                 6
             } else try {
-                toInt()
+                toByte()
             } catch (e: NumberFormatException) {
                 throw IllegalArgumentException("Invalid value for digits")
             }

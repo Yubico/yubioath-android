@@ -53,7 +53,13 @@ class YubiKeyOathTest {
         val key = YubiKeyOath(keyManager, NfcBackend(tagMock))
         Mockito.verify(tagMock).transceive(Mockito.any(ByteArray::class.java))
 
-        key.storeCode("foo", byteArrayOf(0, 1, 2, 3, 4, 5, 6, 7), YubiKeyOath.TOTP_TYPE or YubiKeyOath.HMAC_SHA1, 6, 0)
+        key.storeTotp("foo", byteArrayOf(0, 1, 2, 3, 4, 5, 6, 7), Algorithm.SHA1, 6)
         Mockito.verify(tagMock).transceive(byteArrayOf(0x00, 0x01, 0x00, 0x00, 0x11, 0x71, 0x03, 'f'.toByte(), 'o'.toByte(), 'o'.toByte(), 0x73, 0x0A, 0x21, 0x06, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07))
+
+        key.storeHotp("foo", byteArrayOf(0, 1, 2, 3, 4, 5, 6, 7), Algorithm.SHA256, 6, 0)
+        Mockito.verify(tagMock).transceive(byteArrayOf(0x00, 0x01, 0x00, 0x00, 0x11, 0x71, 0x03, 'f'.toByte(), 'o'.toByte(), 'o'.toByte(), 0x73, 0x0A, 0x12, 0x06, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07))
+
+        key.storeHotp("foo", byteArrayOf(0, 1, 2, 3, 4, 5, 6, 7), Algorithm.SHA1, 6, 1)
+        Mockito.verify(tagMock).transceive(byteArrayOf(0x00, 0x01, 0x00, 0x00, 0x17, 0x71, 0x03, 'f'.toByte(), 'o'.toByte(), 'o'.toByte(), 0x73, 0x0A, 0x11, 0x06, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x7a, 0x04, 0x00, 0x00, 0x00, 0x01))
     }
 }
