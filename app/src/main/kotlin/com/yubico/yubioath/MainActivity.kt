@@ -57,19 +57,19 @@ class MainActivity : AppCompatActivity(), OnDiscoveredTagListener {
 
         usbManager = getSystemService(Context.USB_SERVICE) as UsbManager
 
-        when(supportFragmentManager.findFragmentByTag(SwipeListFragment::class.java.name)) {
+        when (supportFragmentManager.findFragmentByTag(SwipeListFragment::class.java.name)) {
             null -> openFragment(SwipeListFragment())
             else -> Unit
         }
 
-        if(packageManager.hasSystemFeature(PackageManager.FEATURE_NFC)) {
+        if (packageManager.hasSystemFeature(PackageManager.FEATURE_NFC)) {
             tagDispatcher = TagDispatcherBuilder(this, this).enableReaderMode(false).build()
         }
     }
 
-    fun checkForUsbDevice():Boolean {
+    fun checkForUsbDevice(): Boolean {
         usbManager.deviceList.values.find { UsbBackend.isSupported(it) }?.let {
-            if(usbManager.hasPermission(it)) {
+            if (usbManager.hasPermission(it)) {
                 useUsbDevice(it)
             } else {
                 val mPermissionIntent = PendingIntent.getBroadcast(this, 0, Intent(ACTION_USB_PERMISSION), 0)
@@ -80,17 +80,17 @@ class MainActivity : AppCompatActivity(), OnDiscoveredTagListener {
         return false
     }
 
-    private fun useUsbDevice(device:UsbDevice) {
+    private fun useUsbDevice(device: UsbDevice) {
         useOath(YubiKeyOath(state.keyManager, UsbBackend.connect(usbManager, device)))
     }
 
-    private fun useOath(oath:YubiKeyOath) {
-        val listener = totpListener ?: (supportFragmentManager.findFragmentByTag(SwipeListFragment::class.java.name) as SwipeListFragment?)?.current ?: SwipeListFragment().apply {
+    private fun useOath(oath: YubiKeyOath) {
+        val listener = totpListener ?: (supportFragmentManager.findFragmentByTag(SwipeListFragment::class.java.name) as? SwipeListFragment ?: SwipeListFragment().apply {
             openFragment(this)
-        }.current
+        }).current
 
         try {
-            if(oath.isLocked()) {
+            if (oath.isLocked()) {
                 oath.unlock()
             }
             listener.onYubiKey(oath)
@@ -112,7 +112,7 @@ class MainActivity : AppCompatActivity(), OnDiscoveredTagListener {
     }
 
     override fun onBackPressed() {
-        if(supportFragmentManager.findFragmentByTag(SwipeListFragment::class.java.name) == null) {
+        if (supportFragmentManager.findFragmentByTag(SwipeListFragment::class.java.name) == null) {
             openFragment(SwipeListFragment())
         } else {
             super.onBackPressed()
@@ -131,11 +131,11 @@ class MainActivity : AppCompatActivity(), OnDiscoveredTagListener {
     public override fun onResume() {
         super.onResume()
 
-        if(intent.action == NfcAdapter.ACTION_NDEF_DISCOVERED && !state.ndefConsumed) {
+        if (intent.action == NfcAdapter.ACTION_NDEF_DISCOVERED && !state.ndefConsumed) {
             state.ndefConsumed = true
             tagDispatcher?.interceptIntent(intent)
         }
-        
+
         when (tagDispatcher?.enableExclusiveNfc()) {
             TagDispatcher.NfcStatus.AVAILABLE_DISABLED -> {
                 with(supportFragmentManager) {
