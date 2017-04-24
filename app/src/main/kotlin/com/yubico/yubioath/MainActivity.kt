@@ -41,7 +41,7 @@ class MainActivity : AppCompatActivity(), OnDiscoveredTagListener {
 
     private lateinit var usbManager: UsbManager
     private var tagDispatcher: TagDispatcher? = null
-    private var totpListener: OnYubiKeyNeoListener? = null
+    private var totpListener: OnYubiKeyListener? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -93,7 +93,7 @@ class MainActivity : AppCompatActivity(), OnDiscoveredTagListener {
             if(oath.isLocked()) {
                 oath.unlock()
             }
-            listener.onYubiKeyNeo(oath)
+            listener.onYubiKey(oath)
         } catch (e: PasswordRequiredException) {
             listener.onPasswordMissing(state.keyManager, e.id, e.isMissing)
         } catch (e: IOException) {
@@ -152,7 +152,7 @@ class MainActivity : AppCompatActivity(), OnDiscoveredTagListener {
     }
 
     fun openFragment(fragment: Fragment) {
-        totpListener = if (fragment is OnYubiKeyNeoListener) fragment else null
+        totpListener = if (fragment is OnYubiKeyListener) fragment else null
 
         with(supportFragmentManager.beginTransaction()) {
             replace(R.id.fragment_container, fragment, fragment.javaClass.name)
@@ -200,9 +200,9 @@ class MainActivity : AppCompatActivity(), OnDiscoveredTagListener {
         tagDispatcher?.interceptIntent(intent)
     }
 
-    interface OnYubiKeyNeoListener {
+    interface OnYubiKeyListener {
         @Throws(IOException::class)
-        fun onYubiKeyNeo(oath: YubiKeyOath)
+        fun onYubiKey(oath: YubiKeyOath)
 
         fun onPasswordMissing(manager: KeyManager, id: ByteArray, missing: Boolean)
     }

@@ -52,7 +52,7 @@ import kotlinx.android.synthetic.main.about_fragment.view.*
  * Time: 10:38 AM
  * To change this template use File | Settings | File Templates.
  */
-class AboutFragment : Fragment(), MainActivity.OnYubiKeyNeoListener {
+class AboutFragment : Fragment(), MainActivity.OnYubiKeyListener {
     private var toastInstance: Toast? = null
     private var clearCounter = 5
 
@@ -101,10 +101,10 @@ class AboutFragment : Fragment(), MainActivity.OnYubiKeyNeoListener {
         dialog.show(ft, "dialog")
     }
 
-    override fun onYubiKeyNeo(oath: YubiKeyOath) {
+    override fun onYubiKey(oath: YubiKeyOath) {
         activity.runOnUiThread {
             val fragment = SwipeListFragment()
-            fragment.current.onYubiKeyNeo(oath)
+            fragment.current.onYubiKey(oath)
             (activity as MainActivity).openFragment(fragment)
         }
     }

@@ -50,7 +50,7 @@ import java.util.*
  * Time: 3:15 PM
  * To change this template use File | Settings | File Templates.
  */
-class SwipeListFragment(val current:ListCodesFragment = ListCodesFragment()) : Fragment(), MainActivity.OnYubiKeyNeoListener by current {
+class SwipeListFragment(val current:ListCodesFragment = ListCodesFragment()) : Fragment(), MainActivity.OnYubiKeyListener by current {
     private val emptyFragment1 = DummyListCodesFragment()
     private val emptyFragment2 = DummyListCodesFragment()
 

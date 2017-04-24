@@ -52,7 +52,7 @@ import java.io.IOException
  * Time: 1:49 PM
  * To change this template use File | Settings | File Templates.
  */
-class SetPasswordFragment : Fragment(), MainActivity.OnYubiKeyNeoListener {
+class SetPasswordFragment : Fragment(), MainActivity.OnYubiKeyListener {
     private lateinit var deviceId: ByteArray
     private var keyManager: KeyManager? = null
     private var needsPassword = false
@@ -121,7 +121,7 @@ class SetPasswordFragment : Fragment(), MainActivity.OnYubiKeyNeoListener {
         }
     }
 
-    override fun onYubiKeyNeo(oath: YubiKeyOath) {
+    override fun onYubiKey(oath: YubiKeyOath) {
         if (!swipeDialog.isAdded) {
             activity.toast(R.string.input_required)
             return

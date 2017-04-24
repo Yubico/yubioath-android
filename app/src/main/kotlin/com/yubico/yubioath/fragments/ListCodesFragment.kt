@@ -60,7 +60,7 @@ import java.util.*
  * Time: 11:08 AM
  * To change this template use File | Settings | File Templates.
  */
-class ListCodesFragment : ListFragment(), MainActivity.OnYubiKeyNeoListener, ActionMode.Callback {
+class ListCodesFragment : ListFragment(), MainActivity.OnYubiKeyListener, ActionMode.Callback {
 
     companion object {
         const private val READ_LIST = 0
@@ -142,7 +142,7 @@ class ListCodesFragment : ListFragment(), MainActivity.OnYubiKeyNeoListener, Act
     }
 
     @Throws(IOException::class)
-    override fun onYubiKeyNeo(oath: YubiKeyOath) {
+    override fun onYubiKey(oath: YubiKeyOath) {
         val now = System.currentTimeMillis()
         val timestamp = if (oath.persistent) {
             now / 30000

@@ -56,7 +56,7 @@ import org.jetbrains.anko.*
  * Time: 10:16 AM
  * To change this template use File | Settings | File Templates.
  */
-class AddAccountFragment : Fragment(), MainActivity.OnYubiKeyNeoListener {
+class AddAccountFragment : Fragment(), MainActivity.OnYubiKeyListener {
     companion object {
         const private val CODE_URI = "codeUri"
 
@@ -145,7 +145,7 @@ class AddAccountFragment : Fragment(), MainActivity.OnYubiKeyNeoListener {
         dialog.show(ft, "dialog")
     }
 
-    override fun onYubiKeyNeo(oath: YubiKeyOath) {
+    override fun onYubiKey(oath: YubiKeyOath) {
         if (manualMode) {
             if (swipeDialog == null) {
                 return
@@ -166,7 +166,7 @@ class AddAccountFragment : Fragment(), MainActivity.OnYubiKeyNeoListener {
                     longToast(R.string.prog_success)
                     runOnUiThread {
                         val fragment = SwipeListFragment()
-                        fragment.current.onYubiKeyNeo(oath)
+                        fragment.current.onYubiKey(oath)
                         openFragment(fragment)
                     }
                 } catch (e: StorageFullException) {
