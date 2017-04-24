@@ -90,10 +90,10 @@ class MainActivity : AppCompatActivity(), OnDiscoveredTagListener {
         }).current
 
         try {
-            if (oath.isLocked()) {
-                oath.unlock()
+            oath.use {
+                if(it.isLocked()) it.unlock()
+                listener.onYubiKey(it)
             }
-            listener.onYubiKey(oath)
         } catch (e: PasswordRequiredException) {
             listener.onPasswordMissing(state.keyManager, e.id, e.isMissing)
         } catch (e: IOException) {

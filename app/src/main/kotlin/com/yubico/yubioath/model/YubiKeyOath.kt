@@ -232,9 +232,7 @@ constructor(private val keyManager: KeyManager, private val backend: Backend) : 
     }
 
     @Throws(IOException::class)
-    override fun close() {
-        backend.close()
-    }
+    override fun close() = backend.close()
 
     companion object {
         const private val APDU_OK = 0x9000
