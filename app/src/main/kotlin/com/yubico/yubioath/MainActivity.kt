@@ -85,7 +85,7 @@ class MainActivity : AppCompatActivity(), OnDiscoveredTagListener {
     }
 
     private fun useOath(oath:YubiKeyOath) {
-        val listener = totpListener ?: (supportFragmentManager.findFragmentByTag(SwipeListFragment::class.java.name) as SwipeListFragment)?.current ?: SwipeListFragment().apply {
+        val listener = totpListener ?: (supportFragmentManager.findFragmentByTag(SwipeListFragment::class.java.name) as SwipeListFragment?)?.current ?: SwipeListFragment().apply {
             openFragment(this)
         }.current
 
@@ -112,10 +112,12 @@ class MainActivity : AppCompatActivity(), OnDiscoveredTagListener {
     }
 
     override fun onBackPressed() {
-        when(supportFragmentManager.findFragmentByTag(SwipeListFragment::class.java.name)) {
-            null -> openFragment(SwipeListFragment())
-            else -> super.onBackPressed()
+        if(supportFragmentManager.findFragmentByTag(SwipeListFragment::class.java.name) == null) {
+            openFragment(SwipeListFragment())
+        } else {
+            super.onBackPressed()
         }
+
         Handler().postDelayed({ checkForUsbDevice() }, 10)
     }
 
@@ -137,10 +139,9 @@ class MainActivity : AppCompatActivity(), OnDiscoveredTagListener {
         when (tagDispatcher?.enableExclusiveNfc()) {
             TagDispatcher.NfcStatus.AVAILABLE_DISABLED -> {
                 with(supportFragmentManager) {
-                    beginTransaction().let { transaction ->
-                        findFragmentByTag("dialog")?.let { transaction.remove(it) }
-                        EnableNfcDialog().show(transaction, "dialog")
-                    }
+                    val transaction = beginTransaction()
+                    findFragmentByTag("dialog")?.let { transaction.remove(it) }
+                    EnableNfcDialog().show(transaction, "dialog")
                 }
             }
             TagDispatcher.NfcStatus.NOT_AVAILABLE -> {
@@ -154,10 +155,9 @@ class MainActivity : AppCompatActivity(), OnDiscoveredTagListener {
     fun openFragment(fragment: Fragment) {
         totpListener = if (fragment is OnYubiKeyListener) fragment else null
 
-        with(supportFragmentManager.beginTransaction()) {
-            replace(R.id.fragment_container, fragment, fragment.javaClass.name)
-            commitAllowingStateLoss()
-        }
+        supportFragmentManager.beginTransaction()
+                .replace(R.id.fragment_container, fragment, fragment.javaClass.name)
+                .commitAllowingStateLoss()
     }
 
     private fun scanQRCode() {

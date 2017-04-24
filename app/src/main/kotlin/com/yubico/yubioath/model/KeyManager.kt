@@ -57,7 +57,7 @@ class KeyManager(private val store: SharedPreferences) {
     private fun doStoreSecret(id: ByteArray, secret: ByteArray, remember: Boolean) {
         val key = KEY + bytes2string(id)
 
-        with(store.edit()) {
+        store.edit().apply {
             if (secret.isNotEmpty()) {
                 val value = bytes2string(secret)
                 val secrets = getMem(key)
@@ -71,8 +71,7 @@ class KeyManager(private val store: SharedPreferences) {
                 memStore.remove(key)
                 remove(key)
             }
-            apply()
-        }
+        }.apply()
     }
 
     fun storeSecret(id: ByteArray, secret: ByteArray, remember: Boolean) {
@@ -104,17 +103,15 @@ class KeyManager(private val store: SharedPreferences) {
             }
 
             val factory: SecretKeyFactory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1")
-            var legacyFactory: SecretKeyFactory
+
             try {
-                legacyFactory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1And8bit")
+                val legacyFactory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1And8bit")
                 return doCalculateSecret(if (legacy) legacyFactory else factory, password.toCharArray(), id)
             } catch (e: NoSuchAlgorithmException) {
                 // Pre 4.4, standard key factory is wrong.
-                legacyFactory = factory
-
                 // Android < 4.4 only uses the lowest 8 bits of each character, so fix the char[].
                 val pwChars = if(legacy) password.toCharArray() else password.toByteArray(Charsets.UTF_8).map(Byte::toChar).toCharArray()
-                return doCalculateSecret(legacyFactory, pwChars, id)
+                return doCalculateSecret(factory, pwChars, id)
             }
         }
 
