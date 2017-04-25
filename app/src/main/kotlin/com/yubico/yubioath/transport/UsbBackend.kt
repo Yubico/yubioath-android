@@ -43,44 +43,44 @@ class UsbBackend(private val connection: UsbDeviceConnection, private val iface:
                 .putShort(0.toShort())
                 .put(data)
         packet.rewind()
-        var buf = ByteArray(endpointBulkOut.maxPacketSize)
+        val bufOut = ByteArray(endpointBulkOut.maxPacketSize)
         var remaining = packet.remaining()
         while (remaining >= 0) { // Note that we send an empty packet on multiples of packet.length!
-            val packetSize = Math.min(buf.size, remaining)
-            packet.get(buf, 0, packetSize)
-            connection.bulkTransfer(endpointBulkOut, buf, packetSize, TIMEOUT)
-            remaining -= buf.size
+            val packetSize = Math.min(bufOut.size, remaining)
+            packet.get(bufOut, 0, packetSize)
+            connection.bulkTransfer(endpointBulkOut, bufOut, packetSize, TIMEOUT)
+            remaining -= bufOut.size
         }
 
-        buf = ByteArray(endpointBulkIn.maxPacketSize)
-
-        var read:Int
+        val bufIn = ByteArray(endpointBulkIn.maxPacketSize)
+        var read: Int
         do {
-            read = connection.bulkTransfer(endpointBulkIn, buf, buf.size, TIMEOUT)
-        } while(buf[5] != SLOT || buf[6] != sequence || buf[7] == STATUS_TIME_EXTENSION)
+            read = connection.bulkTransfer(endpointBulkIn, bufIn, bufIn.size, TIMEOUT)
+        } while (bufIn[5] != SLOT || bufIn[6] != sequence || bufIn[7] == STATUS_TIME_EXTENSION)
         sequence++
 
-        val firstPacket = ByteBuffer.wrap(buf).order(ByteOrder.LITTLE_ENDIAN)
-        firstPacket.get() //TODO: Should be 0x80
-        val length = firstPacket.int
-        firstPacket.get() // Slot, already checked
-        firstPacket.get() // Sequence, already checked
-        firstPacket.get() //TODO: Status, should be 0
-        firstPacket.get() //TODO: Should be 0, error
-        firstPacket.get() //TODO: Should be ?, level parameter
-        val response = ByteBuffer.allocate(length)
-        response.put(buf, firstPacket.position(), Math.min(length, firstPacket.remaining()))
-        while (read == buf.size) {  //Read until first non-full packet.
-            read = connection.bulkTransfer(endpointBulkIn, buf, buf.size, TIMEOUT)
-            response.put(buf, 0, read)
+
+        val response = ByteBuffer.wrap(bufIn).order(ByteOrder.LITTLE_ENDIAN).run {
+            get() //TODO: Should be 0x80
+            val length = int
+            get() // Slot, already checked
+            get() // Sequence, already checked
+            get() //TODO: Status, should be 0
+            get() //TODO: Should be 0, error
+            get() //TODO: Should be ?, level parameter
+
+            ByteBuffer.allocate(length).put(bufIn, position(), Math.min(length, remaining()))
+        }
+
+        while (read == bufIn.size) {  //Read until first non-full packet.
+            read = connection.bulkTransfer(endpointBulkIn, bufIn, bufIn.size, TIMEOUT)
+            response.put(bufIn, 0, read)
         }
 
         return response.array()
     }
 
-    override fun sendApdu(apdu: ByteArray): ByteArray {
-        return transceive(0x6f.toByte(), apdu)
-    }
+    override fun sendApdu(apdu: ByteArray): ByteArray = transceive(0x6f.toByte(), apdu)
 
     @Throws(IOException::class)
     override fun close() {
@@ -95,18 +95,13 @@ class UsbBackend(private val connection: UsbDeviceConnection, private val iface:
         private const val STATUS_TIME_EXTENSION = 0x80.toByte()
 
         private fun findInterface(device: UsbDevice): UsbInterface? {
-            for (i in 0..device.interfaceCount - 1) {
-                val iface = device.getInterface(i)
-                if (iface.interfaceClass == UsbConstants.USB_CLASS_CSCID) {
-                    return iface
-                }
-            }
-            return null
+            return (0..device.interfaceCount - 1)
+                    .asSequence()
+                    .map { device.getInterface(it) }
+                    .firstOrNull { it.interfaceClass == UsbConstants.USB_CLASS_CSCID }
         }
 
-        fun isSupported(device: UsbDevice): Boolean {
-            return findInterface(device) != null
-        }
+        fun isSupported(device: UsbDevice): Boolean = findInterface(device) != null
 
         fun connect(manager: UsbManager, device: UsbDevice): UsbBackend {
             val iface = findInterface(device)

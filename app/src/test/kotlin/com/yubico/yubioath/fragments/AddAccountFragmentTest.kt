@@ -47,7 +47,7 @@ class AddAccountFragmentTest {
         val failingUris = listOf("http://example.com/", "otpauth://foobar?secret=kaka", "foobar", "otpauth://totp/Example:alice@google.com?secret=balhonga1&issuer=Example", "otpauth:///foo:mallory@example.com?secret=kaka")
         for (uri in failingUris) {
             try {
-                CredentialData(uri)
+                CredentialData.from_uri(uri)
                 fail("URL $uri did not fail")
             } catch (e: IllegalArgumentException) {
                 // Should fail.
@@ -61,7 +61,7 @@ class AddAccountFragmentTest {
         val goodUris = listOf("otpauth://totp/Example:alice@google.com?secret=JBSWY3DPEHPK3PXP&issuer=Example", "otpauth://hotp/foobar:bob@example.com?secret=blahonga2")
         for (uri in goodUris) {
             try {
-                CredentialData(uri)
+                CredentialData.from_uri(uri)
             } catch (e: IllegalArgumentException) {
                 System.err.println("Failed at uri: " + uri)
                 throw e

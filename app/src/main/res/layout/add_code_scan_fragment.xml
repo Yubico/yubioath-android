@@ -35,7 +35,6 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:layout_gravity="center"
-    android:gravity="center_vertical"
     android:padding="16dp">
 
     <TextView
@@ -54,18 +53,25 @@
         android:layout_gravity="left|top" />
 
     <LinearLayout
-        android:orientation="vertical"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_gravity="center"
-        android:gravity="center_vertical"
-        android:padding="16dp">
+        android:orientation="horizontal"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:paddingTop="16dp">
 
-        <TextView
+        <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/swipe_to_put"
-            android:layout_gravity="center" />
+            android:id="@+id/scan_back"
+            android:layout_gravity="start"
+            android:layout_weight="1"
+            android:text="@string/cancel" />
 
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/scan_add"
+            android:layout_gravity="end"
+            android:layout_weight="1"
+            android:text="@string/add" />
     </LinearLayout>
 </LinearLayout>

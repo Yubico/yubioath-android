@@ -34,7 +34,6 @@ import android.util.Log
 import com.yubico.yubioath.exc.*
 import com.yubico.yubioath.transport.ApduError
 import com.yubico.yubioath.transport.Backend
-import java.io.ByteArrayOutputStream
 import java.io.Closeable
 import java.io.IOException
 import java.nio.ByteBuffer
@@ -172,12 +171,13 @@ constructor(private val keyManager: KeyManager, private val backend: Backend) : 
     }
 
     @Throws(IOException::class)
-    fun readHotpCode(name: String): String {
-        val resp = send(CALCULATE_INS, p2 = 1) {
+    fun readCode(name: String): String {
+        val steam = name.startsWith("Steam:")
+        val resp = send(CALCULATE_INS, p2 = if(steam) 0 else 1) {
             tlv(NAME_TAG, name.toByteArray())
-            tlv(CHALLENGE_TAG)
+            put(CHALLENGE_TAG).put(8).putLong(System.currentTimeMillis() / 30000)
         }
-        return codeFromTruncated(resp.parseTlv(T_RESPONSE_TAG))
+        return if(steam) steamCodeFromFull(resp.parseTlv(RESPONSE_TAG)) else codeFromTruncated(resp.parseTlv(T_RESPONSE_TAG))
     }
 
     @Throws(IOException::class)
@@ -197,11 +197,15 @@ constructor(private val keyManager: KeyManager, private val backend: Backend) : 
             codes.add(mapOf(
                     "label" to name,
                     "code" to when (respType) {
-                        T_RESPONSE_TAG -> if(name.startsWith("Steam:"))
-                            steamCodeFromTruncated(hashBytes)
-                        else
-                            codeFromTruncated(hashBytes)
-                        NO_RESPONSE_TAG -> ""
+                        T_RESPONSE_TAG -> {
+                            if (name.startsWith("Steam:"))
+                                if (version[0] == 4.toByte()) {
+                                    readCode(name) // We need a full response for a Steam code on YK4.
+                                } else steamCodeFromTruncated(hashBytes)
+                            else
+                                codeFromTruncated(hashBytes)
+                        }
+                        NO_RESPONSE_TAG, TOUCH_TAG -> ""
                         else -> "<invalid code>"
                     }
             ))
@@ -249,6 +253,7 @@ constructor(private val keyManager: KeyManager, private val backend: Backend) : 
         const private val PROPERTY_TAG: Byte = 0x78
         const private val VERSION_TAG: Byte = 0x79
         const private val IMF_TAG: Byte = 0x7a
+        const private val TOUCH_TAG: Byte = 0x7c
 
         const private val PUT_INS: Byte = 0x01
         const private val DELETE_INS: Byte = 0x02
@@ -298,7 +303,7 @@ constructor(private val keyManager: KeyManager, private val backend: Backend) : 
         private fun steamCodeFromTruncated(data: ByteArray): String {
             with(ByteBuffer.wrap(data)) {
                 get()  //Ignore stored length for Steam
-                var code = int
+                var code = 0x7fffffff and int
                 return StringBuilder().apply {
                     for (i in 0..4) {
                         append(STEAM_CHARS[code % STEAM_CHARS.length])
@@ -306,6 +311,11 @@ constructor(private val keyManager: KeyManager, private val backend: Backend) : 
                     }
                 }.toString()
             }
+        }
+
+        private fun steamCodeFromFull(data: ByteArray): String {
+            val offs = 0xf and data[data.size - 1].toInt()
+            return steamCodeFromTruncated(byteArrayOf(0) + data.copyOfRange(offs, offs+4))
         }
 
         private fun ByteBuffer.tlv(tag: Byte, data: ByteArray = byteArrayOf()): ByteBuffer {

@@ -47,6 +47,7 @@ import kotlinx.android.synthetic.main.add_code_manual_fragment.*
 import kotlinx.android.synthetic.main.add_code_manual_fragment.view.*
 import kotlinx.android.synthetic.main.add_code_scan_fragment.*
 import kotlinx.android.synthetic.main.add_code_scan_fragment.view.*
+import org.apache.commons.codec.binary.Base32
 import org.jetbrains.anko.*
 
 /**
@@ -75,7 +76,7 @@ class AddAccountFragment : Fragment(), MainActivity.OnYubiKeyListener {
 
     override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         try {
-            data = arguments?.getString(CODE_URI)?.trim()?.let { CredentialData(it) }
+            data = arguments?.getString(CODE_URI)?.trim()?.let { CredentialData.from_uri(it) }
         } catch (e: IllegalArgumentException) {
             Log.e("yubioath", "Exception parsing URI", e)
             with(activity as MainActivity) {
@@ -91,6 +92,8 @@ class AddAccountFragment : Fragment(), MainActivity.OnYubiKeyListener {
 
             inflater!!.inflate(R.layout.add_code_scan_fragment, container, false).apply {
                 qr_credential_name.setText(it.name)
+                scan_back.setOnClickListener { onClick(it) }
+                scan_add.setOnClickListener { onClick(it) }
             }
         } ?: inflater!!.inflate(R.layout.add_code_manual_fragment, container, false).apply {
             manual_back.setOnClickListener { onClick(it) }
@@ -105,14 +108,14 @@ class AddAccountFragment : Fragment(), MainActivity.OnYubiKeyListener {
 
     private fun onClick(v: View) {
         when (v.id) {
-            R.id.manual_back -> {
+            R.id.manual_back, R.id.scan_back -> {
                 SetPasswordFragment.closeKeyboard(activity)
 
                 (activity as MainActivity).openFragment(SwipeListFragment())
             }
             R.id.manual_add -> {
                 val name = credential_name.text.toString()
-                val secret = credential_secret.text.toString()
+                val secret = credential_secret.text.toString().toUpperCase()
                 val type = if (credential_type.selectedItemId == 0.toLong()) OathType.TOTP else OathType.HOTP
 
                 if (name.isEmpty() || secret.isEmpty()) {
@@ -120,8 +123,27 @@ class AddAccountFragment : Fragment(), MainActivity.OnYubiKeyListener {
                 } else {
                     SetPasswordFragment.closeKeyboard(activity)
 
-                    data = CredentialData("otpauth://$type/$name?secret=$secret")
+                    val base32 = Base32()
+                    val key = when {
+                        base32.isInAlphabet(secret) -> base32.decode(secret)
+                        else -> throw IllegalArgumentException("Secret must be base32 encoded")
+                    }
+                    data = CredentialData(key, name, type)
 
+                    swipeDialog = SwipeDialog().apply {
+                        setOnCancel { (activity as MainActivity).openFragment(SwipeListFragment()) }
+                        show(this@AddAccountFragment.fragmentManager, "dialog")
+                    }
+                    (activity as MainActivity).checkForUsbDevice()
+                }
+            }
+            R.id.scan_add -> {
+                val name = qr_credential_name.text.toString()
+                if (name.isEmpty()) {
+                    activity.longToast(R.string.credential_invalid_name)
+                } else {
+                    SetPasswordFragment.closeKeyboard(activity)
+                    data?.name = name
                     swipeDialog = SwipeDialog().apply {
                         setOnCancel { (activity as MainActivity).openFragment(SwipeListFragment()) }
                         show(this@AddAccountFragment.fragmentManager, "dialog")
@@ -146,22 +168,16 @@ class AddAccountFragment : Fragment(), MainActivity.OnYubiKeyListener {
     }
 
     override fun onYubiKey(oath: YubiKeyOath) {
-        if (manualMode) {
-            if (swipeDialog == null) {
-                return
-            }
-
-            swipeDialog?.dismiss()
-        } else {
-            data?.name = qr_credential_name.text.toString()
+        if (swipeDialog == null) {
+            return
         }
 
         with(activity as MainActivity) {
             data?.apply {
                 try {
-                    when(oath_type) {
-                        OathType.HOTP -> oath.storeHotp(name, key, algorithm_type, digits, counter)
-                        OathType.TOTP -> oath.storeTotp(name, key, algorithm_type, digits)
+                    when(oathType) {
+                        OathType.HOTP -> oath.storeHotp(name, key, algorithm, digits, counter)
+                        OathType.TOTP -> oath.storeTotp(name, key, algorithm, digits)
                     }
                     longToast(R.string.prog_success)
                     runOnUiThread {
@@ -173,6 +189,8 @@ class AddAccountFragment : Fragment(), MainActivity.OnYubiKeyListener {
                     longToast(R.string.storage_full)
                 } catch (e: Exception) {
                     longToast(R.string.tag_error_retry)
+                } finally {
+                    swipeDialog?.dismiss()
                 }
             }
         }

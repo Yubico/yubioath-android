@@ -170,7 +170,7 @@ class ListCodesFragment : ListFragment(), MainActivity.OnYubiKeyListener, Action
             }
             READ_SELECTED -> {
                 selectedItem?.let {
-                    it.code = oath.readHotpCode(it.label)
+                    it.code = oath.readCode(it.label)
                     adapter.notifyDataSetChanged()
                 }
                 swipeDialog.dismiss()

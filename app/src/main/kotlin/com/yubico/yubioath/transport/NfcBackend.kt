@@ -7,7 +7,7 @@ import nordpol.IsoCard
  * Created by Dain on 2017-04-19.
  */
 
-class NfcBackend(private val card:IsoCard): Backend {
+class NfcBackend(private val card: IsoCard) : Backend {
     override val persistent = false
 
     init {
@@ -15,9 +15,7 @@ class NfcBackend(private val card:IsoCard): Backend {
         card.timeout = 3000
     }
 
-    override fun sendApdu(apdu: ByteArray): ByteArray {
-        return card.transceive(apdu)
-    }
+    override fun sendApdu(apdu: ByteArray): ByteArray = card.transceive(apdu)
 
     override fun close() = card.close()
 }
