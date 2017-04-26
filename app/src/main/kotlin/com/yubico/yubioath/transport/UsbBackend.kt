@@ -106,9 +106,13 @@ class UsbBackend(private val connection: UsbDeviceConnection, private val iface:
             return findInterface(device)?.let { iface ->
                 (0..iface.endpointCount - 1)
                         .map { iface.getEndpoint(it) }
-                        .filter { it.type == UsbConstants.USB_ENDPOINT_XFER_BULK }
-                        .partition { it.direction == UsbConstants.USB_DIR_OUT }.let {
-                    UsbBackend(manager.openDevice(device), iface, it.first[0], it.second[0])
+                        .filter { it.type == UsbConstants.USB_ENDPOINT_XFER_BULK }.let {
+                    UsbBackend(
+                            manager.openDevice(device),
+                            iface,
+                            it.first { it.direction == UsbConstants.USB_DIR_OUT },
+                            it.first { it.direction == UsbConstants.USB_DIR_IN }
+                    )
                 }
             } ?: throw IllegalArgumentException("UsbDevice does not support CCID")
         }
