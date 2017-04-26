@@ -68,7 +68,7 @@ constructor(private val keyManager: KeyManager, private val backend: Backend) : 
 
             id = resp.parseTlv(NAME_TAG)
 
-            if(resp.hasRemaining()) {
+            if (resp.hasRemaining()) {
                 challenge = resp.parseTlv(CHALLENGE_TAG)
             }
         } catch (e: ApduError) {
@@ -173,11 +173,11 @@ constructor(private val keyManager: KeyManager, private val backend: Backend) : 
     @Throws(IOException::class)
     fun readCode(name: String): String {
         val steam = name.startsWith("Steam:")
-        val resp = send(CALCULATE_INS, p2 = if(steam) 0 else 1) {
+        val resp = send(CALCULATE_INS, p2 = if (steam) 0 else 1) {
             tlv(NAME_TAG, name.toByteArray())
             put(CHALLENGE_TAG).put(8).putLong(System.currentTimeMillis() / 30000)
         }
-        return if(steam) steamCodeFromFull(resp.parseTlv(RESPONSE_TAG)) else codeFromTruncated(resp.parseTlv(T_RESPONSE_TAG))
+        return if (steam) steamCodeFromFull(resp.parseTlv(RESPONSE_TAG)) else codeFromTruncated(resp.parseTlv(T_RESPONSE_TAG))
     }
 
     @Throws(IOException::class)
@@ -186,32 +186,31 @@ constructor(private val keyManager: KeyManager, private val backend: Backend) : 
             put(CHALLENGE_TAG).put(8).putLong(timestamp)
         }
 
-        val codes = ArrayList<Map<String, String>>()
-        while (resp.hasRemaining()) {
-            val name = String(resp.parseTlv(NAME_TAG))
-            val respType = resp.slice().get()  // Peek
-            val hashBytes = resp.parseTlv(respType)
+        return mutableListOf<Map<String, String>>().apply {
+            while (resp.hasRemaining()) {
+                val name = String(resp.parseTlv(NAME_TAG))
+                val respType = resp.slice().get()  // Peek
+                val hashBytes = resp.parseTlv(respType)
 
-            if(name.startsWith("_hidden:")) continue
+                if (name.startsWith("_hidden:")) continue
 
-            codes.add(mapOf(
-                    "label" to name,
-                    "code" to when (respType) {
-                        T_RESPONSE_TAG -> {
-                            if (name.startsWith("Steam:"))
-                                if (version[0] == 4.toByte()) {
-                                    readCode(name) // We need a full response for a Steam code on YK4.
-                                } else steamCodeFromTruncated(hashBytes)
-                            else
-                                codeFromTruncated(hashBytes)
+                add(mapOf(
+                        "label" to name,
+                        "code" to when (respType) {
+                            T_RESPONSE_TAG -> {
+                                if (name.startsWith("Steam:"))
+                                    if (version[0] == 4.toByte()) {
+                                        readCode(name) // We need a full response for a Steam code on YK4.
+                                    } else steamCodeFromTruncated(hashBytes)
+                                else
+                                    codeFromTruncated(hashBytes)
+                            }
+                            NO_RESPONSE_TAG, TOUCH_TAG -> ""
+                            else -> "<invalid code>"
                         }
-                        NO_RESPONSE_TAG, TOUCH_TAG -> ""
-                        else -> "<invalid code>"
-                    }
-            ))
+                ))
+            }
         }
-
-        return codes
     }
 
     @Throws(IOException::class)
@@ -219,20 +218,19 @@ constructor(private val keyManager: KeyManager, private val backend: Backend) : 
         val apdu = ByteBuffer.allocate(256).put(0).put(ins).put(p1).put(p2).put(0).apply(data).let {
             it.put(4, (it.position() - 5).toByte()).array().copyOfRange(0, it.position())
         }
-        var resp = splitApduResponse(backend.sendApdu(apdu))
 
-        val buf = ByteBuffer.allocate(2048)
-        while (resp.status != APDU_OK) {
-            if (resp.status.shr(8).toByte() == APDU_DATA_REMAINING_SW1) {
-                buf.put(resp.data)
-                resp = splitApduResponse(backend.sendApdu(byteArrayOf(0, SEND_REMAINING_INS, 0, 0)))
-            } else {
-                throw ApduError(resp.data, resp.status)
+        return ByteBuffer.allocate(4096).apply {
+            var resp = splitApduResponse(backend.sendApdu(apdu))
+            while (resp.status != APDU_OK) {
+                if (resp.status.shr(8).toByte() == APDU_DATA_REMAINING_SW1) {
+                    put(resp.data)
+                    resp = splitApduResponse(backend.sendApdu(byteArrayOf(0, SEND_REMAINING_INS, 0, 0)))
+                } else {
+                    throw ApduError(resp.data, resp.status)
+                }
             }
+            put(resp.data).limit(position()).rewind()
         }
-        buf.put(resp.data)
-
-        return buf.apply { limit(position()).rewind() }
     }
 
     @Throws(IOException::class)
@@ -278,7 +276,7 @@ constructor(private val keyManager: KeyManager, private val backend: Backend) : 
         @Throws(IOException::class)
         private fun ByteBuffer.parseTlv(tag: Byte): ByteArray {
             val readTag = get()
-            if(readTag != tag) {
+            if (readTag != tag) {
                 throw IOException("Required tag: %02x, got %02x".format(tag, readTag))
             }
             return ByteArray(0xff and get().toInt()).apply { get(this) }
@@ -314,8 +312,8 @@ constructor(private val keyManager: KeyManager, private val backend: Backend) : 
         }
 
         private fun steamCodeFromFull(data: ByteArray): String {
-            val offs = 0xf and data[data.size - 1].toInt()
-            return steamCodeFromTruncated(byteArrayOf(0) + data.copyOfRange(offs, offs+4))
+            val offs = 0xf and data[data.size - 1].toInt() + 1
+            return steamCodeFromTruncated(byteArrayOf(0) + data.copyOfRange(offs, offs + 4))
         }
 
         private fun ByteBuffer.tlv(tag: Byte, data: ByteArray = byteArrayOf()): ByteBuffer {

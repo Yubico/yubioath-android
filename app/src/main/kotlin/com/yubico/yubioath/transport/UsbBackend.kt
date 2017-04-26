@@ -95,8 +95,7 @@ class UsbBackend(private val connection: UsbDeviceConnection, private val iface:
         private const val STATUS_TIME_EXTENSION = 0x80.toByte()
 
         private fun findInterface(device: UsbDevice): UsbInterface? {
-            return (0..device.interfaceCount - 1)
-                    .asSequence()
+            return (0..device.interfaceCount - 1).asSequence()
                     .map { device.getInterface(it) }
                     .firstOrNull { it.interfaceClass == UsbConstants.USB_CLASS_CSCID }
         }
@@ -104,25 +103,14 @@ class UsbBackend(private val connection: UsbDeviceConnection, private val iface:
         fun isSupported(device: UsbDevice): Boolean = findInterface(device) != null
 
         fun connect(manager: UsbManager, device: UsbDevice): UsbBackend {
-            val iface = findInterface(device)
-            if (iface != null) {
-                var endpointBulkIn: UsbEndpoint? = null
-                var endpointBulkOut: UsbEndpoint? = null
-                for (j in 0..iface.endpointCount - 1) {
-                    val endpoint = iface.getEndpoint(j)
-                    if (endpoint.type == UsbConstants.USB_ENDPOINT_XFER_BULK) {
-                        if (endpoint.direction == UsbConstants.USB_DIR_IN) {
-                            endpointBulkIn = endpoint
-                        } else {
-                            endpointBulkOut = endpoint
-                        }
-                    }
+            return findInterface(device)?.let { iface ->
+                (0..iface.endpointCount - 1)
+                        .map { iface.getEndpoint(it) }
+                        .filter { it.type == UsbConstants.USB_ENDPOINT_XFER_BULK }
+                        .partition { it.direction == UsbConstants.USB_DIR_OUT }.let {
+                    UsbBackend(manager.openDevice(device), iface, it.first[0], it.second[0])
                 }
-                if (endpointBulkOut != null && endpointBulkIn != null) {
-                    return UsbBackend(manager.openDevice(device), iface, endpointBulkOut, endpointBulkIn)
-                }
-            }
-            throw IllegalArgumentException("UsbDevice does not support CCID")
+            } ?: throw IllegalArgumentException("UsbDevice does not support CCID")
         }
     }
 }
