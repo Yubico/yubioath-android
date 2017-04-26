@@ -1,6 +1,5 @@
 package com.yubico.yubioath.transport
 
-import android.util.Log
 import nordpol.IsoCard
 
 /**

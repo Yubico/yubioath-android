@@ -1,18 +1,11 @@
 package com.yubico.yubioath.transport
 
-import android.hardware.usb.UsbConstants
-import android.hardware.usb.UsbDevice
-import android.hardware.usb.UsbDeviceConnection
-import android.hardware.usb.UsbEndpoint
-import android.hardware.usb.UsbInterface
-import android.hardware.usb.UsbManager
-import android.util.Log
-
+import android.hardware.usb.*
 import java.io.Closeable
 import java.io.IOException
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
-import java.util.Arrays
+import java.util.*
 
 /**
  * Created by Dain on 2017-04-19.

@@ -50,7 +50,7 @@ import java.util.*
  * Time: 3:15 PM
  * To change this template use File | Settings | File Templates.
  */
-class SwipeListFragment(val current:ListCodesFragment = ListCodesFragment()) : Fragment(), MainActivity.OnYubiKeyListener by current {
+class SwipeListFragment(val current: ListCodesFragment = ListCodesFragment()) : Fragment(), MainActivity.OnYubiKeyListener by current {
     private val emptyFragment1 = DummyListCodesFragment()
     private val emptyFragment2 = DummyListCodesFragment()
 
@@ -74,7 +74,7 @@ class SwipeListFragment(val current:ListCodesFragment = ListCodesFragment()) : F
 
                     override fun onPageScrollStateChanged(state: Int) {
                         if (state == 0 && currentItem != 1) {
-                            if(!(activity as MainActivity).checkForUsbDevice()) {
+                            if (!(activity as MainActivity).checkForUsbDevice()) {
                                 current.showCodes(ArrayList<Map<String, String>>(), 0)
                             }
                             setCurrentItem(1, false)

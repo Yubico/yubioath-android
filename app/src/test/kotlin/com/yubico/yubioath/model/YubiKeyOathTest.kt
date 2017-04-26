@@ -2,7 +2,6 @@ package com.yubico.yubioath.model
 
 import android.content.SharedPreferences
 import com.yubico.yubioath.BuildConfig
-import com.yubico.yubioath.transport.Backend
 import com.yubico.yubioath.transport.NfcBackend
 import nordpol.IsoCard
 import org.junit.Assert
@@ -11,7 +10,6 @@ import org.junit.runner.RunWith
 import org.mockito.Mockito
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
-import kotlin.experimental.or
 
 @RunWith(RobolectricTestRunner::class)
 @Config(constants = BuildConfig::class, sdk = intArrayOf(21))

@@ -42,7 +42,9 @@ import com.yubico.yubioath.R
 import com.yubico.yubioath.model.KeyManager
 import com.yubico.yubioath.model.YubiKeyOath
 import kotlinx.android.synthetic.main.set_password_fragment.view.*
-import org.jetbrains.anko.*
+import org.jetbrains.anko.inputMethodManager
+import org.jetbrains.anko.longToast
+import org.jetbrains.anko.toast
 import java.io.IOException
 
 /**
@@ -67,7 +69,7 @@ class SetPasswordFragment : Fragment(), MainActivity.OnYubiKeyListener {
 
         return inflater!!.inflate(R.layout.set_password_fragment, container, false).apply {
             cancelPassword.setOnClickListener { onClick(it) }
-            savePassword.setOnClickListener { onClick(it)}
+            savePassword.setOnClickListener { onClick(it) }
         }
     }
 

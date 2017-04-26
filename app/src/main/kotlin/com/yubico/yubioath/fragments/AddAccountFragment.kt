@@ -48,7 +48,7 @@ import kotlinx.android.synthetic.main.add_code_manual_fragment.view.*
 import kotlinx.android.synthetic.main.add_code_scan_fragment.*
 import kotlinx.android.synthetic.main.add_code_scan_fragment.view.*
 import org.apache.commons.codec.binary.Base32
-import org.jetbrains.anko.*
+import org.jetbrains.anko.longToast
 
 /**
  * Created with IntelliJ IDEA.
@@ -175,7 +175,7 @@ class AddAccountFragment : Fragment(), MainActivity.OnYubiKeyListener {
         with(activity as MainActivity) {
             data?.apply {
                 try {
-                    when(oathType) {
+                    when (oathType) {
                         OathType.HOTP -> oath.storeHotp(name, key, algorithm, digits, counter)
                         OathType.TOTP -> oath.storeTotp(name, key, algorithm, digits)
                     }

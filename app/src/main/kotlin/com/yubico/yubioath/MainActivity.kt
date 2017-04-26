@@ -2,7 +2,8 @@ package com.yubico.yubioath
 
 import android.annotation.SuppressLint
 import android.app.PendingIntent
-import android.content.*
+import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.hardware.usb.UsbDevice
 import android.hardware.usb.UsbManager
@@ -25,13 +26,14 @@ import com.yubico.yubioath.exc.UnsupportedAppletException
 import com.yubico.yubioath.fragments.*
 import com.yubico.yubioath.model.KeyManager
 import com.yubico.yubioath.model.YubiKeyOath
-import com.yubico.yubioath.transport.UsbBackend
 import com.yubico.yubioath.transport.NfcBackend
+import com.yubico.yubioath.transport.UsbBackend
 import nordpol.android.AndroidCard
 import nordpol.android.OnDiscoveredTagListener
 import nordpol.android.TagDispatcher
 import nordpol.android.TagDispatcherBuilder
-import org.jetbrains.anko.*
+import org.jetbrains.anko.longToast
+import org.jetbrains.anko.toast
 import java.io.IOException
 
 class MainActivity : AppCompatActivity(), OnDiscoveredTagListener {
@@ -91,7 +93,7 @@ class MainActivity : AppCompatActivity(), OnDiscoveredTagListener {
 
         try {
             oath.use {
-                if(it.isLocked()) it.unlock()
+                if (it.isLocked()) it.unlock()
                 listener.onYubiKey(it)
             }
         } catch (e: PasswordRequiredException) {

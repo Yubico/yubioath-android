@@ -110,7 +110,7 @@ class KeyManager(private val store: SharedPreferences) {
             } catch (e: NoSuchAlgorithmException) {
                 // Pre 4.4, standard key factory is wrong.
                 // Android < 4.4 only uses the lowest 8 bits of each character, so fix the char[].
-                val pwChars = if(legacy) password.toCharArray() else password.toByteArray(Charsets.UTF_8).map(Byte::toChar).toCharArray()
+                val pwChars = if (legacy) password.toCharArray() else password.toByteArray(Charsets.UTF_8).map(Byte::toChar).toCharArray()
                 return doCalculateSecret(factory, pwChars, id)
             }
         }

@@ -36,7 +36,6 @@ import android.os.Bundle
 import android.os.Handler
 import android.support.v4.app.DialogFragment
 import android.support.v4.app.ListFragment
-import android.util.Log
 import android.view.*
 import android.view.animation.Animation
 import android.view.animation.LinearInterpolator
@@ -49,7 +48,9 @@ import com.yubico.yubioath.model.KeyManager
 import com.yubico.yubioath.model.YubiKeyOath
 import kotlinx.android.synthetic.main.list_codes_fragment.*
 import kotlinx.android.synthetic.main.oath_code_view.view.*
-import org.jetbrains.anko.*
+import org.jetbrains.anko.clipboardManager
+import org.jetbrains.anko.longToast
+import org.jetbrains.anko.toast
 import java.io.IOException
 import java.util.*
 
@@ -70,7 +71,7 @@ class ListCodesFragment : ListFragment(), MainActivity.OnYubiKeyListener, Action
 
     private val timeoutAnimation = TimeoutAnimation()
     private var initialCodes: List<Map<String, String>> = emptyList()
-    private var initialTimestamp:Long = 0
+    private var initialTimestamp: Long = 0
     private lateinit var adapter: CodeAdapter
     private lateinit var swipeDialog: SwipeDialog
     private var actionMode: ActionMode? = null
@@ -106,7 +107,8 @@ class ListCodesFragment : ListFragment(), MainActivity.OnYubiKeyListener, Action
                 timeoutBar.clearAnimation()
                 timeoutBar.progress = 0
             }
-            selectedItem?.let { //Deselect selected item as it doesn't keep well.
+            selectedItem?.let {
+                //Deselect selected item as it doesn't keep well.
                 actionMode?.finish()
                 listView.setItemChecked(adapter.getPosition(it), false)
                 selectedItem = null
