@@ -1,3 +1,7 @@
+* Version 1.2.1 released 2017-05-05
+ ** Better handling of errors.
+ ** No longer require NFC to be enabled when available.
+
 * Version 1.2.0 released 2017-04-26
  ** Embedded QR scanner to avoid relying on third party app.
  ** Experimental USB support, enabling use with YubiKey 4C or other YubiKeys via OTG cable.
