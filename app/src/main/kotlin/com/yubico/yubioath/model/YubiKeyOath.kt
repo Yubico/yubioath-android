@@ -41,7 +41,6 @@ import java.security.SecureRandom
 import java.util.*
 import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
-import kotlin.experimental.or
 
 /**
  * Created with IntelliJ IDEA.
@@ -50,6 +49,9 @@ import kotlin.experimental.or
  * Time: 3:57 PM
  * To change this template use File | Settings | File Templates.
  */
+
+//Here because the current kotlin plugin doesn't seem to pick up kotlin.experimental.or
+infix fun Byte.or(other:Byte):Byte = (toInt() or other.toInt()).toByte()
 
 class YubiKeyOath @Throws(IOException::class, AppletSelectException::class)
 constructor(private val keyManager: KeyManager, private val backend: Backend) : Closeable {
@@ -222,7 +224,7 @@ constructor(private val keyManager: KeyManager, private val backend: Backend) : 
         return ByteBuffer.allocate(4096).apply {
             var resp = splitApduResponse(backend.sendApdu(apdu))
             while (resp.status != APDU_OK) {
-                if (resp.status.shr(8).toByte() == APDU_DATA_REMAINING_SW1) {
+                if ((resp.status shr 8).toByte() == APDU_DATA_REMAINING_SW1) {
                     put(resp.data)
                     resp = splitApduResponse(backend.sendApdu(byteArrayOf(0, SEND_REMAINING_INS, 0, 0)))
                 } else {

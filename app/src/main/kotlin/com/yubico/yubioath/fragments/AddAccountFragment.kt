@@ -119,14 +119,14 @@ class AddAccountFragment : Fragment(), MainActivity.OnYubiKeyListener {
                 val type = if (credential_type.selectedItemId == 0.toLong()) OathType.TOTP else OathType.HOTP
 
                 if (name.isEmpty() || secret.isEmpty()) {
-                    activity.longToast(R.string.credential_manual_error)
+                    activity.longToast(R.string.credential_incomplete)
                 } else {
                     SetPasswordFragment.closeKeyboard(activity)
 
                     val base32 = Base32()
                     val key = when {
                         base32.isInAlphabet(secret) -> base32.decode(secret)
-                        else -> throw IllegalArgumentException("Secret must be base32 encoded")
+                        else -> { activity.longToast(R.string.credential_invalid_secret); return }
                     }
                     data = CredentialData(key, name, type)
 

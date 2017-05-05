@@ -16,6 +16,7 @@ class StateFragment : Fragment() {
 
     lateinit var keyManager: KeyManager
     var ndefConsumed = false
+    var nfcWarned = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

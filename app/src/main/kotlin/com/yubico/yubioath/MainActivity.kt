@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.hardware.usb.UsbDevice
 import android.hardware.usb.UsbManager
 import android.nfc.NfcAdapter
@@ -17,7 +16,6 @@ import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.WindowManager
-import android.widget.Toast
 import com.google.zxing.integration.android.IntentIntegrator
 import com.yubico.yubioath.exc.AppletMissingException
 import com.yubico.yubioath.exc.AppletSelectException
@@ -37,18 +35,17 @@ import org.jetbrains.anko.toast
 import java.io.IOException
 
 class MainActivity : AppCompatActivity(), OnDiscoveredTagListener {
-    private val ACTION_USB_PERMISSION = "com.android.example.USB_PERMISSION"
+    private val ACTION_USB_PERMISSION = "com.yubico.yubioath.USB_PERMISSION"
 
     private lateinit var state: StateFragment
 
     private lateinit var usbManager: UsbManager
-    private var tagDispatcher: TagDispatcher? = null
+    private lateinit var tagDispatcher: TagDispatcher
     private var totpListener: OnYubiKeyListener? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        //This causes rotation animation to look like crap.
         window.setFlags(WindowManager.LayoutParams.FLAG_SECURE, WindowManager.LayoutParams.FLAG_SECURE)
 
         setContentView(R.layout.main_activity)
@@ -64,9 +61,10 @@ class MainActivity : AppCompatActivity(), OnDiscoveredTagListener {
             else -> Unit
         }
 
-        if (packageManager.hasSystemFeature(PackageManager.FEATURE_NFC)) {
-            tagDispatcher = TagDispatcherBuilder(this, this).enableReaderMode(false).build()
-        }
+        tagDispatcher = TagDispatcherBuilder(this, this)
+                .enableReaderMode(false)
+                .enableUnavailableNfcUserPrompt(false)
+                .build()
     }
 
     fun checkForUsbDevice(): Boolean {
@@ -126,7 +124,7 @@ class MainActivity : AppCompatActivity(), OnDiscoveredTagListener {
     @SuppressLint("NewApi")
     public override fun onPause() {
         super.onPause()
-        tagDispatcher?.disableExclusiveNfc()
+        tagDispatcher.disableExclusiveNfc()
     }
 
     @SuppressLint("NewApi")
@@ -135,20 +133,21 @@ class MainActivity : AppCompatActivity(), OnDiscoveredTagListener {
 
         if (intent.action == NfcAdapter.ACTION_NDEF_DISCOVERED && !state.ndefConsumed) {
             state.ndefConsumed = true
-            tagDispatcher?.interceptIntent(intent)
+            tagDispatcher.interceptIntent(intent)
         }
 
-        when (tagDispatcher?.enableExclusiveNfc()) {
+        when (tagDispatcher.enableExclusiveNfc()) {
             TagDispatcher.NfcStatus.AVAILABLE_DISABLED -> {
-                with(supportFragmentManager) {
-                    val transaction = beginTransaction()
-                    findFragmentByTag("dialog")?.let { transaction.remove(it) }
-                    EnableNfcDialog().show(transaction, "dialog")
+                if(!state.nfcWarned) {
+                    toast(R.string.nfc_off)
+                    state.nfcWarned = true
                 }
             }
             TagDispatcher.NfcStatus.NOT_AVAILABLE -> {
-                Toast.makeText(this, R.string.no_nfc, Toast.LENGTH_LONG).show()
-                finish()
+                if(!state.nfcWarned) {
+                    toast(R.string.no_nfc)
+                    state.nfcWarned = true
+                }
             }
             else -> Unit
         }
@@ -195,6 +194,9 @@ class MainActivity : AppCompatActivity(), OnDiscoveredTagListener {
         } catch (e: IOException) {
             toast(R.string.tag_error)
             Log.e("yubioath", "IOException in handler", e)
+        } catch (e: AppletMissingException) {
+            toast(R.string.applet_missing)
+            Log.e("yubioath", "AppletMissingException in handler", e)
         }
     }
 
