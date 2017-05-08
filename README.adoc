@@ -1,4 +1,4 @@
-== Android application for OATH with YubiKey NEO
+== Android application for OATH with YubiKey NEO and YubiKey 4
 
 This app is hosted on Google Play as
 https://play.google.com/store/apps/details?id=com.yubico.yubioath[Yubico Authenticator].
@@ -10,18 +10,20 @@ See the file COPYING for copyright and license information.
 
 === Introduction
 
-This is a small android application for doing OATH codes with
-the help of a YubiKey NEO.
+This is a small android application for generating OATH codes with the help of
+a YubiKey with OATH functionality. It can be used over NFC with YubiKey that
+support it, or via USB connection. The USB functionality requires your mobile
+device to support USB Host mode, and for CCID to be enabled on your YubiKey.
+
 To use it when you have an OATH QR-code:
 
-1. Make sure NFC is turned on
+1. Make sure NFC is turned on (or connect the YubiKey via USB)
 2. Start the application
 3. Select 'Scan new QR-code' from the actions menu.
-4. The barcode scanner will start if installed, otherwise offer to install
-5. Scan the barcode and select which slot to program
-6. Swipe the YubiKey NEO as instructed
+4. Scan the barcode and select which slot to program
+5. Tap the NFC-enabled YubiKey as instructed (not needed when using USB)
 
-To view codes, just start the app and swipe your YubiKey NEO.
+To view codes, just start the app and connect/tap your YubiKey.
 
 
 === Building
