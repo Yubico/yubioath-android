@@ -1,4 +1,4 @@
-package com.yubico.yubioath.model
+package com.yubico.yubioath.protocol
 
 import android.net.Uri
 import org.apache.commons.codec.binary.Base32
@@ -7,7 +7,7 @@ import org.apache.commons.codec.binary.Base32
  * Created by Dain on 2016-08-24.
  */
 
-class CredentialData(val key: ByteArray, var name: String, val oathType: OathType, val algorithm: Algorithm = Algorithm.SHA1, val digits: Byte = 6, val counter: Int = 0) {
+class CredentialData(val key: ByteArray, var name: String, val oathType: OathType, val algorithm: Algorithm = Algorithm.SHA1, val digits: Byte = 6, val period: Int = 30, val counter: Int = 0, var touch: Boolean = false) {
 
     companion object {
         fun from_uri(uriString: String): CredentialData {
@@ -56,6 +56,16 @@ class CredentialData(val key: ByteArray, var name: String, val oathType: OathTyp
                 }
             }
 
+            val period = with(uri.getQueryParameter("period")) {
+                if (isNullOrEmpty()) {
+                    30
+                } else try {
+                    toInt()
+                } catch (e: NumberFormatException) {
+                    throw IllegalArgumentException("Invalid value for period")
+                }
+            }
+
             val counter = with(uri.getQueryParameter("counter")) {
                 if (isNullOrEmpty()) {
                     0
@@ -66,7 +76,7 @@ class CredentialData(val key: ByteArray, var name: String, val oathType: OathTyp
                 }
             }
 
-            return CredentialData(key, name, oathType, algorithm, digits, counter)
+            return CredentialData(key, name, oathType, algorithm, digits, period, counter)
         }
     }
 }

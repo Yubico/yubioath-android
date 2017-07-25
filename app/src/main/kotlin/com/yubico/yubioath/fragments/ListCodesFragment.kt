@@ -44,15 +44,17 @@ import android.widget.ArrayAdapter
 import android.widget.ListView
 import com.yubico.yubioath.MainActivity
 import com.yubico.yubioath.R
-import com.yubico.yubioath.model.KeyManager
-import com.yubico.yubioath.model.YubiKeyOath
+import com.yubico.yubioath.client.KeyManager
+import com.yubico.yubioath.protocol.OathType
+import com.yubico.yubioath.client.Code
+import com.yubico.yubioath.client.OathClient
+import com.yubico.yubioath.client.Credential
 import kotlinx.android.synthetic.main.list_codes_fragment.*
 import kotlinx.android.synthetic.main.oath_code_view.view.*
 import org.jetbrains.anko.clipboardManager
 import org.jetbrains.anko.longToast
 import org.jetbrains.anko.toast
 import java.io.IOException
-import java.util.*
 
 /**
  * Created with IntelliJ IDEA.
@@ -70,13 +72,13 @@ class ListCodesFragment : ListFragment(), MainActivity.OnYubiKeyListener, Action
     }
 
     private val timeoutAnimation = TimeoutAnimation()
-    private var initialCodes: List<Map<String, String>> = emptyList()
+    private var initialCodes: MutableMap<Credential, Code?> = mutableMapOf()
     private var initialTimestamp: Long = 0
     private lateinit var adapter: CodeAdapter
     private lateinit var swipeDialog: SwipeDialog
     private var actionMode: ActionMode? = null
     private var state = READ_LIST
-    private var selectedItem: OathCode? = null
+    private var selectedItem: MutableMap.MutableEntry<Credential, Code?>? = null
     private var needsPassword: DialogFragment? = null
     private var startTime: Long = 0
 
@@ -95,7 +97,7 @@ class ListCodesFragment : ListFragment(), MainActivity.OnYubiKeyListener, Action
 
         if (savedInstanceState == null) {
             swipeDialog = SwipeDialog()
-            adapter = CodeAdapter(ArrayList<OathCode>())
+            adapter = CodeAdapter(mutableMapOf())
             listAdapter = adapter
         } else {
             //Correct timer
@@ -119,7 +121,7 @@ class ListCodesFragment : ListFragment(), MainActivity.OnYubiKeyListener, Action
         listView.setOnItemClickListener { parent, view, position, id ->
             actionMode?.apply {
                 selectedItem = adapter.getItem(position)
-                title = selectedItem?.label
+                title = selectedItem?.key?.name
                 listView.setItemChecked(position, true)
             } ?: listView.setItemChecked(position, false)
         }
@@ -128,14 +130,14 @@ class ListCodesFragment : ListFragment(), MainActivity.OnYubiKeyListener, Action
             if (actionMode == null) {
                 actionMode = activity.startActionMode(this)
             }
-            actionMode?.title = selectedItem?.label
+            actionMode?.title = selectedItem?.key?.name
             listView.setItemChecked(position, true)
             true
         }
 
         if (initialCodes.isNotEmpty()) {
             showCodes(initialCodes, initialTimestamp)
-            initialCodes = emptyList()
+            initialCodes = mutableMapOf()
         } else needsPassword?.let {
             val ft = fragmentManager.beginTransaction()
             it.show(ft, "dialog")
@@ -144,15 +146,15 @@ class ListCodesFragment : ListFragment(), MainActivity.OnYubiKeyListener, Action
     }
 
     @Throws(IOException::class)
-    override fun onYubiKey(oath: YubiKeyOath) {
+    override fun onYubiKey(oath: OathClient) {
         val now = System.currentTimeMillis()
         val timestamp = if (oath.persistent) {
-            now / 30000
+            now
         } else {
             //If less than 10 seconds remain until we'd get the next OTP, skip ahead.
-            (now / 1000 + 10) / 30
+            now + 10000
         }
-        val timerStart = if (oath.persistent) timestamp * 30000 else now
+        val timerStart = if (oath.persistent) (timestamp / 30000) * 30000 else now
 
         if (activity == null || !swipeDialog.isAdded) {
             //If the swipeDialog isn't shown we ignore the state and just list the OTPs.
@@ -161,7 +163,7 @@ class ListCodesFragment : ListFragment(), MainActivity.OnYubiKeyListener, Action
 
         when (state) {
             READ_LIST -> {
-                val codes = oath.getCodes(timestamp)
+                val codes = oath.calculateCodes(timestamp)
                 showCodes(codes, timerStart)
                 if (codes.isEmpty()) {
                     Handler().postDelayed(//Give the app some time to get the activity ready.
@@ -172,7 +174,7 @@ class ListCodesFragment : ListFragment(), MainActivity.OnYubiKeyListener, Action
             }
             READ_SELECTED -> {
                 selectedItem?.let {
-                    it.code = oath.readCode(it.label)
+                    it.setValue(oath.calculate(it.key, timestamp))
                     adapter.notifyDataSetChanged()
                 }
                 swipeDialog.dismiss()
@@ -180,31 +182,25 @@ class ListCodesFragment : ListFragment(), MainActivity.OnYubiKeyListener, Action
             }
             DELETE_SELECTED -> {
                 selectedItem?.let {
-                    oath.deleteCode(it.label)
+                    oath.delete(it.key)
                     selectedItem = null
                 }
                 swipeDialog.dismiss()
                 activity?.toast(R.string.deleted)
-                showCodes(oath.getCodes(timestamp), timerStart)
+                showCodes(oath.calculateCodes(timestamp), timerStart)
                 state = READ_LIST
             }
         }
     }
 
-    fun showCodes(codeMap: List<Map<String, String>>, timestamp: Long) {
+    fun showCodes(codes: MutableMap<Credential, Code?>, timestamp: Long) {
         if (activity == null) {
-            initialCodes = codeMap
+            initialCodes = codes
             initialTimestamp = timestamp
             return
         }
 
-        val codes = ArrayList<OathCode>()
-        var hasTimeout = false
-        for (code in codeMap) {
-            val oathCode = OathCode(code["label"] ?: "", code["code"] ?: "")
-            hasTimeout = hasTimeout || !oathCode.hotp
-            codes.add(oathCode)
-        }
+        val hasTimeout = codes.values.any { it != null && it.validUntil < Long.MAX_VALUE }
 
         actionMode?.finish()
 
@@ -236,11 +232,20 @@ class ListCodesFragment : ListFragment(), MainActivity.OnYubiKeyListener, Action
         }
     }
 
-    private fun readHotp(code: OathCode) {
+    private fun readHotp(entry: MutableMap.MutableEntry<Credential, Code?>) {
         actionMode?.finish()
-        selectedItem = code
+        selectedItem = entry
         state = READ_SELECTED
         swipeDialog.show(fragmentManager, "dialog")
+    }
+
+    private fun copyToClipboard(code: Code?) {
+        code?.let {
+            val clipboard = activity.clipboardManager as ClipboardManager
+            val clip = ClipData.newPlainText("OTP", code.value)
+            clipboard.primaryClip = clip
+            activity.toast(R.string.copied)
+        }
     }
 
     override fun onActionItemClicked(mode: ActionMode, item: MenuItem): Boolean {
@@ -269,50 +274,52 @@ class ListCodesFragment : ListFragment(), MainActivity.OnYubiKeyListener, Action
         listView.setItemChecked(listView.checkedItemPosition, false)
     }
 
-    private inner class CodeAdapter(codes: List<OathCode>) : ArrayAdapter<OathCode>(activity, R.layout.oath_code_view, codes) {
+    private inner class CodeAdapter(codes: MutableMap<Credential, Code?>) : ArrayAdapter<MutableMap.MutableEntry<Credential, Code?>>(activity, R.layout.oath_code_view, codes.entries.toMutableList()) {
         var expired = false
 
-        fun setAll(codes: List<OathCode>) {
+        fun setAll(codes: MutableMap<Credential, Code?>) {
             clear()
             expired = false
-            addAll(codes)
-            sort { lhs, rhs -> lhs.label.toLowerCase().compareTo(rhs.label.toLowerCase()) }
+            addAll(codes.entries.toList())
         }
 
         override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
             val inflater = activity.layoutInflater
-            val code = getItem(position)
-            val holder: CodeAdapterViewHolder
-            if (convertView == null) {
+            val entry = getItem(position)
+
+            val holder = if (convertView == null) {
                 val view = inflater.inflate(R.layout.oath_code_view, null)
-                holder = CodeAdapterViewHolder(view)
-                view.tag = holder
+                CodeAdapterViewHolder(view).apply { view.tag = this }
             } else {
-                holder = convertView.tag as CodeAdapterViewHolder
+                convertView.tag as CodeAdapterViewHolder
             }
 
-            listView.setItemChecked(position, actionMode != null && selectedItem === code)
+            listView.setItemChecked(position, actionMode != null && selectedItem === entry)
 
             with(holder) {
                 (view as ViewGroup).descendantFocusability = ViewGroup.FOCUS_BLOCK_DESCENDANTS
 
-                val splitIndex = code.label.indexOf(':')
-                if (splitIndex > 0) {
-                    issuerView.text = code.label.substring(0, splitIndex)
+                val credential = entry.key
+
+                if (credential.issuer != null) {
+                    issuerView.text = credential.issuer
                     issuerView.visibility = View.VISIBLE
-                    labelView.text = code.label.substring(splitIndex + 1)
                 } else {
                     issuerView.visibility = View.GONE
-                    labelView.text = code.label
                 }
+                labelView.text = credential.name
 
-                codeView.text = if (code.isRead) code.code else "<refresh to read>"
-                val valid = if (code.hotp) code.isRead else !expired
+                val code = entry.value
+                codeView.text = code?.value ?: "<refresh to read>"
+
+                val meExpired = credential.period == 30 && expired || code != null && code.validUntil < System.currentTimeMillis()
+
+                val valid = credential.type == OathType.HOTP && code != null || !meExpired
                 codeView.setTextColor(resources.getColor(if (valid) android.R.color.primary_text_dark else android.R.color.secondary_text_dark))
-                readButton.setOnClickListener { readHotp(code) }
-                copyButton.setOnClickListener { code.copyToClipboard() }
-                readButton.visibility = if (code.hotp) View.VISIBLE else View.GONE
-                copyButton.visibility = if (code.isRead) View.VISIBLE else View.GONE
+                readButton.setOnClickListener { readHotp(entry) }
+                copyButton.setOnClickListener { copyToClipboard(code) }
+                readButton.visibility = if (code == null ) View.VISIBLE else View.GONE
+                copyButton.visibility = if (code != null) View.VISIBLE else View.GONE
 
                 return view
             }
@@ -344,7 +351,6 @@ class ListCodesFragment : ListFragment(), MainActivity.OnYubiKeyListener, Action
         }
 
         override fun applyTransformation(interpolatedTime: Float, t: Transformation) {
-            super.applyTransformation(interpolatedTime, t)
             timeoutBar.progress = ((1.0 - interpolatedTime) * 1000).toInt()
         }
     }

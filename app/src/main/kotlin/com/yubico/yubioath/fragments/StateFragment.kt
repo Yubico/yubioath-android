@@ -4,7 +4,7 @@ import android.content.Context
 import android.os.Bundle
 import android.support.v4.app.Fragment
 import com.yubico.yubioath.MainActivity
-import com.yubico.yubioath.model.KeyManager
+import com.yubico.yubioath.client.KeyManager
 
 /**
  * Created by Dain on 2017-04-21.

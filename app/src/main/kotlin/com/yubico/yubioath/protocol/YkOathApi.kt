@@ -1,34 +1,4 @@
-/*
- * Copyright (c) 2013, Yubico AB.  All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- *
- *  Redistributions of source code must retain the above copyright
- *   notice, this list of conditions and the following disclaimer.
- *
- *  Redistributions in binary form must reproduce the above copyright
- *   notice, this list of conditions and the following
- *   disclaimer in the documentation and/or other materials provided
- *   with the distribution.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND
- * CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
- * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
- * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS
- * BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
- * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED
- * TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
- * ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
- * TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
- * THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
- * SUCH DAMAGE.
- */
-
-package com.yubico.yubioath.model
+package com.yubico.yubioath.protocol
 
 import android.util.Log
 import com.yubico.yubioath.exc.*
@@ -42,30 +12,20 @@ import java.util.*
 import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
 
-/**
- * Created with IntelliJ IDEA.
- * User: dain
- * Date: 8/23/13
- * Time: 3:57 PM
- * To change this template use File | Settings | File Templates.
- */
 
-//Here because the current kotlin plugin doesn't seem to pick up kotlin.experimental.or
-infix fun Byte.or(other:Byte):Byte = (toInt() or other.toInt()).toByte()
-
-class YubiKeyOath @Throws(IOException::class, AppletSelectException::class)
-constructor(private val keyManager: KeyManager, private val backend: Backend) : Closeable {
+class YkOathApi @Throws(IOException::class, AppletSelectException::class)
+constructor(private val backend: Backend) : Closeable {
     val persistent = backend.persistent
 
     val id: ByteArray
-    val version: ByteArray
+    val version: Version
     private var challenge: ByteArray = ByteArray(0)
 
     init {
         try {
             val resp = send(0xa4.toByte(), p1 = 0x04) { put(AID) }
 
-            version = resp.parseTlv(VERSION_TAG)
+            version = Version.parse(resp.parseTlv(VERSION_TAG))
             checkVersion(version)
 
             id = resp.parseTlv(NAME_TAG)
@@ -81,27 +41,8 @@ constructor(private val keyManager: KeyManager, private val backend: Backend) : 
 
     fun isLocked(): Boolean = challenge.isNotEmpty()
 
-    @Throws(IOException::class, PasswordRequiredException::class)
-    fun unlock() {
-        val secrets = keyManager.getSecrets(id)
-
-        if (secrets.isEmpty()) {
-            throw PasswordRequiredException("Password is missing!", id, true)
-        }
-
-        for (secret in secrets) {
-            if (doUnlock(challenge, secret)) {
-                keyManager.setOnlySecret(id, secret)
-                challenge = ByteArray(0)
-                return
-            }
-        }
-
-        throw PasswordRequiredException("Password is incorrect!", id, false)
-    }
-
     @Throws(IOException::class)
-    private fun doUnlock(challenge: ByteArray, secret: ByteArray): Boolean {
+    fun unlock(secret: ByteArray): Boolean {
         val response = hmacSha1(secret, challenge)
         val myChallenge = ByteArray(8)
         val random = SecureRandom()
@@ -120,21 +61,7 @@ constructor(private val keyManager: KeyManager, private val backend: Backend) : 
     }
 
     @Throws(IOException::class)
-    private fun unsetLockCode() {
-        send(SET_CODE_INS) { tlv(KEY_TAG) }
-        keyManager.storeSecret(id, ByteArray(0), true)
-    }
-
-    @Throws(IOException::class)
-    fun setLockCode(code: String, remember: Boolean) {
-        val secret = KeyManager.calculateSecret(code, id, false)
-        if (secret.isEmpty()) {
-            unsetLockCode()
-            return
-        } else if (keyManager.getSecrets(id).contains(secret)) {
-            return
-        }
-
+    fun setLockCode(secret: ByteArray) {
         val challenge = ByteArray(8)
         val random = SecureRandom()
         random.nextBytes(challenge)
@@ -145,21 +72,24 @@ constructor(private val keyManager: KeyManager, private val backend: Backend) : 
             tlv(CHALLENGE_TAG, challenge)
             tlv(RESPONSE_TAG, response)
         }
-        keyManager.setOnlySecret(id, secret)
     }
 
     @Throws(IOException::class)
-    fun storeTotp(name: String, key: ByteArray, algorithm: Algorithm, digits: Byte) = storeCode(name, key, OathType.TOTP, algorithm, digits, 0)
+    fun unsetLockCode() {
+        send(SET_CODE_INS) { tlv(KEY_TAG) }
+    }
 
     @Throws(IOException::class)
-    fun storeHotp(name: String, key: ByteArray, algorithm: Algorithm, digits: Byte, imf: Int) = storeCode(name, key, OathType.HOTP, algorithm, digits, imf)
+    fun putCode(name: String, key: ByteArray, type: OathType, algorithm: Algorithm, digits: Byte, imf: Int, touch: Boolean) {
+        if(touch && version.major < 4) {
+            throw IllegalArgumentException("Require touch requires YubiKey 4")
+        }
 
-    @Throws(IOException::class)
-    private fun storeCode(name: String, key: ByteArray, type: OathType, algorithm: Algorithm, digits: Byte, imf: Int) {
         try {
             send(PUT_INS) {
                 tlv(NAME_TAG, name.toByteArray())
                 tlv(KEY_TAG, byteArrayOf(type.byteVal or algorithm.byteVal, digits) + algorithm.shortenKey(key))
+                if (touch) put(PROPERTY_TAG).put(REQUIRE_TOUCH_PROP)
                 if (type == OathType.HOTP && imf > 0) put(IMF_TAG).put(4).putInt(imf)
             }
         } catch (e: ApduError) {
@@ -173,44 +103,29 @@ constructor(private val keyManager: KeyManager, private val backend: Backend) : 
     }
 
     @Throws(IOException::class)
-    fun readCode(name: String): String {
-        val steam = name.startsWith("Steam:")
-        val resp = send(CALCULATE_INS, p2 = if (steam) 0 else 1) {
+    fun calculate(name: String, challenge: ByteArray, truncate:Boolean = true): ByteArray {
+        val resp = send(CALCULATE_INS, p2 = if (truncate) 1 else 0) {
             tlv(NAME_TAG, name.toByteArray())
-            put(CHALLENGE_TAG).put(8).putLong(System.currentTimeMillis() / 30000)
+            tlv(CHALLENGE_TAG, challenge)
         }
-        return if (steam) steamCodeFromFull(resp.parseTlv(RESPONSE_TAG)) else codeFromTruncated(resp.parseTlv(T_RESPONSE_TAG))
+        return resp.parseTlv(resp.slice().get())
     }
 
     @Throws(IOException::class)
-    fun getCodes(timestamp: Long): List<Map<String, String>> {
+    fun calculateAll(challenge: ByteArray): List<ResponseData> {
         val resp = send(CALCULATE_ALL_INS, p2 = 1) {
-            put(CHALLENGE_TAG).put(8).putLong(timestamp)
+            tlv(CHALLENGE_TAG, challenge)
         }
 
-        return mutableListOf<Map<String, String>>().apply {
+        return mutableListOf<ResponseData>().apply {
             while (resp.hasRemaining()) {
                 val name = String(resp.parseTlv(NAME_TAG))
                 val respType = resp.slice().get()  // Peek
                 val hashBytes = resp.parseTlv(respType)
+                val oathType = if (respType == NO_RESPONSE_TAG) OathType.TOTP else OathType.TOTP
+                val touch = respType == TOUCH_TAG
 
-                if (name.startsWith("_hidden:")) continue
-
-                add(mapOf(
-                        "label" to name,
-                        "code" to when (respType) {
-                            T_RESPONSE_TAG -> {
-                                if (name.startsWith("Steam:"))
-                                    if (version[0] == 4.toByte()) {
-                                        readCode(name) // We need a full response for a Steam code on YK4.
-                                    } else steamCodeFromTruncated(hashBytes)
-                                else
-                                    codeFromTruncated(hashBytes)
-                            }
-                            NO_RESPONSE_TAG, TOUCH_TAG -> ""
-                            else -> "<invalid code>"
-                        }
-                ))
+                add(ResponseData(name, oathType, touch, hashBytes))
             }
         }
     }
@@ -238,6 +153,16 @@ constructor(private val keyManager: KeyManager, private val backend: Backend) : 
     @Throws(IOException::class)
     override fun close() = backend.close()
 
+    data class Version(val major:Int, val minor:Int, val micro:Int) {
+        companion object {
+            fun parse(data: ByteArray):Version = Version(data[0].toInt(), data[1].toInt(), data[2].toInt())
+        }
+    }
+
+    class ResponseData(val key:String, val oathType: OathType, val touch:Boolean, val data:ByteArray)
+
+    private infix fun Byte.or(b:Byte):Byte = (toInt() or b.toInt()).toByte()
+
     companion object {
         const private val APDU_OK = 0x9000
         const private val APDU_FILE_FULL = 0x6a84
@@ -255,6 +180,9 @@ constructor(private val keyManager: KeyManager, private val backend: Backend) : 
         const private val IMF_TAG: Byte = 0x7a
         const private val TOUCH_TAG: Byte = 0x7c
 
+        const private val ALWAYS_INCREASING_PROP: Byte = 0x01
+        const private val REQUIRE_TOUCH_PROP: Byte = 0x02
+
         const private val PUT_INS: Byte = 0x01
         const private val DELETE_INS: Byte = 0x02
         const private val SET_CODE_INS: Byte = 0x03
@@ -268,10 +196,8 @@ constructor(private val keyManager: KeyManager, private val backend: Backend) : 
 
         private val AID = byteArrayOf(0xa0.toByte(), 0x00, 0x00, 0x05, 0x27, 0x21, 0x01, 0x01)
 
-        private val MOD = intArrayOf(1, 10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000)
-
         @Throws(UnsupportedAppletException::class)
-        private fun checkVersion(version: ByteArray) {
+        private fun checkVersion(version: Version) {
             // All versions currently
         }
 
@@ -288,34 +214,6 @@ constructor(private val keyManager: KeyManager, private val backend: Backend) : 
             return Mac.getInstance("HmacSHA1").apply {
                 init(SecretKeySpec(key, algorithm))
             }.doFinal(data)
-        }
-
-        private fun codeFromTruncated(data: ByteArray): String {
-            with(ByteBuffer.wrap(data)) {
-                val num_digits = get().toInt()
-                val code = int
-                return String.format("%0${num_digits}d", code % MOD[num_digits])
-            }
-        }
-
-        private val STEAM_CHARS = "23456789BCDFGHJKMNPQRTVWXY"
-
-        private fun steamCodeFromTruncated(data: ByteArray): String {
-            with(ByteBuffer.wrap(data)) {
-                get()  //Ignore stored length for Steam
-                var code = 0x7fffffff and int
-                return StringBuilder().apply {
-                    for (i in 0..4) {
-                        append(STEAM_CHARS[code % STEAM_CHARS.length])
-                        code /= STEAM_CHARS.length
-                    }
-                }.toString()
-            }
-        }
-
-        private fun steamCodeFromFull(data: ByteArray): String {
-            val offs = 0xf and data[data.size - 1].toInt() + 1
-            return steamCodeFromTruncated(byteArrayOf(0) + data.copyOfRange(offs, offs + 4))
         }
 
         private fun ByteBuffer.tlv(tag: Byte, data: ByteArray = byteArrayOf()): ByteBuffer {

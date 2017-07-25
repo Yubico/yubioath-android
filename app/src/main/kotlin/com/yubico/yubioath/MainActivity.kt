@@ -22,8 +22,9 @@ import com.yubico.yubioath.exc.AppletSelectException
 import com.yubico.yubioath.exc.PasswordRequiredException
 import com.yubico.yubioath.exc.UnsupportedAppletException
 import com.yubico.yubioath.fragments.*
-import com.yubico.yubioath.model.KeyManager
-import com.yubico.yubioath.model.YubiKeyOath
+import com.yubico.yubioath.client.KeyManager
+import com.yubico.yubioath.client.OathClient
+import com.yubico.yubioath.transport.Backend
 import com.yubico.yubioath.transport.NfcBackend
 import com.yubico.yubioath.transport.UsbBackend
 import nordpol.android.AndroidCard
@@ -81,17 +82,16 @@ class MainActivity : AppCompatActivity(), OnDiscoveredTagListener {
     }
 
     private fun useUsbDevice(device: UsbDevice) {
-        useOath(YubiKeyOath(state.keyManager, UsbBackend.connect(usbManager, device)))
+        useBackend(UsbBackend.connect(usbManager, device))
     }
 
-    private fun useOath(oath: YubiKeyOath) {
+    private fun useBackend(backend: Backend) {
         val listener = totpListener ?: (supportFragmentManager.findFragmentByTag(SwipeListFragment::class.java.name) as? SwipeListFragment ?: SwipeListFragment().apply {
             openFragment(this)
         }).current
 
         try {
-            oath.use {
-                if (it.isLocked()) it.unlock()
+            OathClient(backend, state.keyManager).use {
                 listener.onYubiKey(it)
             }
         } catch (e: PasswordRequiredException) {
@@ -190,7 +190,7 @@ class MainActivity : AppCompatActivity(), OnDiscoveredTagListener {
 
     override fun tagDiscovered(tag: Tag) {
         try {
-            useOath(YubiKeyOath(state.keyManager, NfcBackend(AndroidCard.get(tag))))
+            useBackend(NfcBackend(AndroidCard.get(tag)))
         } catch (e: IOException) {
             toast(R.string.tag_error)
             Log.e("yubioath", "IOException in handler", e)
@@ -206,7 +206,7 @@ class MainActivity : AppCompatActivity(), OnDiscoveredTagListener {
 
     interface OnYubiKeyListener {
         @Throws(IOException::class)
-        fun onYubiKey(oath: YubiKeyOath)
+        fun onYubiKey(oath: OathClient)
 
         fun onPasswordMissing(manager: KeyManager, id: ByteArray, missing: Boolean)
     }

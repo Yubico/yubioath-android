@@ -39,8 +39,8 @@ import android.view.View
 import android.view.ViewGroup
 import com.yubico.yubioath.MainActivity
 import com.yubico.yubioath.R
-import com.yubico.yubioath.model.KeyManager
-import com.yubico.yubioath.model.YubiKeyOath
+import com.yubico.yubioath.client.KeyManager
+import com.yubico.yubioath.client.OathClient
 import kotlinx.android.synthetic.main.set_password_fragment.view.*
 import org.jetbrains.anko.inputMethodManager
 import org.jetbrains.anko.longToast
@@ -123,7 +123,7 @@ class SetPasswordFragment : Fragment(), MainActivity.OnYubiKeyListener {
         }
     }
 
-    override fun onYubiKey(oath: YubiKeyOath) {
+    override fun onYubiKey(oath: OathClient) {
         if (!swipeDialog.isAdded) {
             activity.toast(R.string.input_required)
             return
@@ -138,7 +138,7 @@ class SetPasswordFragment : Fragment(), MainActivity.OnYubiKeyListener {
             val newPass = it.editNewPassword.text.toString()
             val remember = it.rememberPassword.isChecked
             try {
-                oath.setLockCode(newPass, remember)
+                oath.setPassword(newPass, remember)
                 (activity as MainActivity).openFragment(SwipeListFragment())
                 activity.toast(R.string.password_updated)
             } catch (e: IOException) {

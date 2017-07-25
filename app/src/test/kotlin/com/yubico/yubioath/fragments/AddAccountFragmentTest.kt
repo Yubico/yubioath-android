@@ -31,7 +31,7 @@
 package com.yubico.yubioath.fragments
 
 import com.yubico.yubioath.BuildConfig
-import com.yubico.yubioath.model.CredentialData
+import com.yubico.yubioath.protocol.CredentialData
 import org.junit.Assert.fail
 import org.junit.Test
 import org.junit.runner.RunWith

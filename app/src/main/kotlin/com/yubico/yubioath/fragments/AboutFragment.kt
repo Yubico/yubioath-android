@@ -41,8 +41,8 @@ import android.view.ViewGroup
 import android.widget.Toast
 import com.yubico.yubioath.MainActivity
 import com.yubico.yubioath.R
-import com.yubico.yubioath.model.KeyManager
-import com.yubico.yubioath.model.YubiKeyOath
+import com.yubico.yubioath.client.KeyManager
+import com.yubico.yubioath.client.OathClient
 import kotlinx.android.synthetic.main.about_fragment.view.*
 
 /**
@@ -101,7 +101,7 @@ class AboutFragment : Fragment(), MainActivity.OnYubiKeyListener {
         dialog.show(ft, "dialog")
     }
 
-    override fun onYubiKey(oath: YubiKeyOath) {
+    override fun onYubiKey(oath: OathClient) {
         activity.runOnUiThread {
             val fragment = SwipeListFragment()
             fragment.current.onYubiKey(oath)

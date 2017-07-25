@@ -39,10 +39,10 @@ import android.view.ViewGroup
 import com.yubico.yubioath.MainActivity
 import com.yubico.yubioath.R
 import com.yubico.yubioath.exc.StorageFullException
-import com.yubico.yubioath.model.CredentialData
-import com.yubico.yubioath.model.KeyManager
-import com.yubico.yubioath.model.OathType
-import com.yubico.yubioath.model.YubiKeyOath
+import com.yubico.yubioath.protocol.CredentialData
+import com.yubico.yubioath.client.KeyManager
+import com.yubico.yubioath.protocol.OathType
+import com.yubico.yubioath.client.OathClient
 import kotlinx.android.synthetic.main.add_code_manual_fragment.*
 import kotlinx.android.synthetic.main.add_code_manual_fragment.view.*
 import kotlinx.android.synthetic.main.add_code_scan_fragment.*
@@ -167,18 +167,15 @@ class AddAccountFragment : Fragment(), MainActivity.OnYubiKeyListener {
         dialog.show(ft, "dialog")
     }
 
-    override fun onYubiKey(oath: YubiKeyOath) {
+    override fun onYubiKey(oath: OathClient) {
         if (swipeDialog == null) {
             return
         }
 
         with(activity as MainActivity) {
-            data?.apply {
+            data?.let {
                 try {
-                    when (oathType) {
-                        OathType.HOTP -> oath.storeHotp(name, key, algorithm, digits, counter)
-                        OathType.TOTP -> oath.storeTotp(name, key, algorithm, digits)
-                    }
+                    oath.addCredential(it)
                     longToast(R.string.prog_success)
                     runOnUiThread {
                         val fragment = SwipeListFragment()

@@ -1,4 +1,4 @@
-package com.yubico.yubioath.model
+package com.yubico.yubioath.protocol
 
 sealed class OathType(val byteVal: Byte) {
     override fun toString() = javaClass.simpleName.toLowerCase()

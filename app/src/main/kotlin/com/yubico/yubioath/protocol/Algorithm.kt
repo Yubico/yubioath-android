@@ -1,4 +1,4 @@
-package com.yubico.yubioath.model
+package com.yubico.yubioath.protocol
 
 import java.security.MessageDigest
 

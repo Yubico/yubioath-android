@@ -28,7 +28,7 @@
  * SUCH DAMAGE.
  */
 
-package com.yubico.yubioath.model
+package com.yubico.yubioath.client
 
 import android.content.SharedPreferences
 import android.util.Base64
