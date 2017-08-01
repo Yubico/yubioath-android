@@ -28,6 +28,8 @@ class Credential(val parentId:ByteArray, val key:String, val type: OathType, val
         name = data
     }
 
+    override fun toString(): String = "Credential($key)"
+
     override fun equals(other: Any?): Boolean {
         return other is Credential && Arrays.equals(parentId, other.parentId) && key == other.key
     }

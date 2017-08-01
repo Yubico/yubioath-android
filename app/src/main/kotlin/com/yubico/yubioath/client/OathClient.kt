@@ -9,6 +9,9 @@ import java.util.*
 
 class OathClient(backend: Backend, private val keyManager: KeyManager) : Closeable {
     private val api: YkOathApi = YkOathApi(backend)
+    val id = api.id
+    val version = api.version
+    val persistent = api.persistent
 
     init {
         if (api.isLocked()) {
@@ -25,10 +28,6 @@ class OathClient(backend: Backend, private val keyManager: KeyManager) : Closeab
             } ?: throw PasswordRequiredException("Password is incorrect!", api.id, false)
         }
     }
-
-    val id = api.id
-    val version = api.version
-    val persistent = api.persistent
 
     override fun close() = api.close()
 
@@ -49,27 +48,6 @@ class OathClient(backend: Backend, private val keyManager: KeyManager) : Closeab
         }
     }
 
-    fun calculateCodes(timestamp: Long): MutableMap<Credential, Code?> {
-        // Default to 30 second period
-        val timeStep = (timestamp / 1000 / 30)
-        val challenge = ByteBuffer.allocate(8).putLong(timeStep).array()
-
-        return api.calculateAll(challenge).map {
-            val credential = Credential(api.id, it.key, it.oathType, it.touch)
-
-            val code: Code? = if (it.data.isNotEmpty()) {
-                if (credential.period != 30 || credential.issuer == "Steam") {
-                    //Recalculate for periods != 30 or Steam credentials
-                    calculate(credential, timestamp)
-                } else {
-                    Code(formatTruncated(it.data), timeStep * 30 * 1000, (timeStep + 1) * 30 * 1000)
-                }
-            } else null // Either HOTP or requires touch, don't auto-generate.
-
-            Pair(credential, code)
-        }.toMap().toSortedMap(compareBy<Credential> { it.issuer }.thenBy { it.name })
-    }
-
     fun calculate(credential: Credential, timestamp: Long): Code {
         ensureOwnership(credential)
 
@@ -83,9 +61,31 @@ class OathClient(backend: Backend, private val keyManager: KeyManager) : Closeab
 
         val (validFrom, validUntil) = when (credential.type) {
             OathType.TOTP -> Pair(timeStep * 1000 * credential.period, (timeStep + 1) * 1000 * credential.period)
-            OathType.HOTP -> Pair(Long.MIN_VALUE, Long.MAX_VALUE)
+            OathType.HOTP -> Pair(timestamp, Long.MAX_VALUE)
         }
+
         return Code(value, validFrom, validUntil)
+    }
+
+    fun refreshCodes(timestamp: Long, existing:MutableMap<Credential, Code?>):MutableMap<Credential, Code?> {
+        // Default to 30 second period
+        val timeStep = (timestamp / 1000 / 30)
+        val challenge = ByteBuffer.allocate(8).putLong(timeStep).array()
+
+        return api.calculateAll(challenge).map {
+            val credential = Credential(api.id, it.key, it.oathType, it.touch)
+            val existingCode = existing[credential]
+            val code: Code? = if (it.data.size > 1) {
+                if (credential.period != 30 || credential.issuer == "Steam") {
+                    //Recalculate needed for for periods != 30 or Steam credentials
+                    if(existingCode != null && existingCode.validUntil > timestamp) existingCode else calculate(credential, timestamp)
+                } else {
+                    Code(formatTruncated(it.data), timeStep * 30 * 1000, (timeStep + 1) * 30 * 1000)
+                }
+            } else existingCode
+
+            Pair(credential, code)
+        }.toMap().toSortedMap(compareBy<Credential> { it.issuer }.thenBy { it.name })
     }
 
     fun delete(credential: Credential) {

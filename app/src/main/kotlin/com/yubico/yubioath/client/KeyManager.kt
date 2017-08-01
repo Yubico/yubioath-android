@@ -32,6 +32,7 @@ package com.yubico.yubioath.client
 
 import android.content.SharedPreferences
 import android.util.Base64
+import android.util.Log
 import java.security.NoSuchAlgorithmException
 import java.util.*
 import javax.crypto.SecretKeyFactory
@@ -75,6 +76,7 @@ class KeyManager(private val store: SharedPreferences) {
     }
 
     fun storeSecret(id: ByteArray, secret: ByteArray, remember: Boolean) {
+        Log.d("yubioath", "Store secret: " + secret.joinToString("") { "%02x".format(it) })
         doStoreSecret(id, secret, remember)
     }
 

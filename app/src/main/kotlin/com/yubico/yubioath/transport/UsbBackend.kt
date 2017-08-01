@@ -47,8 +47,10 @@ class UsbBackend(private val connection: UsbDeviceConnection, private val iface:
 
         val bufIn = ByteArray(endpointBulkIn.maxPacketSize)
         var read: Int
+        var tries = 5
         do {
             read = connection.bulkTransfer(endpointBulkIn, bufIn, bufIn.size, TIMEOUT)
+            if((bufIn[5] != SLOT || bufIn[6] != sequence) && tries-- < 0) throw IOException("Failed to read response")
         } while (bufIn[5] != SLOT || bufIn[6] != sequence || bufIn[7] == STATUS_TIME_EXTENSION)
         sequence++
 
@@ -67,7 +69,11 @@ class UsbBackend(private val connection: UsbDeviceConnection, private val iface:
 
         while (read == bufIn.size) {  //Read until first non-full packet.
             read = connection.bulkTransfer(endpointBulkIn, bufIn, bufIn.size, TIMEOUT)
-            response.put(bufIn, 0, read)
+            if (read > 0) {
+                response.put(bufIn, 0, read)
+            } else if (read < 0) {
+                throw IOException("Failed to read response")
+            }
         }
 
         return response.array()

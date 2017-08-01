@@ -14,7 +14,7 @@ import javax.crypto.spec.SecretKeySpec
 
 
 class YkOathApi @Throws(IOException::class, AppletSelectException::class)
-constructor(private val backend: Backend) : Closeable {
+constructor(private var backend: Backend) : Closeable {
     val persistent = backend.persistent
 
     val id: ByteArray
@@ -34,7 +34,6 @@ constructor(private val backend: Backend) : Closeable {
                 challenge = resp.parseTlv(CHALLENGE_TAG)
             }
         } catch (e: ApduError) {
-            Log.e("yubioath", "error selecting", e)
             throw AppletMissingException()
         }
     }
@@ -122,7 +121,7 @@ constructor(private val backend: Backend) : Closeable {
                 val name = String(resp.parseTlv(NAME_TAG))
                 val respType = resp.slice().get()  // Peek
                 val hashBytes = resp.parseTlv(respType)
-                val oathType = if (respType == NO_RESPONSE_TAG) OathType.TOTP else OathType.TOTP
+                val oathType = if (respType == NO_RESPONSE_TAG) OathType.HOTP else OathType.TOTP
                 val touch = respType == TOUCH_TAG
 
                 add(ResponseData(name, oathType, touch, hashBytes))
@@ -137,7 +136,9 @@ constructor(private val backend: Backend) : Closeable {
         }
 
         return ByteBuffer.allocate(4096).apply {
+            Log.d("yubioath", "SEND: %02X %02X %02X".format(ins, p1, p2) + apdu.joinToString("") { "%02x".format(it) })
             var resp = splitApduResponse(backend.sendApdu(apdu))
+            Log.d("yubioath", "RECV: %04X ".format(resp.status) + resp.data.joinToString("") { "%02x".format(it) })
             while (resp.status != APDU_OK) {
                 if ((resp.status shr 8).toByte() == APDU_DATA_REMAINING_SW1) {
                     put(resp.data)
@@ -151,7 +152,14 @@ constructor(private val backend: Backend) : Closeable {
     }
 
     @Throws(IOException::class)
-    override fun close() = backend.close()
+    override fun close() {
+        backend.close()
+        backend = object : Backend {
+            override val persistent: Boolean = false
+            override fun sendApdu(apdu: ByteArray): ByteArray = throw IOException("SENDING APDU ON CLOSED BACKEND!")
+            override fun close() = throw IOException("Backend already closed!")
+        }
+    }
 
     data class Version(val major:Int, val minor:Int, val micro:Int) {
         companion object {
