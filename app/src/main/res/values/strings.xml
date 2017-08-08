@@ -38,7 +38,7 @@
     <string name="invalid_barcode">The scanned barcode is invalid</string>
     <string name="scan_failed">Barcode scanning failed</string>
     <string name="swipe">Tap your YubiKey</string>
-    <string name="swipe_and_hold">Tap and hold your YubiKey</string>
+    <string name="swipe_and_hold">Tap or insert your YubiKey</string>
     <string name="swipe_to_list">Tap your YubiKey to view credentials</string>
     <string name="swipe_to_put">Tap your YubiKey to store</string>
     <string name="totp">Oath TOTP</string>
@@ -110,5 +110,7 @@ Version: %1$s</p>
 
 <p>Copyright Yubico<br/>
 <a href="http://www.yubico.com/">http://www.yubico.com/</a></p>]]></string>
+    <string name="title_activity_new">NewActivity</string>
+    <string name="action_settings">Settings</string>
 
 </resources>

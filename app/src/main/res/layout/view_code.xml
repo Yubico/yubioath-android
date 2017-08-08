@@ -34,10 +34,11 @@
                 xmlns:app="http://schemas.android.com/apk/res-auto"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                style="@style/activated"
                 android:padding="12dp">
 
     <android.support.design.widget.FloatingActionButton
-        android:id="@+id/imageButton"
+        android:id="@+id/credential_fab"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
@@ -55,8 +56,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
-        android:layout_toEndOf="@id/imageButton"
-        android:layout_toRightOf="@id/imageButton"
+        android:layout_toEndOf="@id/credential_fab"
+        android:layout_toRightOf="@id/credential_fab"
         android:text="Issuer"
         android:textStyle="bold"
         />
@@ -67,8 +68,8 @@
         android:layout_height="wrap_content"
         android:text="1234"
         android:textAppearance="@android:style/TextAppearance.Large"
-        android:layout_toEndOf="@id/imageButton"
-        android:layout_toRightOf="@id/imageButton"
+        android:layout_toEndOf="@id/credential_fab"
+        android:layout_toRightOf="@id/credential_fab"
         android:layout_below="@id/issuer"
         android:layout_alignWithParentIfMissing="true"/>
 
@@ -77,8 +78,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Label"
-        android:layout_toEndOf="@id/imageButton"
-        android:layout_toRightOf="@id/imageButton"
+        android:layout_toEndOf="@id/credential_fab"
+        android:layout_toRightOf="@id/credential_fab"
         android:layout_below="@id/code"/>
 
     <ProgressBar
@@ -89,8 +90,8 @@
         android:indeterminate="false"
         android:max="1000"
         android:rotation="180"
-        android:layout_toEndOf="@id/imageButton"
-        android:layout_toRightOf="@id/imageButton"
+        android:layout_toEndOf="@id/credential_fab"
+        android:layout_toRightOf="@id/credential_fab"
         android:layout_below="@id/label"/>
 
     <ImageButton
@@ -98,20 +99,20 @@
         style="?android:attr/actionButtonStyle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:contentDescription="@string/copy_to_clipboard"
-        android:src="@drawable/content_copy"
         android:layout_alignParentEnd="true"
-        android:layout_alignParentRight="true"/>
+        android:layout_alignParentRight="true"
+        android:contentDescription="@string/copy_to_clipboard"
+        app:srcCompat="@drawable/ic_content_copy_24dp"/>
 
     <ImageButton
         android:id="@+id/readButton"
         style="?android:attr/actionButtonStyle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:contentDescription="@string/read_hotp"
-        android:src="@drawable/navigation_refresh"
-        android:layout_toStartOf="@id/copyButton"
+        android:layout_alignWithParentIfMissing="true"
         android:layout_toLeftOf="@id/copyButton"
-        android:layout_alignWithParentIfMissing="true"/>
+        android:layout_toStartOf="@id/copyButton"
+        android:contentDescription="@string/read_hotp"
+        app:srcCompat="@drawable/ic_refresh_24dp"/>
 
 </RelativeLayout>

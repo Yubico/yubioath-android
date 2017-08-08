@@ -1,213 +1,70 @@
 package com.yubico.yubioath
 
 import android.annotation.SuppressLint
-import android.app.PendingIntent
-import android.content.Context
+import android.arch.lifecycle.ViewModelProviders
 import android.content.Intent
-import android.hardware.usb.UsbDevice
-import android.hardware.usb.UsbManager
 import android.nfc.NfcAdapter
-import android.nfc.Tag
 import android.os.Bundle
-import android.os.Handler
-import android.support.v4.app.Fragment
 import android.support.v7.app.AppCompatActivity
-import android.util.Log
-import android.view.Menu
-import android.view.MenuItem
-import android.view.WindowManager
-import com.google.zxing.integration.android.IntentIntegrator
-import com.yubico.yubioath.exc.AppletMissingException
-import com.yubico.yubioath.exc.AppletSelectException
-import com.yubico.yubioath.exc.PasswordRequiredException
-import com.yubico.yubioath.exc.UnsupportedAppletException
-import com.yubico.yubioath.fragments.*
-import com.yubico.yubioath.client.KeyManager
-import com.yubico.yubioath.client.OathClient
-import com.yubico.yubioath.transport.Backend
-import com.yubico.yubioath.transport.NfcBackend
-import com.yubico.yubioath.transport.UsbBackend
+import com.yubico.yubioath.ui.OathViewModel
 import nordpol.android.AndroidCard
 import nordpol.android.OnDiscoveredTagListener
 import nordpol.android.TagDispatcher
 import nordpol.android.TagDispatcherBuilder
-import org.jetbrains.anko.longToast
 import org.jetbrains.anko.toast
-import java.io.IOException
 
-class MainActivity : AppCompatActivity(), OnDiscoveredTagListener {
-    private val ACTION_USB_PERMISSION = "com.yubico.yubioath.USB_PERMISSION"
-
-    private lateinit var state: StateFragment
-
-    private lateinit var usbManager: UsbManager
+class MainActivity : AppCompatActivity() {
+    private lateinit var viewModel: OathViewModel
     private lateinit var tagDispatcher: TagDispatcher
-    private var totpListener: OnYubiKeyListener? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
 
-        window.setFlags(WindowManager.LayoutParams.FLAG_SECURE, WindowManager.LayoutParams.FLAG_SECURE)
+        viewModel = ViewModelProviders.of(this).get(OathViewModel::class.java)
 
-        setContentView(R.layout.main_activity)
-
-        state = supportFragmentManager.findFragmentByTag(StateFragment::class.java.name) as StateFragment? ?: StateFragment().apply {
-            supportFragmentManager.beginTransaction().add(this, javaClass.name).commit()
-        }
-
-        usbManager = getSystemService(Context.USB_SERVICE) as UsbManager
-
-        when (supportFragmentManager.findFragmentByTag(SwipeListFragment::class.java.name)) {
-            null -> openFragment(SwipeListFragment())
-            else -> Unit
-        }
-
-        tagDispatcher = TagDispatcherBuilder(this, this)
-                .enableReaderMode(false)
-                .enableUnavailableNfcUserPrompt(false)
-                .build()
+        tagDispatcher = TagDispatcherBuilder(this, OnDiscoveredTagListener {
+            viewModel.start(this)
+            viewModel.nfcConnected(AndroidCard.get(it))
+        }).enableReaderMode(false).enableUnavailableNfcUserPrompt(false).build()
     }
 
-    fun checkForUsbDevice(): Boolean {
-        usbManager.deviceList.values.find { UsbBackend.isSupported(it) }?.let {
-            if (usbManager.hasPermission(it)) {
-                useUsbDevice(it)
-            } else {
-                val mPermissionIntent = PendingIntent.getBroadcast(this, 0, Intent(ACTION_USB_PERMISSION), 0)
-                usbManager.requestPermission(it, mPermissionIntent)
-            }
-            return true
-        }
-        return false
-    }
-
-    private fun useUsbDevice(device: UsbDevice) {
-        useBackend(UsbBackend.connect(usbManager, device))
-    }
-
-    private fun useBackend(backend: Backend) {
-        val listener = totpListener ?: (supportFragmentManager.findFragmentByTag(SwipeListFragment::class.java.name) as? SwipeListFragment ?: SwipeListFragment().apply {
-            openFragment(this)
-        }).current
-
-        try {
-            OathClient(backend, state.keyManager).use {
-                listener.onYubiKey(it)
-            }
-        } catch (e: PasswordRequiredException) {
-            listener.onPasswordMissing(state.keyManager, e.id, e.isMissing)
-        } catch (e: IOException) {
-            toast(R.string.tag_error)
-            Log.e("yubioath", "IOException in handler", e)
-        } catch (e: AppletMissingException) {
-            toast(R.string.applet_missing)
-            Log.e("yubioath", "AppletMissingException in handler", e)
-        } catch (e: UnsupportedAppletException) {
-            toast(R.string.unsupported_applet_version)
-            Log.e("yubioath", "UnsupportedAppletException in handler", e)
-        } catch (e: AppletSelectException) {
-            toast(R.string.tag_error)
-            Log.e("yubioath", "AppletSelectException in handler", e)
-        }
-    }
-
-    override fun onBackPressed() {
-        if (supportFragmentManager.findFragmentByTag(SwipeListFragment::class.java.name) == null) {
-            openFragment(SwipeListFragment())
-        } else {
-            super.onBackPressed()
-        }
-
-        Handler().postDelayed({ checkForUsbDevice() }, 10)
+    override fun onNewIntent(intent: Intent) {
+        tagDispatcher.interceptIntent(intent)
     }
 
     @SuppressLint("NewApi")
     public override fun onPause() {
         super.onPause()
         tagDispatcher.disableExclusiveNfc()
+        viewModel.stop()
     }
 
     @SuppressLint("NewApi")
     public override fun onResume() {
         super.onResume()
 
-        if (intent.action == NfcAdapter.ACTION_NDEF_DISCOVERED && !state.ndefConsumed) {
-            state.ndefConsumed = true
+        viewModel.start(this)
+
+        if (intent.action == NfcAdapter.ACTION_NDEF_DISCOVERED && !viewModel.ndefConsumed) {
+            viewModel.ndefConsumed = true
             tagDispatcher.interceptIntent(intent)
         }
 
         when (tagDispatcher.enableExclusiveNfc()) {
             TagDispatcher.NfcStatus.AVAILABLE_DISABLED -> {
-                if(!state.nfcWarned) {
+                if(!viewModel.nfcWarned) {
                     toast(R.string.nfc_off)
-                    state.nfcWarned = true
+                    viewModel.nfcWarned = true
                 }
             }
             TagDispatcher.NfcStatus.NOT_AVAILABLE -> {
-                if(!state.nfcWarned) {
+                if(!viewModel.nfcWarned) {
                     toast(R.string.no_nfc)
-                    state.nfcWarned = true
+                    viewModel.nfcWarned = true
                 }
             }
             else -> Unit
         }
-    }
-
-    fun openFragment(fragment: Fragment) {
-        totpListener = if (fragment is OnYubiKeyListener) fragment else null
-
-        supportFragmentManager.beginTransaction()
-                .replace(R.id.fragment_container, fragment, fragment.javaClass.name)
-                .commitAllowingStateLoss()
-    }
-
-    private fun scanQRCode() {
-        IntentIntegrator(this).setDesiredBarcodeFormats(IntentIntegrator.QR_CODE_TYPES).initiateScan()
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        IntentIntegrator.parseActivityResult(requestCode, resultCode, data)?.contents?.let {
-            openFragment(AddAccountFragment.newInstance(it))
-            return
-        }
-        longToast(R.string.scan_failed)
-    }
-
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        menuInflater.inflate(R.menu.main_activity_actions, menu)
-        return true
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
-            R.id.menu_add_account_scan -> scanQRCode()
-            R.id.menu_add_account_manual -> openFragment(AddAccountFragment())
-            R.id.menu_change_password -> openFragment(SetPasswordFragment())
-            R.id.menu_about -> openFragment(AboutFragment.newInstance(state.keyManager))
-        }
-        return true
-    }
-
-    override fun tagDiscovered(tag: Tag) {
-        try {
-            useBackend(NfcBackend(AndroidCard.get(tag)))
-        } catch (e: IOException) {
-            toast(R.string.tag_error)
-            Log.e("yubioath", "IOException in handler", e)
-        } catch (e: AppletMissingException) {
-            toast(R.string.applet_missing)
-            Log.e("yubioath", "AppletMissingException in handler", e)
-        }
-    }
-
-    override fun onNewIntent(intent: Intent) {
-        tagDispatcher?.interceptIntent(intent)
-    }
-
-    interface OnYubiKeyListener {
-        @Throws(IOException::class)
-        fun onYubiKey(oath: OathClient)
-
-        fun onPasswordMissing(manager: KeyManager, id: ByteArray, missing: Boolean)
     }
 }
