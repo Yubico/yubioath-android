@@ -95,13 +95,13 @@ class OathViewModel : ViewModel() {
 
     fun addCredential(data: CredentialData) = requestClient(creds.keys.first().parentId) {
         val credential = it.addCredential(data)
-        creds = it.refreshCodes(System.currentTimeMillis(), creds)
+        creds = it.refreshCodes(currentTime(), creds)
         credListener(creds)
         Log.d("yubioath", "Added credential: $credential: ${creds[credential]}")
     }
 
     fun calculate(credential: Credential) = requestClient(credential.parentId) {
-        creds[credential] = it.calculate(credential, System.currentTimeMillis())
+        creds[credential] = it.calculate(credential, currentTime(true))
         credListener(creds)
         Log.d("yubioath", "Calculated code: $credential: ${creds[credential]}")
     }
@@ -119,24 +119,20 @@ class OathViewModel : ViewModel() {
         updateRefreshJob()
     }
 
+    private fun currentTime(boost:Boolean = false) = System.currentTimeMillis() + if(!boost && lastDeviceInfo.persistent) 0 else 10000
+
     private fun updateRefreshJob() {
         refreshJob?.cancel()
         refreshJob = launch(EXEC) {
             while (true) {
                 services?.let { checkUsb(it) }
-                delay(if(lastDeviceInfo.persistent) {
-                    if(creds.isEmpty()) {
-                        Log.d("yubioath", "USB device present, no credentials, delay 1000")
-                        5000L  //No creds, delay until USB check...
-                    } else {
-                        val now = System.currentTimeMillis()
-                        val deadline = creds.filterKeys { it.type == OathType.TOTP && !it.touch }.values.map { it?.validUntil ?: -1 }.filter { it > now }.min() ?: 5000L
-                        Log.d("yubioath", "USB device present, credentials, delay until first expiry: ${deadline - now}")
-                        deadline - now
-                    }
+
+                delay(if(creds.isEmpty()) {
+                    1000L
                 } else {
-                    Log.d("yubioath", "No USB device, delay 1000")
-                    5000L //No persistent connection, delay
+                    val now = System.currentTimeMillis() //Needs to use real time, not adjusted for non-persistent.
+                    val deadline = creds.filterKeys { it.type == OathType.TOTP && !it.touch }.values.map { it?.validUntil ?: -1 }.filter { it > now }.min()
+                    if(deadline != null) deadline - now else 1000L
                 })
             }
         }
@@ -175,7 +171,7 @@ class OathViewModel : ViewModel() {
                         }
                     }
                 }
-                creds = client.refreshCodes(System.currentTimeMillis(), creds)
+                creds = client.refreshCodes(currentTime(), creds)
                 selectedItem?.let {
                     if(!Arrays.equals(client.deviceInfo.id, it.parentId)) {
                         selectedItem = null

@@ -112,27 +112,25 @@ class CredentialAdapter(context:Context, private val actionHandler: ActionHandle
                     if (credential.hasTimer()) {
                         visibility = View.VISIBLE
                         if(code != null && code.valid()) {
-                            startAnimation(timeoutAnimation.apply {
-                                duration = code.validUntil - code.validFrom
-                                startOffset = code.validFrom - System.currentTimeMillis()
-                                setAnimationListener(object : Animation.AnimationListener {
-                                    override fun onAnimationStart(animation: Animation?) = Unit
-                                    override fun onAnimationRepeat(animation: Animation?) = Unit
-                                    override fun onAnimationEnd(animation: Animation?) {
-                                        //Only act if master timer doesn't catch it.
-                                        if (!credential.touch && (code.validUntil % 30).toInt() != 0) {
-                                            notifyDataSetChanged()
-                                            //actionHandler.calculate(credential, false)
-                                        }
-                                    }
+                            if(animation == null || animation.hasEnded()) {
+                                val now = System.currentTimeMillis()
+                                startAnimation(timeoutAnimation.apply {
+                                    duration = code.validUntil - Math.min(now, code.validFrom)
+                                    startOffset = Math.min(0, code.validFrom - now)
+                                    setAnimationListener(object : Animation.AnimationListener {
+                                        override fun onAnimationStart(animation: Animation?) = Unit
+                                        override fun onAnimationRepeat(animation: Animation?) = Unit
+                                        override fun onAnimationEnd(animation: Animation?) { notifyDataSetChanged() }
+                                    })
                                 })
-                            })
+                            }
                         } else {
                             clearAnimation()
+                            progress = 0
                         }
                     } else {
-                        visibility = View.GONE
                         clearAnimation()
+                        visibility = View.GONE
                     }
                 }
             }
