@@ -9,30 +9,28 @@ import java.util.*
 
 class OathClient(backend: Backend, private val keyManager: KeyManager) : Closeable {
     private val api: YkOathApi = YkOathApi(backend)
-    val id = api.id
-    val version = api.version
-    val persistent = api.persistent
+    val deviceInfo = api.deviceInfo
 
     init {
         if (api.isLocked()) {
-            val secrets = keyManager.getSecrets(api.id)
+            val secrets = keyManager.getSecrets(deviceInfo.id)
 
             if (secrets.isEmpty()) {
-                throw PasswordRequiredException("Password is missing!", api.id, true)
+                throw PasswordRequiredException("Password is missing!", deviceInfo.id, true)
             }
 
             secrets.find {
                 api.unlock(it)
             }?.apply {
-                keyManager.setOnlySecret(api.id, this)
-            } ?: throw PasswordRequiredException("Password is incorrect!", api.id, false)
+                keyManager.setOnlySecret(deviceInfo.id, this)
+            } ?: throw PasswordRequiredException("Password is incorrect!", deviceInfo.id, false)
         }
     }
 
     override fun close() = api.close()
 
     private fun ensureOwnership(credential: Credential) {
-        if (!Arrays.equals(id, credential.parentId)) {
+        if (!Arrays.equals(deviceInfo.id, credential.parentId)) {
             throw IllegalArgumentException("Credential parent ID doesn't match!")
         }
     }
@@ -40,11 +38,11 @@ class OathClient(backend: Backend, private val keyManager: KeyManager) : Closeab
     fun setPassword(pw: String?, remember:Boolean) {
         if (pw == null || pw.isEmpty()) {
             api.unsetLockCode()
-            keyManager.storeSecret(id, byteArrayOf(), true)
+            keyManager.storeSecret(deviceInfo.id, byteArrayOf(), true)
         } else {
-            val secret = KeyManager.calculateSecret(pw, id, false)
+            val secret = KeyManager.calculateSecret(pw, deviceInfo.id, false)
             api.setLockCode(secret)
-            keyManager.storeSecret(id, secret, remember)
+            keyManager.storeSecret(deviceInfo.id, secret, remember)
         }
     }
 
@@ -73,7 +71,7 @@ class OathClient(backend: Backend, private val keyManager: KeyManager) : Closeab
         val challenge = ByteBuffer.allocate(8).putLong(timeStep).array()
 
         return api.calculateAll(challenge).map {
-            val credential = Credential(api.id, it.key, it.oathType, it.touch)
+            val credential = Credential(deviceInfo.id, it.key, it.oathType, it.touch)
             val existingCode = existing[credential]
             val code: Code? = if (it.data.size > 1) {
                 if (credential.period != 30 || credential.issuer == "Steam") {
@@ -99,7 +97,7 @@ class OathClient(backend: Backend, private val keyManager: KeyManager) : Closeab
                 name = "$period/$name"
             }
             api.putCode(name, key, oathType, algorithm, digits, counter, touch)
-            return Credential(id, name, oathType, touch)
+            return Credential(deviceInfo.id, name, oathType, touch)
         }
     }
 

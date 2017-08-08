@@ -12,6 +12,7 @@ import com.yubico.yubioath.client.KeyManager
 import com.yubico.yubioath.client.OathClient
 import com.yubico.yubioath.protocol.CredentialData
 import com.yubico.yubioath.protocol.OathType
+import com.yubico.yubioath.protocol.YkOathApi
 import com.yubico.yubioath.transport.Backend
 import com.yubico.yubioath.transport.NfcBackend
 import com.yubico.yubioath.transport.UsbBackend
@@ -29,9 +30,10 @@ import java.util.concurrent.Executors
 
 class OathViewModel : ViewModel() {
     companion object {
-        const private val KEY_STORE = "NEO_STORE"
+        const private val KEY_STORE = "NEO_STORE" //Name for legacy reasons...
         const private val ACTION_USB_PERMISSION = "com.yubico.yubioath.USB_PERMISSION"
         private val EXEC = Executors.newSingleThreadExecutor().asCoroutineDispatcher()
+        private val DUMMY_INFO = YkOathApi.DeviceInfo(byteArrayOf(), false, YkOathApi.Version(0, 0, 0))
     }
 
     private data class Services(val context: Context, val usbManager: UsbManager, val keyManager: KeyManager)
@@ -40,42 +42,55 @@ class OathViewModel : ViewModel() {
     private var services: Services? = null
     private val clientRequests = Channel<Pair<ByteArray, (OathClient) -> Unit>>()
 
-    var hasDevice = false
+    var lastDeviceInfo = DUMMY_INFO
         private set
     var creds: MutableMap<Credential, Code?> = mutableMapOf()
-    private var credListener: ((Map<Credential, Code?>) -> Any) = {}
+        private set
+    var credListener: ((Map<Credential, Code?>) -> Any) = {}
+    var refreshJob: Job? = null
+
+    var selectedItem: Credential? = null
     var ndefConsumed = false
     var nfcWarned = false
 
-    fun init(context: Context) = launch(EXEC) {
+    fun start(context: Context) = launch(EXEC) {
         lock.withLock {
             val keyManager = KeyManager(context.getSharedPreferences(KEY_STORE, Context.MODE_PRIVATE))
             services = Services(context, context.usbManager, keyManager)
-            Log.d("yubioath", "New Services!")
+            Log.d("yubioath", "Started!")
+            updateRefreshJob()
         }
-        services?.let { checkUsb(it) }
     }
 
-    fun setCredListener(listener: ((Map<Credential, Code?>) -> Any)) {
-        credListener = listener
-        Log.d("yubioath", "Credential Listener set: $listener")
+    fun stop() = launch(EXEC) {
+        lock.withLock {
+            services = null
+            refreshJob?.cancel()
+            refreshJob = null
+            Log.d("yubioath", "Stopped!")
+        }
     }
 
     fun nfcConnected(card: IsoCard) = launch(EXEC) {
         lock.withLock {
             Log.d("yubioath", "NFC DEVICE!")
             services?.let {
-                useBackend(NfcBackend(card), it.keyManager)
+                try {
+                    useBackend(NfcBackend(card), it.keyManager)
+                } catch (e: Exception) {
+                    lastDeviceInfo = DUMMY_INFO
+                    Log.e("yubioath", "Error using NFC device", e)
+                }
             }
         }
     }
 
-    fun requestClient(id: ByteArray, func: (api: OathClient) -> Unit): Job {
+    fun requestClient(id: ByteArray, func: (api: OathClient) -> Unit) = launch(EXEC) {
         Log.d("yubioath", "Requesting API...")
-        val request = launch(EXEC) { clientRequests.send(Pair(id, func)) }
-        Log.d("yubioath", "Request sent!")
-        requestUsbCheck(0)
-        return request
+        services?.let {
+            launch(EXEC) { checkUsb(it) }
+        }
+        clientRequests.send(Pair(id, func))
     }
 
     fun addCredential(data: CredentialData) = requestClient(creds.keys.first().parentId) {
@@ -98,27 +113,52 @@ class OathViewModel : ViewModel() {
         Log.d("yubioath", "Deleted credential: $credential")
     }
 
-    private fun requestUsbCheck(delayTime: Long) {
-        services?.let {
-            launch(EXEC) {
-                delay(delayTime)
-                if (services == it) {
-                    checkUsb(it)
-                }
+    fun clearCredentials() {
+        creds.clear()
+        credListener(creds)
+        updateRefreshJob()
+    }
+
+    private fun updateRefreshJob() {
+        refreshJob?.cancel()
+        refreshJob = launch(EXEC) {
+            while (true) {
+                services?.let { checkUsb(it) }
+                delay(if(lastDeviceInfo.persistent) {
+                    if(creds.isEmpty()) {
+                        Log.d("yubioath", "USB device present, no credentials, delay 1000")
+                        5000L  //No creds, delay until USB check...
+                    } else {
+                        val now = System.currentTimeMillis()
+                        val deadline = creds.filterKeys { it.type == OathType.TOTP && !it.touch }.values.map { it?.validUntil ?: -1 }.filter { it > now }.min() ?: 5000L
+                        Log.d("yubioath", "USB device present, credentials, delay until first expiry: ${deadline - now}")
+                        deadline - now
+                    }
+                } else {
+                    Log.d("yubioath", "No USB device, delay 1000")
+                    5000L //No persistent connection, delay
+                })
             }
         }
     }
 
     private suspend fun checkUsb(services: Services) {
-        services.usbManager.deviceList.values.find { UsbBackend.isSupported(it) }?.let {
-            if (services.usbManager.hasPermission(it)) {
-                Log.d("yubioath", "USB device present")
-                lock.withLock {
-                    useBackend(UsbBackend.connect(services.usbManager, it), services.keyManager)
+        services.usbManager.deviceList.values.find { UsbBackend.isSupported(it) }.let {
+            if(it == null) {
+                if(lastDeviceInfo.persistent) {
+                    Log.d("yubioath", "Persistent device removed!")
+                    lastDeviceInfo = DUMMY_INFO
                 }
             } else {
-                val mPermissionIntent = PendingIntent.getBroadcast(services.context, 0, Intent(ACTION_USB_PERMISSION), 0)
-                services.usbManager.requestPermission(it, mPermissionIntent)
+                if (services.usbManager.hasPermission(it)) {
+                    Log.d("yubioath", "USB device present")
+                    lock.withLock {
+                        useBackend(UsbBackend.connect(services.usbManager, it), services.keyManager)
+                    }
+                } else {
+                    val mPermissionIntent = PendingIntent.getBroadcast(services.context, 0, Intent(ACTION_USB_PERMISSION), 0)
+                    services.usbManager.requestPermission(it, mPermissionIntent)
+                }
             }
         }
     }
@@ -126,28 +166,27 @@ class OathViewModel : ViewModel() {
     private suspend fun useBackend(backend: Backend, keyManager: KeyManager) {
         try {
             OathClient(backend, keyManager).use { client ->
-                hasDevice = client.persistent
+                lastDeviceInfo = client.deviceInfo
                 Log.d("yubioath", "Got API, checking requests...")
                 while (!clientRequests.isEmpty) {
                     clientRequests.receive().let { (id, func) ->
-                        if (Arrays.equals(id, client.id)) {
+                        if (Arrays.equals(id, client.deviceInfo.id)) {
                             func(client)
                         }
                     }
                 }
                 creds = client.refreshCodes(System.currentTimeMillis(), creds)
+                selectedItem?.let {
+                    if(!Arrays.equals(client.deviceInfo.id, it.parentId)) {
+                        selectedItem = null
+                    }
+                }
                 credListener(creds)
             }
             Log.d("yubioath", "Refreshed codes: $creds")
-            val deadline = creds.filterKeys { it.type == OathType.TOTP && !it.touch }.values.filterNotNull().minBy { it.validUntil }?.validUntil ?: -1
-            val delayTime = deadline - System.currentTimeMillis()
-            if (delayTime > 0) {
-                requestUsbCheck(delayTime)
-            }
         } catch(e: Exception) {
-            hasDevice = false
+            lastDeviceInfo = DUMMY_INFO
             Log.e("yubioath", "Error using OathClient", e)
-            requestUsbCheck(100)
         }
     }
 }

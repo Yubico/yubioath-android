@@ -1,6 +1,5 @@
 package com.yubico.yubioath.protocol
 
-import android.util.Log
 import com.yubico.yubioath.exc.*
 import com.yubico.yubioath.transport.ApduError
 import com.yubico.yubioath.transport.Backend
@@ -15,20 +14,19 @@ import javax.crypto.spec.SecretKeySpec
 
 class YkOathApi @Throws(IOException::class, AppletSelectException::class)
 constructor(private var backend: Backend) : Closeable {
-    val persistent = backend.persistent
-
-    val id: ByteArray
-    val version: Version
+    val deviceInfo: DeviceInfo
     private var challenge: ByteArray = ByteArray(0)
 
     init {
         try {
             val resp = send(0xa4.toByte(), p1 = 0x04) { put(AID) }
 
-            version = Version.parse(resp.parseTlv(VERSION_TAG))
+            val version = Version.parse(resp.parseTlv(VERSION_TAG))
             checkVersion(version)
 
-            id = resp.parseTlv(NAME_TAG)
+            val id = resp.parseTlv(NAME_TAG)
+
+            deviceInfo = DeviceInfo(id, backend.persistent, version)
 
             if (resp.hasRemaining()) {
                 challenge = resp.parseTlv(CHALLENGE_TAG)
@@ -80,7 +78,7 @@ constructor(private var backend: Backend) : Closeable {
 
     @Throws(IOException::class)
     fun putCode(name: String, key: ByteArray, type: OathType, algorithm: Algorithm, digits: Byte, imf: Int, touch: Boolean) {
-        if(touch && version.major < 4) {
+        if(touch && deviceInfo.version.major < 4) {
             throw IllegalArgumentException("Require touch requires YubiKey 4")
         }
 
@@ -136,9 +134,7 @@ constructor(private var backend: Backend) : Closeable {
         }
 
         return ByteBuffer.allocate(4096).apply {
-            Log.d("yubioath", "SEND: %02X %02X %02X".format(ins, p1, p2) + apdu.joinToString("") { "%02x".format(it) })
             var resp = splitApduResponse(backend.sendApdu(apdu))
-            Log.d("yubioath", "RECV: %04X ".format(resp.status) + resp.data.joinToString("") { "%02x".format(it) })
             while (resp.status != APDU_OK) {
                 if ((resp.status shr 8).toByte() == APDU_DATA_REMAINING_SW1) {
                     put(resp.data)
@@ -166,6 +162,8 @@ constructor(private var backend: Backend) : Closeable {
             fun parse(data: ByteArray):Version = Version(data[0].toInt(), data[1].toInt(), data[2].toInt())
         }
     }
+
+    data class DeviceInfo(val id:ByteArray, val persistent: Boolean, val version:Version)
 
     class ResponseData(val key:String, val oathType: OathType, val touch:Boolean, val data:ByteArray)
 
