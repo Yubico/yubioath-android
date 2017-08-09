@@ -73,8 +73,8 @@
     <string name="save">Save</string>
     <string name="cancel">Cancel</string>
     <string name="close">Close</string>
-    <string name="add_account_scan">Scan account QR-code</string>
-    <string name="add_account_manual">Add account manually</string>
+    <string name="add_account_scan">Scan QR-code</string>
+    <string name="add_account_manual">Manual entry</string>
     <string name="change_password">Change device password</string>
     <string name="password_required">Password required</string>
     <string name="input_required">Enter the missing values, and press Save</string>

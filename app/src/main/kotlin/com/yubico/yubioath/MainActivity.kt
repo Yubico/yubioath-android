@@ -6,6 +6,7 @@ import android.content.Intent
 import android.nfc.NfcAdapter
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
+import android.util.Log
 import com.yubico.yubioath.ui.OathViewModel
 import nordpol.android.AndroidCard
 import nordpol.android.OnDiscoveredTagListener
@@ -24,8 +25,12 @@ class MainActivity : AppCompatActivity() {
         viewModel = ViewModelProviders.of(this).get(OathViewModel::class.java)
 
         tagDispatcher = TagDispatcherBuilder(this, OnDiscoveredTagListener {
-            viewModel.start(this)
-            viewModel.nfcConnected(AndroidCard.get(it))
+            try {
+                viewModel.start(this)
+                viewModel.nfcConnected(AndroidCard.get(it))
+            } catch (e: Exception) {
+                Log.e("yubioath", "Error using NFC device", e)
+            }
         }).enableReaderMode(false).enableUnavailableNfcUserPrompt(false).build()
     }
 

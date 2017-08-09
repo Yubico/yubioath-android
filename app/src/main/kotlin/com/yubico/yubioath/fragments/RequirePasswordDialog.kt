@@ -35,6 +35,7 @@ import android.app.Dialog
 import android.os.Bundle
 import android.support.v4.app.DialogFragment
 import com.yubico.yubioath.MainActivity
+import com.yubico.yubioath.MainActivityOld
 import com.yubico.yubioath.R
 import com.yubico.yubioath.client.KeyManager
 import kotlinx.android.synthetic.main.require_password_dialog.view.*
@@ -73,19 +74,18 @@ class RequirePasswordDialog : DialogFragment() {
         val missing = arguments.getBoolean(MISSING)
 
         activity.layoutInflater.inflate(R.layout.require_password_dialog, null).let {
-            return AlertDialog.Builder(activity).apply {
-                setTitle(if (missing) R.string.password_required else R.string.wrong_password)
-                setView(it).setPositiveButton(R.string.ok) { dialog, which ->
-                    val password = it.editPassword.text.toString().trim()
-                    val remember = it.rememberPassword.isChecked
-                    keyManager.storeSecret(id, KeyManager.calculateSecret(password, id, false), remember)
-                    keyManager.storeSecret(id, KeyManager.calculateSecret(password, id, true), remember)
-                    (activity as MainActivity).checkForUsbDevice()
-                }
-                setNegativeButton(R.string.cancel) { dialog, which ->
-                    dialog.cancel()
-                }
-            }.create()
+            return AlertDialog.Builder(activity)
+                    .setTitle(if (missing) R.string.password_required else R.string.wrong_password)
+                    .setView(it)
+                    .setPositiveButton(R.string.ok, { _, _ ->
+                        val password = it.editPassword.text.toString().trim()
+                        val remember = it.rememberPassword.isChecked
+                        keyManager.clearAll()
+                        keyManager.storeSecret(id, KeyManager.calculateSecret(password, id, false), remember)
+                        keyManager.storeSecret(id, KeyManager.calculateSecret(password, id, true), remember)
+                    })
+                    .setNegativeButton(R.string.cancel) { dialog, _ -> dialog.cancel() }
+                    .create()
         }
     }
 }

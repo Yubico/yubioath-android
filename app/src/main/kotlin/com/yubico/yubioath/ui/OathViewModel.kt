@@ -8,11 +8,14 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.hardware.usb.UsbDevice
 import android.hardware.usb.UsbManager
+import android.support.v7.app.AppCompatActivity
 import android.util.Log
 import com.yubico.yubioath.client.Code
 import com.yubico.yubioath.client.Credential
 import com.yubico.yubioath.client.KeyManager
 import com.yubico.yubioath.client.OathClient
+import com.yubico.yubioath.exc.PasswordRequiredException
+import com.yubico.yubioath.fragments.RequirePasswordDialog
 import com.yubico.yubioath.protocol.CredentialData
 import com.yubico.yubioath.protocol.OathType
 import com.yubico.yubioath.protocol.YkOathApi
@@ -20,6 +23,7 @@ import com.yubico.yubioath.transport.Backend
 import com.yubico.yubioath.transport.NfcBackend
 import com.yubico.yubioath.transport.UsbBackend
 import kotlinx.coroutines.experimental.Job
+import kotlinx.coroutines.experimental.android.UI
 import kotlinx.coroutines.experimental.asCoroutineDispatcher
 import kotlinx.coroutines.experimental.channels.Channel
 import kotlinx.coroutines.experimental.delay
@@ -43,7 +47,7 @@ class OathViewModel : ViewModel() {
 
     private val lock = Mutex()
     private var services: Services? = null
-    private var usbReceiver : BroadcastReceiver? = null
+    private var usbReceiver: BroadcastReceiver? = null
     private val devicesPrompted: MutableSet<UsbDevice> = mutableSetOf()
     private val clientRequests = Channel<Pair<ByteArray, (OathClient) -> Unit>>()
 
@@ -61,6 +65,7 @@ class OathViewModel : ViewModel() {
     fun start(context: Context) = launch(EXEC) {
         lock.withLock {
             val keyManager = KeyManager(context.getSharedPreferences(KEY_STORE, Context.MODE_PRIVATE))
+            services?.apply { usbReceiver?.let { context.unregisterReceiver(it) } }
             services = Services(context, context.usbManager, keyManager).apply {
                 val filter = IntentFilter(ACTION_USB_PERMISSION)
                 usbReceiver = object : BroadcastReceiver() {
@@ -147,7 +152,7 @@ class OathViewModel : ViewModel() {
         updateRefreshJob()
     }
 
-    private fun currentTime(boost:Boolean = false) = System.currentTimeMillis() + if(!boost && lastDeviceInfo.persistent) 0 else 10000
+    private fun currentTime(boost: Boolean = false) = System.currentTimeMillis() + if (!boost && lastDeviceInfo.persistent) 0 else 10000
 
     private fun updateRefreshJob() {
         refreshJob?.cancel()
@@ -155,7 +160,7 @@ class OathViewModel : ViewModel() {
             while (true) {
                 services?.let { checkUsb(it) }
 
-                delay(if(creds.isEmpty()) {
+                delay(if (creds.isEmpty()) {
                     1000L
                 } else {
                     val now = System.currentTimeMillis() //Needs to use real time, not adjusted for non-persistent.
@@ -205,14 +210,25 @@ class OathViewModel : ViewModel() {
                 }
                 creds = client.refreshCodes(currentTime(), creds)
                 selectedItem?.let {
-                    if(!Arrays.equals(client.deviceInfo.id, it.parentId)) {
+                    if (!Arrays.equals(client.deviceInfo.id, it.parentId)) {
                         selectedItem = null
                     }
                 }
                 credListener(creds)
             }
             Log.d("yubioath", "Refreshed codes: $creds")
-        } catch(e: Exception) {
+        } catch (e: PasswordRequiredException) {
+            launch(UI) {
+                services?.apply {
+                    if(context is AppCompatActivity) {
+                        val fragmentManager = context.supportFragmentManager
+                        val ft = fragmentManager.beginTransaction()
+                        fragmentManager.findFragmentByTag("dialog")?.let { ft.remove(it) }
+                        RequirePasswordDialog.newInstance(keyManager, e.id, e.isMissing).show(ft, "dialog")
+                    }
+                }
+            }
+        } catch (e: Exception) {
             lastDeviceInfo = DUMMY_INFO
             Log.e("yubioath", "Error using OathClient", e)
         }
