@@ -63,8 +63,18 @@
     <string name="enter_credential_name">Enter credential name</string>
     <string name="enter_secret_key">Enter secret key</string>
     <string-array name="credential_type">
-        <item>Time based (TOTP)</item>
-        <item>Counter based (HOTP)</item>
+        <item>Time based</item>
+        <item>Counter based</item>
+    </string-array>
+    <string-array name="credential_algo">
+        <item>SHA-1</item>
+        <item>SHA-256</item>
+        <item>SHA-512</item>
+    </string-array>
+    <string-array name="credential_digits">
+        <item>6</item>
+        <item>7</item>
+        <item>8</item>
     </string-array>
     <string name="credential_invalid_name">Invalid name</string>
     <string name="credential_invalid_secret">Invalid secret key, must be a base32 encoded value</string>

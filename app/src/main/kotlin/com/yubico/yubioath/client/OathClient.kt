@@ -59,7 +59,7 @@ class OathClient(backend: Backend, private val keyManager: KeyManager) : Closeab
 
         val (validFrom, validUntil) = when (credential.type) {
             OathType.TOTP -> Pair(timeStep * 1000 * credential.period, (timeStep + 1) * 1000 * credential.period)
-            OathType.HOTP -> Pair(timestamp, Long.MAX_VALUE)
+            OathType.HOTP -> Pair(System.currentTimeMillis(), Long.MAX_VALUE)
         }
 
         return Code(value, validFrom, validUntil)
@@ -96,7 +96,7 @@ class OathClient(backend: Backend, private val keyManager: KeyManager) : Closeab
             if(oathType == OathType.TOTP && period != 30) {
                 name = "$period/$name"
             }
-            api.putCode(name, key, oathType, algorithm, digits, counter, touch)
+            api.putCode(name, secret, oathType, algorithm, digits, counter, touch)
             return Credential(deviceInfo.id, name, oathType, touch)
         }
     }

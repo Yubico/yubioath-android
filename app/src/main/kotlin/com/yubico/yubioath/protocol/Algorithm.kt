@@ -6,8 +6,7 @@ import java.security.MessageDigest
  * Created by Dain on 2017-04-24.
  */
 sealed class Algorithm(val byteVal: Byte, name: String, val blockSize: Int) {
-
-    val messageDigest = MessageDigest.getInstance(name)
+    val messageDigest = MessageDigest.getInstance(name)!!
 
     fun shortenKey(key: ByteArray) = if (key.size > blockSize) messageDigest.digest(key) else key
 

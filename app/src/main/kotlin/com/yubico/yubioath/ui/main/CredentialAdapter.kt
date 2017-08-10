@@ -1,4 +1,4 @@
-package com.yubico.yubioath.ui
+package com.yubico.yubioath.ui.main
 
 import android.content.Context
 import android.content.res.ColorStateList

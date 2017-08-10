@@ -10,21 +10,19 @@ class Credential(val parentId:ByteArray, val key:String, val type: OathType, val
 
     init {
         var data = key
-        var issuerData = if(':' in data) {
+
+        period = if(data.contains(Regex("""^\d+/"""))) {
+            val parts = data.split('/', limit = 2)
+            data = parts[1]
+            parts[0].toInt()
+        } else 30
+
+        issuer = if(':' in data) {
             val parts = data.split(':', limit = 2)
             data = parts[1]
             parts[0]
         } else null
 
-        period = issuerData?.let {
-            if(it.contains(Regex("""^\d+/"""))) {
-                val parts = it.split('/', limit = 2)
-                issuerData = parts[1]
-                parts[0].toInt()
-            } else null
-        } ?: 30
-
-        issuer = issuerData
         name = data
     }
 

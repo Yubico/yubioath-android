@@ -28,10 +28,13 @@
  * SUCH DAMAGE.
  */
 
-package com.yubico.yubioath.fragments
+package com.yubico.yubioath.protocol
 
+import android.net.Uri
 import com.yubico.yubioath.BuildConfig
 import com.yubico.yubioath.protocol.CredentialData
+import org.hamcrest.Matchers
+import org.junit.Assert
 import org.junit.Assert.fail
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -40,14 +43,14 @@ import org.robolectric.annotation.Config
 
 @RunWith(RobolectricTestRunner::class)
 @Config(constants = BuildConfig::class, sdk = intArrayOf(21))
-class AddAccountFragmentTest {
+class CredentialDataTest {
 
     @Test
     fun testParseUriBad() {
         val failingUris = listOf("http://example.com/", "otpauth://foobar?secret=kaka", "foobar", "otpauth://totp/Example:alice@google.com?secret=balhonga1&issuer=Example", "otpauth:///foo:mallory@example.com?secret=kaka")
         for (uri in failingUris) {
             try {
-                CredentialData.from_uri(uri)
+                CredentialData.from_uri(Uri.parse(uri))
                 fail("URL $uri did not fail")
             } catch (e: IllegalArgumentException) {
                 // Should fail.
@@ -61,11 +64,23 @@ class AddAccountFragmentTest {
         val goodUris = listOf("otpauth://totp/Example:alice@google.com?secret=JBSWY3DPEHPK3PXP&issuer=Example", "otpauth://hotp/foobar:bob@example.com?secret=blahonga2")
         for (uri in goodUris) {
             try {
-                CredentialData.from_uri(uri)
+                CredentialData.from_uri(Uri.parse(uri))
             } catch (e: IllegalArgumentException) {
                 System.err.println("Failed at uri: " + uri)
                 throw e
             }
         }
+    }
+
+    @Test
+    fun testParseIssuer() {
+        val noIssuer = CredentialData.from_uri(Uri.parse("otpauth://totp/account?secret=abba"))
+        Assert.assertNull(noIssuer.issuer)
+        val usingParam = CredentialData.from_uri(Uri.parse("otpauth://totp/account?secret=abba&issuer=Issuer"))
+        Assert.assertEquals(usingParam.issuer, "Issuer")
+        val usingSeparator = CredentialData.from_uri(Uri.parse("otpauth://totp/Issuer:account?secret=abba"))
+        Assert.assertEquals(usingSeparator.issuer, "Issuer")
+        val usingBoth = CredentialData.from_uri(Uri.parse("otpauth://totp/IssuerA:account?secret=abba&issuer=IssuerB"))
+        Assert.assertEquals(usingBoth.issuer, "IssuerA")
     }
 }

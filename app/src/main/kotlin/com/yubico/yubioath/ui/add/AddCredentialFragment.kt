@@ -28,25 +28,29 @@
  * SUCH DAMAGE.
  */
 
-package com.yubico.yubioath.fragments
+package com.yubico.yubioath.ui.add
 
+import android.arch.lifecycle.ViewModelProviders
 import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import com.yubico.yubioath.MainActivity
+import android.widget.AdapterView
+import com.yubico.yubioath.MainActivityOld
 import com.yubico.yubioath.R
 import com.yubico.yubioath.exc.StorageFullException
 import com.yubico.yubioath.protocol.CredentialData
 import com.yubico.yubioath.client.KeyManager
 import com.yubico.yubioath.protocol.OathType
 import com.yubico.yubioath.client.OathClient
-import kotlinx.android.synthetic.main.add_code_manual_fragment.*
-import kotlinx.android.synthetic.main.add_code_manual_fragment.view.*
-import kotlinx.android.synthetic.main.add_code_scan_fragment.*
-import kotlinx.android.synthetic.main.add_code_scan_fragment.view.*
+import com.yubico.yubioath.fragments.RequirePasswordDialog
+import com.yubico.yubioath.fragments.SetPasswordFragment
+import com.yubico.yubioath.fragments.SwipeDialog
+import com.yubico.yubioath.fragments.SwipeListFragment
+import com.yubico.yubioath.protocol.Algorithm
+import kotlinx.android.synthetic.main.fragment_add_credential.*
 import org.apache.commons.codec.binary.Base32
 import org.jetbrains.anko.longToast
 
@@ -57,64 +61,61 @@ import org.jetbrains.anko.longToast
  * Time: 10:16 AM
  * To change this template use File | Settings | File Templates.
  */
-class AddAccountFragment : Fragment(), MainActivity.OnYubiKeyListener {
-    companion object {
-        const private val CODE_URI = "codeUri"
+class AddCredentialFragment : Fragment() {
+    private val viewModel: AddCredentialViewModel by lazy { ViewModelProviders.of(activity).get(AddCredentialViewModel::class.java) }
+    private var swipeDialog: SwipeDialog? = null
 
-        fun newInstance(uri: String): AddAccountFragment {
-            val bundle = Bundle()
-            bundle.putString(CODE_URI, uri)
-            val fragment = AddAccountFragment()
-            fragment.arguments = bundle
-            return fragment
-        }
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+        return inflater.inflate(R.layout.fragment_add_credential, container, false)
     }
 
-    private var swipeDialog: SwipeDialog? = null
-    private var manualMode: Boolean = true
-    private var data: CredentialData? = null
+    override fun onActivityCreated(savedInstanceState: Bundle?) {
+        super.onActivityCreated(savedInstanceState)
 
-    override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        try {
-            data = arguments?.getString(CODE_URI)?.trim()?.let { CredentialData.from_uri(it) }
-        } catch (e: IllegalArgumentException) {
-            Log.e("yubioath", "Exception parsing URI", e)
-            with(activity as MainActivity) {
-                longToast(R.string.invalid_barcode)
-                runOnUiThread {
-                    openFragment(SwipeListFragment())
-                }
+        credential_type.onItemSelectedListener = object: AdapterView.OnItemSelectedListener {
+            override fun onNothingSelected(parent: AdapterView<*>?) {
+                TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+            }
+
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                Log.d("yubioath", "Item selected: $id")
+                credential_period.isEnabled = id == 0L
             }
         }
 
-        return data?.let {
-            manualMode = false
+        credential_period.setSelectAllOnFocus(true)
 
-            inflater!!.inflate(R.layout.add_code_scan_fragment, container, false).apply {
-                qr_credential_name.setText(it.name)
-                scan_back.setOnClickListener { onClick(it) }
-                scan_add.setOnClickListener { onClick(it) }
-            }
-        } ?: inflater!!.inflate(R.layout.add_code_manual_fragment, container, false).apply {
-            manual_back.setOnClickListener { onClick(it) }
-            manual_add.setOnClickListener { onClick(it) }
+        viewModel.data?.apply {
+            issuer?.let { credential_issuer.setText(it) }
+            credential_account.setText(name)
+            credential_secret.setText(encodedSecret)
+            credential_type.setSelection(when(oathType) {
+                OathType.TOTP -> 0
+                OathType.HOTP -> 1
+            })
+            credential_period.setText(period.toString())
+            credential_algo.setSelection(when(algorithm) {
+                Algorithm.SHA1 -> 0
+                Algorithm.SHA256 -> 1
+                Algorithm.SHA512 -> 2
+            })
         }
     }
 
     override fun onResume() {
         super.onResume()
-        (activity as MainActivity).checkForUsbDevice()
     }
 
+    @Deprecated("Refactor away")
     private fun onClick(v: View) {
         when (v.id) {
             R.id.manual_back, R.id.scan_back -> {
                 SetPasswordFragment.closeKeyboard(activity)
 
-                (activity as MainActivity).openFragment(SwipeListFragment())
+                (activity as MainActivityOld).openFragment(SwipeListFragment())
             }
             R.id.manual_add -> {
-                val name = credential_name.text.toString()
+                val name = credential_account.text.toString()
                 val secret = credential_secret.text.toString().toUpperCase()
                 val type = if (credential_type.selectedItemId == 0.toLong()) OathType.TOTP else OathType.HOTP
 
@@ -128,33 +129,34 @@ class AddAccountFragment : Fragment(), MainActivity.OnYubiKeyListener {
                         base32.isInAlphabet(secret) -> base32.decode(secret)
                         else -> { activity.longToast(R.string.credential_invalid_secret); return }
                     }
-                    data = CredentialData(key, name, type)
+                    viewModel.data = CredentialData(key, null, name, type)
 
                     swipeDialog = SwipeDialog().apply {
-                        setOnCancel { (activity as MainActivity).openFragment(SwipeListFragment()) }
-                        show(this@AddAccountFragment.fragmentManager, "dialog")
+                        setOnCancel { (activity as MainActivityOld).openFragment(SwipeListFragment()) }
+                        show(this@AddCredentialFragment.fragmentManager, "dialog")
                     }
-                    (activity as MainActivity).checkForUsbDevice()
+                    (activity as MainActivityOld).checkForUsbDevice()
                 }
             }
             R.id.scan_add -> {
-                val name = qr_credential_name.text.toString()
+                val name = credential_account.text.toString()
                 if (name.isEmpty()) {
                     activity.longToast(R.string.credential_invalid_name)
                 } else {
                     SetPasswordFragment.closeKeyboard(activity)
-                    data?.name = name
+                    viewModel.data?.name = name
                     swipeDialog = SwipeDialog().apply {
-                        setOnCancel { (activity as MainActivity).openFragment(SwipeListFragment()) }
-                        show(this@AddAccountFragment.fragmentManager, "dialog")
+                        setOnCancel { (activity as MainActivityOld).openFragment(SwipeListFragment()) }
+                        show(this@AddCredentialFragment.fragmentManager, "dialog")
                     }
-                    (activity as MainActivity).checkForUsbDevice()
+                    (activity as MainActivityOld).checkForUsbDevice()
                 }
             }
         }
     }
 
-    override fun onPasswordMissing(manager: KeyManager, id: ByteArray, missing: Boolean) {
+    @Deprecated("Refactor away")
+    private fun onPasswordMissing(manager: KeyManager, id: ByteArray, missing: Boolean) {
         val ft = fragmentManager.beginTransaction()
         val prev = fragmentManager.findFragmentByTag("dialog")
         if (swipeDialog != null) {
@@ -167,21 +169,20 @@ class AddAccountFragment : Fragment(), MainActivity.OnYubiKeyListener {
         dialog.show(ft, "dialog")
     }
 
-    override fun onYubiKey(oath: OathClient) {
+    @Deprecated("Refactor away")
+    private fun onYubiKey(oath: OathClient) {
         if (swipeDialog == null) {
             return
         }
 
-        with(activity as MainActivity) {
-            data?.let {
+        with(activity as MainActivityOld) {
+            viewModel.data?.let {
                 try {
                     oath.addCredential(it)
                     longToast(R.string.prog_success)
-                    runOnUiThread {
-                        val fragment = SwipeListFragment()
-                        fragment.current.onYubiKey(oath)
-                        openFragment(fragment)
-                    }
+                    val fragment = SwipeListFragment()
+                    //fragment.current.onYubiKey(oath)
+                    openFragment(fragment)
                 } catch (e: StorageFullException) {
                     longToast(R.string.storage_full)
                 } catch (e: Exception) {

@@ -7,11 +7,9 @@ import org.apache.commons.codec.binary.Base32
  * Created by Dain on 2016-08-24.
  */
 
-class CredentialData(val key: ByteArray, var name: String, val oathType: OathType, val algorithm: Algorithm = Algorithm.SHA1, val digits: Byte = 6, val period: Int = 30, val counter: Int = 0, var touch: Boolean = false) {
-
+class CredentialData(val secret: ByteArray, var issuer: String?, var name: String, val oathType: OathType, val algorithm: Algorithm = Algorithm.SHA1, val digits: Byte = 6, val period: Int = 30, val counter: Int = 0, var touch: Boolean = false) {
     companion object {
-        fun from_uri(uriString: String): CredentialData {
-            val uri: Uri = Uri.parse(uriString)
+        fun from_uri(uri: Uri): CredentialData {
             val scheme = uri.scheme
             if (!uri.isHierarchical || scheme == null || scheme != "otpauth") {
                 throw IllegalArgumentException("Uri scheme must be otpauth://")
@@ -25,13 +23,19 @@ class CredentialData(val key: ByteArray, var name: String, val oathType: OathTyp
                 }
             }
 
-            val name = uri.path.let {
+            var name = uri.path.let {
                 if (it.isNullOrEmpty()) throw IllegalArgumentException("Path must contain name")
                 var path = it
                 if (path[0] == '/') path = path.substring(1)
                 if (path.length > 64) path = path.substring(0, 64)
                 path
             }
+
+            val issuer = if(':' in name) {
+                val parts = name.split(':', limit = 2)
+                name = parts[1]
+                parts[0]
+            } else uri.getQueryParameter("issuer")
 
             val oathType = when (uri.host.toLowerCase()) {
                 "totp" -> OathType.TOTP
@@ -76,7 +80,9 @@ class CredentialData(val key: ByteArray, var name: String, val oathType: OathTyp
                 }
             }
 
-            return CredentialData(key, name, oathType, algorithm, digits, period, counter)
+            return CredentialData(key, issuer, name, oathType, algorithm, digits, period, counter)
         }
     }
+
+    val encodedSecret:String = Base32().encodeToString(secret).trimEnd('=')
 }
