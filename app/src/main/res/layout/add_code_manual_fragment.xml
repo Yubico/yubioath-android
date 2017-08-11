@@ -54,7 +54,7 @@
     <Spinner
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/credential_type"
+        android:id="@+id/credential_oathtype"
         android:entries="@array/credential_type"
         android:paddingTop="10dp" />
 

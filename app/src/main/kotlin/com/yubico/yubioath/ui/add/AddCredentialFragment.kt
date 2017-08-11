@@ -40,26 +40,16 @@ import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
 import android.widget.AdapterView
 import android.widget.TextView
-import com.yubico.yubioath.MainActivityOld
 import com.yubico.yubioath.R
-import com.yubico.yubioath.exc.StorageFullException
-import com.yubico.yubioath.protocol.CredentialData
-import com.yubico.yubioath.client.KeyManager
-import com.yubico.yubioath.protocol.OathType
-import com.yubico.yubioath.client.OathClient
-import com.yubico.yubioath.fragments.RequirePasswordDialog
-import com.yubico.yubioath.fragments.SetPasswordFragment
-import com.yubico.yubioath.fragments.SwipeDialog
-import com.yubico.yubioath.fragments.SwipeListFragment
 import com.yubico.yubioath.protocol.Algorithm
+import com.yubico.yubioath.protocol.CredentialData
+import com.yubico.yubioath.protocol.OathType
 import kotlinx.android.synthetic.main.fragment_add_credential.*
 import org.apache.commons.codec.binary.Base32
 import org.jetbrains.anko.inputMethodManager
-import org.jetbrains.anko.longToast
 
 class AddCredentialFragment : Fragment() {
     private val viewModel: AddCredentialViewModel by lazy { ViewModelProviders.of(activity).get(AddCredentialViewModel::class.java) }
-    private var swipeDialog: SwipeDialog? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return inflater.inflate(R.layout.fragment_add_credential, container, false)
@@ -68,7 +58,7 @@ class AddCredentialFragment : Fragment() {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
 
-        credential_type.onItemSelectedListener = object: AdapterView.OnItemSelectedListener {
+        credential_type.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onNothingSelected(parent: AdapterView<*>?) {
                 TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
             }
@@ -80,7 +70,7 @@ class AddCredentialFragment : Fragment() {
         }
 
         credential_period.onFocusChangeListener = View.OnFocusChangeListener { _, hasFocus ->
-            if(!hasFocus && credential_period.text.isEmpty()) {
+            if (!hasFocus && credential_period.text.isEmpty()) {
                 credential_period.setText("30", TextView.BufferType.NORMAL)
             }
         }
@@ -91,22 +81,37 @@ class AddCredentialFragment : Fragment() {
             issuer?.let { credential_issuer.setText(it) }
             credential_account.setText(name)
             credential_secret.setText(encodedSecret)
-            credential_type.setSelection(when(oathType) {
+            credential_type.setSelection(when (oathType) {
                 OathType.TOTP -> 0
                 OathType.HOTP -> 1
             })
             credential_period.setText(period.toString())
-            credential_algo.setSelection(when(algorithm) {
+            credential_algo.setSelection(when (algorithm) {
                 Algorithm.SHA1 -> 0
                 Algorithm.SHA256 -> 1
                 Algorithm.SHA512 -> 2
             })
         }
 
-        if(credential_issuer.text.isNullOrEmpty()) {
+        if (credential_issuer.text.isNullOrEmpty()) {
             activity.inputMethodManager.toggleSoftInput(InputMethodManager.SHOW_FORCED, InputMethodManager.HIDE_IMPLICIT_ONLY)
         }
     }
+
+    var isEnabled: Boolean = true
+        set(value) {
+            if (field != value) {
+                listOf(credential_issuer,
+                        credential_account,
+                        credential_secret,
+                        credential_type,
+                        credential_period,
+                        credential_digits,
+                        credential_algo,
+                        credential_touch).forEach { it.isEnabled = value }
+                field = value
+            }
+        }
 
     fun validateData(): CredentialData? {
         activity.currentFocus?.let {
@@ -116,7 +121,7 @@ class AddCredentialFragment : Fragment() {
 
         val encodedSecret = credential_secret.text.toString().replace(" ", "").toUpperCase()
         val decoder = Base32()
-        val secret = if(encodedSecret.isNotEmpty() && decoder.isInAlphabet(encodedSecret)) {
+        val secret = if (encodedSecret.isNotEmpty() && decoder.isInAlphabet(encodedSecret)) {
             credential_secret_wrapper.error = null
             decoder.decode(encodedSecret)
         } else {
@@ -124,20 +129,20 @@ class AddCredentialFragment : Fragment() {
             valid = false
             byteArrayOf()
         }
-        val issuer = credential_issuer.text.toString().let { if(it.isEmpty()) null else it }
+        val issuer = credential_issuer.text.toString().let { if (it.isEmpty()) null else it }
         val name = credential_account.text.toString()
-        if(name.isEmpty()) {
+        if (name.isEmpty()) {
             credential_account_wrapper.error = "Account name must not be empty"
             valid = false
         } else {
             credential_account_wrapper.error = null
         }
-        val type = when(credential_type.selectedItemId) {
+        val type = when (credential_type.selectedItemId) {
             0L -> OathType.TOTP
             1L -> OathType.HOTP
             else -> throw IllegalArgumentException("Invalid OATH type!")
         }
-        val algo = when(credential_algo.selectedItemId) {
+        val algo = when (credential_algo.selectedItemId) {
             0L -> Algorithm.SHA1
             1L -> Algorithm.SHA256
             2L -> Algorithm.SHA512
@@ -147,96 +152,8 @@ class AddCredentialFragment : Fragment() {
         val period = credential_period.text.toString().toInt()
         val touch = credential_touch.isChecked
 
-        return if(valid) {
+        return if (valid) {
             CredentialData(secret, issuer, name, type, algo, digits, period, touch = touch)
         } else null
-    }
-
-    @Deprecated("Refactor away")
-    private fun onClick(v: View) {
-        when (v.id) {
-            R.id.manual_back, R.id.scan_back -> {
-                SetPasswordFragment.closeKeyboard(activity)
-
-                (activity as MainActivityOld).openFragment(SwipeListFragment())
-            }
-            R.id.manual_add -> {
-                val name = credential_account.text.toString()
-                val secret = credential_secret.text.toString().toUpperCase()
-                val type = if (credential_type.selectedItemId == 0.toLong()) OathType.TOTP else OathType.HOTP
-
-                if (name.isEmpty() || secret.isEmpty()) {
-                    activity.longToast(R.string.credential_incomplete)
-                } else {
-                    SetPasswordFragment.closeKeyboard(activity)
-
-                    val base32 = Base32()
-                    val key = when {
-                        base32.isInAlphabet(secret) -> base32.decode(secret)
-                        else -> { activity.longToast(R.string.credential_invalid_secret); return }
-                    }
-                    viewModel.data = CredentialData(key, null, name, type)
-
-                    swipeDialog = SwipeDialog().apply {
-                        setOnCancel { (activity as MainActivityOld).openFragment(SwipeListFragment()) }
-                        show(this@AddCredentialFragment.fragmentManager, "dialog")
-                    }
-                    (activity as MainActivityOld).checkForUsbDevice()
-                }
-            }
-            R.id.scan_add -> {
-                val name = credential_account.text.toString()
-                if (name.isEmpty()) {
-                    activity.longToast(R.string.credential_invalid_name)
-                } else {
-                    SetPasswordFragment.closeKeyboard(activity)
-                    viewModel.data?.name = name
-                    swipeDialog = SwipeDialog().apply {
-                        setOnCancel { (activity as MainActivityOld).openFragment(SwipeListFragment()) }
-                        show(this@AddCredentialFragment.fragmentManager, "dialog")
-                    }
-                    (activity as MainActivityOld).checkForUsbDevice()
-                }
-            }
-        }
-    }
-
-    @Deprecated("Refactor away")
-    private fun onPasswordMissing(manager: KeyManager, id: ByteArray, missing: Boolean) {
-        val ft = fragmentManager.beginTransaction()
-        val prev = fragmentManager.findFragmentByTag("dialog")
-        if (swipeDialog != null) {
-            swipeDialog!!.dismiss()
-        }
-        if (prev != null) {
-            ft.remove(prev)
-        }
-        val dialog = RequirePasswordDialog.newInstance(manager, id, missing)
-        dialog.show(ft, "dialog")
-    }
-
-    @Deprecated("Refactor away")
-    private fun onYubiKey(oath: OathClient) {
-        if (swipeDialog == null) {
-            return
-        }
-
-        with(activity as MainActivityOld) {
-            viewModel.data?.let {
-                try {
-                    oath.addCredential(it)
-                    longToast(R.string.prog_success)
-                    val fragment = SwipeListFragment()
-                    //fragment.current.onYubiKey(oath)
-                    openFragment(fragment)
-                } catch (e: StorageFullException) {
-                    longToast(R.string.storage_full)
-                } catch (e: Exception) {
-                    longToast(R.string.tag_error_retry)
-                } finally {
-                    swipeDialog?.dismiss()
-                }
-            }
-        }
     }
 }

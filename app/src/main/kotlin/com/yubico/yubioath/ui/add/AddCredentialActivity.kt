@@ -1,6 +1,7 @@
 package com.yubico.yubioath.ui.add
 
 import android.os.Bundle
+import android.support.design.widget.Snackbar
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
@@ -40,17 +41,26 @@ class AddCredentialActivity : BaseActivity<AddCredentialViewModel>(AddCredential
                 val data = validateData()
                 if (data != null) {
                     Log.d("yubioath", "Data: $data")
-                    if (viewModel.lastDeviceInfo.persistent) {
-                        viewModel.requestClient(viewModel.lastDeviceInfo.id) { client ->
+                    isEnabled = false
+
+                    Snackbar.make(view!!, R.string.swipe_and_hold, Snackbar.LENGTH_INDEFINITE).apply {
+                        viewModel.requestClient { client ->
                             client.addCredential(data)
-                        }.invokeOnCompletion {
-                            launch(UI) {
-                                finish()
+                        }.apply {
+                            invokeOnCompletion {
+                                launch(UI) {
+                                    dismiss()
+                                    if(!isCancelled) {
+                                        finish()
+                                    }
+                                }
+                            }
+                            setAction(R.string.cancel) {
+                                isEnabled = true
+                                cancel()
                             }
                         }
-                    } else {
-                        Log.d("yubioath", "TODO: Tap dialog")
-                    }
+                    }.show()
                 } else {
                     Log.d("yubioath", "Errors!")
                 }

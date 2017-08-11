@@ -48,7 +48,7 @@ abstract class BaseViewModel : ViewModel() {
 
     private var usbReceiver: BroadcastReceiver? = null
     private val devicesPrompted: MutableSet<UsbDevice> = mutableSetOf()
-    private val clientRequests = Channel<Pair<ByteArray, (OathClient) -> Unit>>()
+    private val clientRequests = Channel<Pair<ByteArray?, (OathClient) -> Unit>>()
 
     var ndefConsumed = false
     var nfcWarned = false
@@ -107,7 +107,7 @@ abstract class BaseViewModel : ViewModel() {
         }
     }
 
-    fun requestClient(id: ByteArray, func: (api: OathClient) -> Unit) = launch(EXEC) {
+    fun requestClient(id: ByteArray? = null, func: (api: OathClient) -> Unit) = launch(EXEC) {
         Log.d("yubioath", "Requesting API...")
         services?.let {
             launch(EXEC) { checkUsb(it) }
@@ -145,7 +145,7 @@ abstract class BaseViewModel : ViewModel() {
                 Log.d("yubioath", "Got API, checking requests...")
                 while (!clientRequests.isEmpty) {
                     clientRequests.receive().let { (id, func) ->
-                        if (Arrays.equals(id, client.deviceInfo.id)) {
+                        if (id == null || Arrays.equals(id, client.deviceInfo.id)) {
                             func(client)
                         }
                     }
