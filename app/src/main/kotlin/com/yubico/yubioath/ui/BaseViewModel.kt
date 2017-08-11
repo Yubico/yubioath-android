@@ -75,6 +75,7 @@ abstract class BaseViewModel : ViewModel() {
                 }
             }
             context.registerReceiver(usbReceiver, filter)
+            checkUsb(this)
             onStart(this)
         }
         Log.d("yubioath", "Started ViewModel: ${this@BaseViewModel}")

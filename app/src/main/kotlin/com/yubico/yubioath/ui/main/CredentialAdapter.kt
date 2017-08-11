@@ -66,12 +66,16 @@ class CredentialAdapter(context:Context, private val actionHandler: ActionHandle
 
     private fun Credential.hasTimer():Boolean = type == OathType.TOTP && period != 30
 
-    override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View {
+    override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View? {
         return (convertView ?: inflater.inflate(R.layout.view_code, parent, false).apply {
             (this as ViewGroup).descendantFocusability = ViewGroup.FOCUS_BLOCK_DESCENDANTS
             tag = CodeAdapterViewHolder(this)
         }).apply {
-            val (credential, code) = getItem(position)
+            val (credential, code) = try {
+                getItem(position)
+            } catch (e: IndexOutOfBoundsException) {
+                return null
+            }
             with(tag as CodeAdapterViewHolder) {
                 fab.imageBitmap = Bitmap.createBitmap(48, 48, Bitmap.Config.ARGB_8888).apply {
                     val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {

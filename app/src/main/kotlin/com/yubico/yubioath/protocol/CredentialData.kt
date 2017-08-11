@@ -7,7 +7,7 @@ import org.apache.commons.codec.binary.Base32
  * Created by Dain on 2016-08-24.
  */
 
-class CredentialData(val secret: ByteArray, var issuer: String?, var name: String, val oathType: OathType, val algorithm: Algorithm = Algorithm.SHA1, val digits: Byte = 6, val period: Int = 30, val counter: Int = 0, var touch: Boolean = false) {
+data class CredentialData(val secret: ByteArray, var issuer: String?, var name: String, val oathType: OathType, val algorithm: Algorithm = Algorithm.SHA1, val digits: Byte = 6, val period: Int = 30, val counter: Int = 0, var touch: Boolean = false) {
     companion object {
         fun from_uri(uri: Uri): CredentialData {
             val scheme = uri.scheme

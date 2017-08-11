@@ -37,7 +37,9 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.InputMethodManager
 import android.widget.AdapterView
+import android.widget.TextView
 import com.yubico.yubioath.MainActivityOld
 import com.yubico.yubioath.R
 import com.yubico.yubioath.exc.StorageFullException
@@ -52,15 +54,9 @@ import com.yubico.yubioath.fragments.SwipeListFragment
 import com.yubico.yubioath.protocol.Algorithm
 import kotlinx.android.synthetic.main.fragment_add_credential.*
 import org.apache.commons.codec.binary.Base32
+import org.jetbrains.anko.inputMethodManager
 import org.jetbrains.anko.longToast
 
-/**
- * Created with IntelliJ IDEA.
- * User: dain
- * Date: 8/28/13
- * Time: 10:16 AM
- * To change this template use File | Settings | File Templates.
- */
 class AddCredentialFragment : Fragment() {
     private val viewModel: AddCredentialViewModel by lazy { ViewModelProviders.of(activity).get(AddCredentialViewModel::class.java) }
     private var swipeDialog: SwipeDialog? = null
@@ -83,6 +79,12 @@ class AddCredentialFragment : Fragment() {
             }
         }
 
+        credential_period.onFocusChangeListener = View.OnFocusChangeListener { _, hasFocus ->
+            if(!hasFocus && credential_period.text.isEmpty()) {
+                credential_period.setText("30", TextView.BufferType.NORMAL)
+            }
+        }
+
         credential_period.setSelectAllOnFocus(true)
 
         viewModel.data?.apply {
@@ -100,10 +102,54 @@ class AddCredentialFragment : Fragment() {
                 Algorithm.SHA512 -> 2
             })
         }
+
+        if(credential_issuer.text.isNullOrEmpty()) {
+            activity.inputMethodManager.toggleSoftInput(InputMethodManager.SHOW_FORCED, InputMethodManager.HIDE_IMPLICIT_ONLY)
+        }
     }
 
-    override fun onResume() {
-        super.onResume()
+    fun validateData(): CredentialData? {
+        activity.currentFocus?.let {
+            activity.inputMethodManager.hideSoftInputFromWindow(it.applicationWindowToken, 0)
+        }
+        var valid = true
+
+        val encodedSecret = credential_secret.text.toString().replace(" ", "").toUpperCase()
+        val decoder = Base32()
+        val secret = if(encodedSecret.isNotEmpty() && decoder.isInAlphabet(encodedSecret)) {
+            credential_secret_wrapper.error = null
+            decoder.decode(encodedSecret)
+        } else {
+            credential_secret_wrapper.error = "Invalid value for secret"
+            valid = false
+            byteArrayOf()
+        }
+        val issuer = credential_issuer.text.toString().let { if(it.isEmpty()) null else it }
+        val name = credential_account.text.toString()
+        if(name.isEmpty()) {
+            credential_account_wrapper.error = "Account name must not be empty"
+            valid = false
+        } else {
+            credential_account_wrapper.error = null
+        }
+        val type = when(credential_type.selectedItemId) {
+            0L -> OathType.TOTP
+            1L -> OathType.HOTP
+            else -> throw IllegalArgumentException("Invalid OATH type!")
+        }
+        val algo = when(credential_algo.selectedItemId) {
+            0L -> Algorithm.SHA1
+            1L -> Algorithm.SHA256
+            2L -> Algorithm.SHA512
+            else -> throw IllegalArgumentException("Invalid hash algorithm!")
+        }
+        val digits = (6 + credential_digits.selectedItemId).toByte()
+        val period = credential_period.text.toString().toInt()
+        val touch = credential_touch.isChecked
+
+        return if(valid) {
+            CredentialData(secret, issuer, name, type, algo, digits, period, touch = touch)
+        } else null
     }
 
     @Deprecated("Refactor away")

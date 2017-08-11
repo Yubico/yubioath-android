@@ -10,6 +10,8 @@ sealed class Algorithm(val byteVal: Byte, name: String, val blockSize: Int) {
 
     fun shortenKey(key: ByteArray) = if (key.size > blockSize) messageDigest.digest(key) else key
 
+    override fun toString() = javaClass.simpleName
+
     object SHA1 : Algorithm(1, "SHA1", 64)
     object SHA256 : Algorithm(2, "SHA256", 64)
     object SHA512 : Algorithm(3, "SHA512", 128)

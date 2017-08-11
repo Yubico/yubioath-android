@@ -93,6 +93,9 @@ class OathClient(backend: Backend, private val keyManager: KeyManager) : Closeab
 
     fun addCredential(data: CredentialData): Credential {
         with(data) {
+            if(issuer != null) {
+                name = "$issuer:$name"
+            }
             if(oathType == OathType.TOTP && period != 30) {
                 name = "$period/$name"
             }

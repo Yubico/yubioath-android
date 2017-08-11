@@ -122,5 +122,6 @@ Version: %1$s</p>
 <a href="http://www.yubico.com/">http://www.yubico.com/</a></p>]]></string>
     <string name="title_activity_new">NewActivity</string>
     <string name="action_settings">Settings</string>
+    <string name="new_credential">New credential</string>
 
 </resources>

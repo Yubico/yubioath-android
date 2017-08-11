@@ -13,6 +13,7 @@ import android.animation.AnimatorListenerAdapter
 import android.content.Intent
 import android.net.Uri
 import android.support.annotation.RequiresApi
+import android.support.annotation.StringRes
 import android.support.design.widget.*
 import android.util.Log
 import android.view.animation.*
@@ -81,18 +82,7 @@ class CredentialsFragment : ListFragment() {
                 val clipboard = activity.clipboardManager as ClipboardManager
                 val clip = ClipData.newPlainText("OTP", code.value)
                 clipboard.primaryClip = clip
-                Snackbar.make(view!!, R.string.copied, Snackbar.LENGTH_SHORT).apply {
-                    addCallback(object: BaseTransientBottomBar.BaseCallback<Snackbar>() {
-                        override fun onDismissed(transientBottomBar: Snackbar?, event: Int) {
-                            if (!fab.isShown && !toolbar_add.isShown) fab.show()
-                        }
-                    })
-                }.show()
-                if (fab.isShown) {
-                    fab.hide()
-                } else {
-                    if (toolbar_add.isShown) hideAddToolbar(false)
-                }
+                snackbarNotification(R.string.copied)
             }
         }
         listAdapter = CredentialAdapter(context, actions, viewModel.creds).apply {
@@ -140,7 +130,6 @@ class CredentialsFragment : ListFragment() {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         IntentIntegrator.parseActivityResult(requestCode, resultCode, data)?.contents?.let {
-            Log.d("yubioath", "QR SCAN RESULTS: $it")
             startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(it), context, AddCredentialActivity::class.java))
         }
     }
@@ -217,6 +206,21 @@ class CredentialsFragment : ListFragment() {
         }
     }
 
+    private fun snackbarNotification(@StringRes message: Int) {
+        Snackbar.make(view!!, message, Snackbar.LENGTH_SHORT).apply {
+            addCallback(object: BaseTransientBottomBar.BaseCallback<Snackbar>() {
+                override fun onDismissed(transientBottomBar: Snackbar?, event: Int) {
+                    if (!fab.isShown && !toolbar_add.isShown) fab.show()
+                }
+            })
+        }.show()
+        if (fab.isShown) {
+            fab.hide()
+        } else {
+            if (toolbar_add.isShown) hideAddToolbar(false)
+        }
+    }
+
     private fun selectItem(position: Int, updateViewModel:Boolean = true) {
         val credential = adapter.getItem(position).key
         if(updateViewModel) {
@@ -224,7 +228,16 @@ class CredentialsFragment : ListFragment() {
         }
 
         val mode = actionMode ?: activity.startActionMode(object : ActionMode.Callback {
-            override fun onActionItemClicked(mode: ActionMode?, item: MenuItem?): Boolean {
+            override fun onActionItemClicked(mode: ActionMode, item: MenuItem): Boolean {
+                when(item.itemId) {
+                    R.id.delete -> viewModel.apply {
+                        selectedItem?.let {
+                            delete(it)
+                            snackbarNotification(R.string.deleted)
+                            selectedItem = null
+                        }
+                    }
+                }
                 actionMode?.finish()
                 return true
             }
