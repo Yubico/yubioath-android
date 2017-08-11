@@ -16,9 +16,14 @@ import java.util.*
 class OathViewModel : BaseViewModel() {
     var creds: MutableMap<Credential, Code?> = mutableMapOf()
         private set
+    var searchFilter: String = ""
+        set(value) {
+            field = value
+            credListener(creds, value)
+        }
     private var refreshJob: Job? = null
 
-    var credListener: ((Map<Credential, Code?>) -> Any) = {}
+    var credListener: ((Map<Credential, Code?>, String) -> Any) = { _, _ -> }
     var selectedItem: Credential? = null
 
     override suspend fun onStart(services: Services) {
@@ -33,27 +38,27 @@ class OathViewModel : BaseViewModel() {
     fun addCredential(data: CredentialData) = requestClient(creds.keys.first().parentId) {
         val credential = it.addCredential(data)
         creds = it.refreshCodes(currentTime(), creds)
-        credListener(creds)
+        credListener(creds, searchFilter)
         Log.d("yubioath", "Added credential: $credential: ${creds[credential]}")
     }
 
     fun calculate(credential: Credential) = requestClient(credential.parentId) {
         creds[credential] = it.calculate(credential, currentTime(true))
-        credListener(creds)
+        credListener(creds, searchFilter)
         Log.d("yubioath", "Calculated code: $credential: ${creds[credential]}")
     }
 
     fun delete(credential: Credential) = requestClient(credential.parentId) {
         it.delete(credential)
         creds.remove(credential)
-        credListener(creds)
+        credListener(creds, searchFilter)
         Log.d("yubioath", "Deleted credential: $credential")
     }
 
     fun clearCredentials() {
         creds.clear()
         selectedItem = null
-        credListener(creds)
+        credListener(creds, searchFilter)
         updateRefreshJob()
     }
 
@@ -83,6 +88,6 @@ class OathViewModel : BaseViewModel() {
                 selectedItem = null
             }
         }
-        credListener(creds)
+        credListener(creds, searchFilter)
     }
 }

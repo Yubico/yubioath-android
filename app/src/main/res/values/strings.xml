@@ -123,5 +123,6 @@ Version: %1$s</p>
     <string name="title_activity_new">NewActivity</string>
     <string name="action_settings">Settings</string>
     <string name="new_credential">New credential</string>
+    <string name="search">Search</string>
 
 </resources>

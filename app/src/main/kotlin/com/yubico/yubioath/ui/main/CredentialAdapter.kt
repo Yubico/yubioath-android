@@ -26,16 +26,39 @@ import kotlinx.coroutines.experimental.delay
 import kotlinx.coroutines.experimental.launch
 import org.jetbrains.anko.imageBitmap
 
-class CredentialAdapter(context:Context, private val actionHandler: ActionHandler, initialCreds: Map<Credential, Code?> = mapOf()) : BaseAdapter() {
+class CredentialAdapter(context: Context, private val actionHandler: ActionHandler, initialCreds: Map<Credential, Code?> = mapOf()) : BaseAdapter() {
+    companion object {
+        private val COLORS = listOf(
+                "#F44336",
+                "#E91E63",
+                "#9C27B0",
+                "#673AB7",
+                "#3F51B5",
+                "#2196F3",
+                "#009688",
+                "#FF5722",
+                "#795548",
+                "#607D8B",
+                "#039BE5",
+                "#0097A7",
+                "#43A047",
+                "#689F38",
+                "#827717",
+                "#EF6C00",
+                "#757575"
+        ).map { ColorStateList.valueOf(Color.parseColor(it)) }
+
+        private fun getColor(cred: Credential) = COLORS[Math.abs(cred.key.hashCode()) % COLORS.size]
+    }
+
     private val inflater = LayoutInflater.from(context)
     var creds: Map<Credential, Code?> = initialCreds
         private set
 
     private var notifyTimeout: Job? = null
 
-    val setCredentials = fun(credentials: Map<Credential, Code?>) = launch(UI) {
-        Log.d("yubioath", "NEW CREDS: $credentials")
-        creds = credentials
+    val setCredentials = fun(credentials: Map<Credential, Code?>, searchFilter:String) = launch(UI) {
+        creds = credentials.filterKeys { searchFilter in it.key }
         notifyDataSetChanged()
         notifyNextTimeout(credentials)
     }
@@ -43,7 +66,7 @@ class CredentialAdapter(context:Context, private val actionHandler: ActionHandle
     private suspend fun notifyNextTimeout(credentials: Map<Credential, Code?>) {
         val now = System.currentTimeMillis()
         val nextTimeout = credentials.map { (cred, code) ->
-            if(code != null) when (cred.type) {
+            if (code != null) when (cred.type) {
                 OathType.TOTP -> code.validUntil
                 OathType.HOTP -> code.validFrom + 5000  // Redraw HOTP codes after 5 seconds as they can be re-calculated.
             } else -1
@@ -61,10 +84,10 @@ class CredentialAdapter(context:Context, private val actionHandler: ActionHandle
 
     fun getPosition(credential: Credential): Int = creds.keys.indexOf(credential)
 
-    private fun Code?.valid():Boolean = this != null && validUntil > System.currentTimeMillis()
-    private fun Code?.canRefresh():Boolean = this == null || validFrom + 5000 < System.currentTimeMillis()
+    private fun Code?.valid(): Boolean = this != null && validUntil > System.currentTimeMillis()
+    private fun Code?.canRefresh(): Boolean = this == null || validFrom + 5000 < System.currentTimeMillis()
 
-    private fun Credential.hasTimer():Boolean = type == OathType.TOTP && period != 30
+    private fun Credential.hasTimer(): Boolean = type == OathType.TOTP && period != 30
 
     override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View? {
         return (convertView ?: inflater.inflate(R.layout.view_code, parent, false).apply {
@@ -83,11 +106,11 @@ class CredentialAdapter(context:Context, private val actionHandler: ActionHandle
                         textAlign = Paint.Align.CENTER
                         color = ContextCompat.getColor(context, android.R.color.primary_text_dark)
                     }
-                    val letter = (if(credential.issuer.isNullOrEmpty()) credential.name else credential.issuer!!).substring(0, 1).toUpperCase()
+                    val letter = (if (credential.issuer.isNullOrEmpty()) credential.name else credential.issuer!!).substring(0, 1).toUpperCase()
                     Canvas(this).drawText(letter, 24f, -paint.ascent(), paint)
                 }
-                val hc = credential.key.hashCode()
-                fab.backgroundTintList = ColorStateList.valueOf(Color.rgb(hc and 0xff, (hc ushr 8) and 0xff, (hc ushr 16) and 0xff))
+
+                fab.backgroundTintList = getColor(credential)
                 issuerView.run {
                     visibility = if (credential.issuer != null) {
                         text = credential.name
@@ -115,8 +138,8 @@ class CredentialAdapter(context:Context, private val actionHandler: ActionHandle
                 timeoutBar.run {
                     if (credential.hasTimer()) {
                         visibility = View.VISIBLE
-                        if(code != null && code.valid()) {
-                            if(animation == null || animation.hasEnded()) {
+                        if (code != null && code.valid()) {
+                            if (animation == null || animation.hasEnded()) {
                                 val now = System.currentTimeMillis()
                                 startAnimation(timeoutAnimation.apply {
                                     duration = code.validUntil - Math.min(now, code.validFrom)
@@ -124,7 +147,9 @@ class CredentialAdapter(context:Context, private val actionHandler: ActionHandle
                                     setAnimationListener(object : Animation.AnimationListener {
                                         override fun onAnimationStart(animation: Animation?) = Unit
                                         override fun onAnimationRepeat(animation: Animation?) = Unit
-                                        override fun onAnimationEnd(animation: Animation?) { notifyDataSetChanged() }
+                                        override fun onAnimationEnd(animation: Animation?) {
+                                            notifyDataSetChanged()
+                                        }
                                     })
                                 })
                             }

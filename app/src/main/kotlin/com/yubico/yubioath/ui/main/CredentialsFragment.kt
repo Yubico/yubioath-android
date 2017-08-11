@@ -23,6 +23,7 @@ import com.yubico.yubioath.ui.add.AddCredentialActivity
 import com.yubico.yubioath.R
 import com.yubico.yubioath.client.Code
 import com.yubico.yubioath.client.Credential
+import com.yubico.yubioath.protocol.CredentialData
 import com.yubico.yubioath.protocol.OathType
 import kotlinx.android.synthetic.main.fragment_credentials.*
 import kotlinx.coroutines.experimental.android.UI
@@ -130,7 +131,13 @@ class CredentialsFragment : ListFragment() {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         IntentIntegrator.parseActivityResult(requestCode, resultCode, data)?.contents?.let {
-            startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(it), context, AddCredentialActivity::class.java))
+            val uri = Uri.parse(it)
+            try {
+                CredentialData.from_uri(uri)
+                startActivity(Intent(Intent.ACTION_VIEW, uri, context, AddCredentialActivity::class.java))
+            } catch (e:IllegalArgumentException) {
+                snackbarNotification(R.string.invalid_barcode)
+            }
         }
     }
 
@@ -232,9 +239,17 @@ class CredentialsFragment : ListFragment() {
                 when(item.itemId) {
                     R.id.delete -> viewModel.apply {
                         selectedItem?.let {
-                            delete(it)
-                            snackbarNotification(R.string.deleted)
                             selectedItem = null
+                            Snackbar.make(view!!, R.string.swipe_and_hold, Snackbar.LENGTH_INDEFINITE).apply {
+                                viewModel.delete(it).apply {
+                                    invokeOnCompletion {
+                                        launch(UI) {
+                                            snackbarNotification(R.string.deleted)
+                                        }
+                                    }
+                                    setAction(R.string.cancel, { cancel() })
+                                }
+                            }.show()
                         }
                     }
                 }
