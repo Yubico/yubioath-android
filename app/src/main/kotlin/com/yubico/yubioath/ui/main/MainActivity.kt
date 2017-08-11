@@ -3,7 +3,6 @@ package com.yubico.yubioath.ui.main
 import android.os.Bundle
 import android.support.v4.view.MenuItemCompat
 import android.support.v7.widget.SearchView
-import android.util.Log
 import android.view.Menu
 import com.yubico.yubioath.R
 import com.yubico.yubioath.ui.BaseActivity

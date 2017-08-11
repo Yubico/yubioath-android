@@ -58,7 +58,7 @@ class CredentialAdapter(context: Context, private val actionHandler: ActionHandl
     private var notifyTimeout: Job? = null
 
     val setCredentials = fun(credentials: Map<Credential, Code?>, searchFilter:String) = launch(UI) {
-        creds = credentials.filterKeys { searchFilter in it.key }
+        creds = credentials.filterKeys { it.key.contains(searchFilter, true) }
         notifyDataSetChanged()
         notifyNextTimeout(credentials)
     }
