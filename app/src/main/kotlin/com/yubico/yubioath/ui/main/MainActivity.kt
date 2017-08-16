@@ -1,11 +1,16 @@
 package com.yubico.yubioath.ui.main
 
+import android.content.Intent
 import android.os.Bundle
 import android.support.v4.view.MenuItemCompat
 import android.support.v7.widget.SearchView
+import android.util.Log
 import android.view.Menu
+import android.view.MenuItem
 import com.yubico.yubioath.R
 import com.yubico.yubioath.ui.BaseActivity
+import com.yubico.yubioath.ui.add.AddCredentialActivity
+import com.yubico.yubioath.ui.settings.SettingsActivity
 
 class MainActivity : BaseActivity<OathViewModel>(OathViewModel::class.java) {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -27,5 +32,15 @@ class MainActivity : BaseActivity<OathViewModel>(OathViewModel::class.java) {
         })
 
         return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        Log.d("yubioath", "MENU: $item")
+        when(item.itemId) {
+            R.id.action_password -> Log.d("yubioath", "TODO: Set password")
+            R.id.action_settings -> startActivity(Intent(this, SettingsActivity::class.java))
+        }
+
+        return super.onOptionsItemSelected(item)
     }
 }

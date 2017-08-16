@@ -34,8 +34,6 @@ import android.app.AlertDialog
 import android.app.Dialog
 import android.os.Bundle
 import android.support.v4.app.DialogFragment
-import com.yubico.yubioath.MainActivity
-import com.yubico.yubioath.MainActivityOld
 import com.yubico.yubioath.R
 import com.yubico.yubioath.client.KeyManager
 import kotlinx.android.synthetic.main.require_password_dialog.view.*

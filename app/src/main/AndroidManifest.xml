@@ -20,7 +20,8 @@
         android:theme="@style/AppTheme">
         <activity
             android:name=".ui.main.MainActivity"
-            android:configChanges="orientation|keyboard|keyboardHidden">
+            android:configChanges="orientation|keyboard|keyboardHidden"
+            android:launchMode="singleTask">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
 
@@ -56,12 +57,30 @@
 
         <activity
             android:name=".ui.add.AddCredentialActivity"
-            android:configChanges="orientation|keyboard|keyboardHidden">
+            android:label="@string/new_credential"
+            android:configChanges="orientation|keyboard|keyboardHidden"
+            android:launchMode="singleTask">
             <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-                <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="otpauth" />
+                <action android:name="android.intent.action.VIEW"/>
+
+                <category android:name="android.intent.category.BROWSABLE"/>
+
+                <data android:scheme="otpauth"/>
             </intent-filter>
+
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.yubico.yubioath.ui.main.MainActivity"/>
+        </activity>
+
+        <activity
+            android:name=".ui.settings.SettingsActivity"
+            android:label="@string/title_activity_settings"
+            android:configChanges="orientation|keyboard|keyboardHidden">
+
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.yubico.yubioath.ui.main.MainActivity"/>
         </activity>
 
         <!-- This keeps the app in portrait mode when scanning QR codes -->

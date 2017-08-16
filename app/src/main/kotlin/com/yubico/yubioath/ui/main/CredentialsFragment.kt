@@ -18,6 +18,7 @@ import android.support.design.widget.*
 import android.util.Log
 import android.view.animation.*
 import android.widget.AdapterView
+import android.widget.ImageView
 import com.google.zxing.integration.android.IntentIntegrator
 import com.yubico.yubioath.ui.add.AddCredentialActivity
 import com.yubico.yubioath.R
@@ -92,6 +93,8 @@ class CredentialsFragment : ListFragment() {
                 override fun onChanged() {
                     //Update progress bar
                     updateProgressBar()
+                    listView.alpha = 1f
+                    swipe_clear_layout.isEnabled = !isEmpty
                 }
             })
         }
@@ -127,6 +130,32 @@ class CredentialsFragment : ListFragment() {
             hideAddToolbar()
             startActivity(Intent(context, AddCredentialActivity::class.java))
         }
+
+        fixSwipeClearDrawable()
+        swipe_clear_layout.apply {
+            isEnabled = !listAdapter.isEmpty
+            setOnRefreshListener {
+                isRefreshing = false
+
+                if (viewModel.lastDeviceInfo.persistent) {
+                    viewModel.clearCredentials()
+                } else {
+                    listView.animate().apply {
+                        alpha(0f)
+                        duration = 195
+                        interpolator = LinearInterpolator()
+                        setListener(object : Animator.AnimatorListener {
+                            override fun onAnimationRepeat(animation: Animator?) = Unit
+                            override fun onAnimationCancel(animation: Animator?) = Unit
+                            override fun onAnimationStart(animation: Animator?) = Unit
+                            override fun onAnimationEnd(animation: Animator?) {
+                                viewModel.clearCredentials()
+                            }
+                        })
+                    }.start()
+                }
+            }
+        }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -138,6 +167,14 @@ class CredentialsFragment : ListFragment() {
             } catch (e:IllegalArgumentException) {
                 snackbarNotification(R.string.invalid_barcode)
             }
+        }
+    }
+
+    private fun fixSwipeClearDrawable() {
+        //Hack that changes the drawable using reflection.
+        swipe_clear_layout.javaClass.getDeclaredField("mCircleView").apply {
+            isAccessible = true
+            (get(swipe_clear_layout) as ImageView).setImageResource(R.drawable.ic_close_24dp)
         }
     }
 

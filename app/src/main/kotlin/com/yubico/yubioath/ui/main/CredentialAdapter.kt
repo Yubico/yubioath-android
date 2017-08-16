@@ -26,7 +26,7 @@ import kotlinx.coroutines.experimental.delay
 import kotlinx.coroutines.experimental.launch
 import org.jetbrains.anko.imageBitmap
 
-class CredentialAdapter(context: Context, private val actionHandler: ActionHandler, initialCreds: Map<Credential, Code?> = mapOf()) : BaseAdapter() {
+class CredentialAdapter(private val context: Context, private val actionHandler: ActionHandler, initialCreds: Map<Credential, Code?> = mapOf()) : BaseAdapter() {
     companion object {
         private val COLORS = listOf(
                 "#F44336",
@@ -89,6 +89,14 @@ class CredentialAdapter(context: Context, private val actionHandler: ActionHandl
 
     private fun Credential.hasTimer(): Boolean = type == OathType.TOTP && period != 30
 
+    private fun Code?.formatValue(): String = when(this?.value?.length) {
+        null -> context.getString(R.string.press_for_code)
+        8 -> value.slice(0..3) + " " + value.slice(4..7) //1234 5678
+        7 -> value.slice(0..3) + " " + value.slice(4..6) //1234 567
+        6 -> value.slice(0..2) + " " + value.slice(3..5) //123 456
+        else -> value
+    }
+
     override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View? {
         return (convertView ?: inflater.inflate(R.layout.view_code, parent, false).apply {
             (this as ViewGroup).descendantFocusability = ViewGroup.FOCUS_BLOCK_DESCENDANTS
@@ -126,7 +134,7 @@ class CredentialAdapter(context: Context, private val actionHandler: ActionHandl
                 }
                 labelView.text = credential.name
 
-                codeView.text = code?.value ?: "<refresh to read>"
+                codeView.text = code.formatValue()
                 codeView.isEnabled = code.valid()
 
                 fab.setOnClickListener { actionHandler.select(position) }

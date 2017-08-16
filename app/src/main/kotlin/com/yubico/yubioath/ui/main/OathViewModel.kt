@@ -4,7 +4,6 @@ import android.util.Log
 import com.yubico.yubioath.client.Code
 import com.yubico.yubioath.client.Credential
 import com.yubico.yubioath.client.OathClient
-import com.yubico.yubioath.protocol.CredentialData
 import com.yubico.yubioath.protocol.OathType
 import com.yubico.yubioath.ui.BaseViewModel
 import com.yubico.yubioath.ui.EXEC
@@ -35,13 +34,6 @@ class OathViewModel : BaseViewModel() {
         refreshJob = null
     }
 
-    fun addCredential(data: CredentialData) = requestClient(creds.keys.first().parentId) {
-        val credential = it.addCredential(data)
-        creds = it.refreshCodes(currentTime(), creds)
-        credListener(creds, searchFilter)
-        Log.d("yubioath", "Added credential: $credential: ${creds[credential]}")
-    }
-
     fun calculate(credential: Credential) = requestClient(credential.parentId) {
         creds[credential] = it.calculate(credential, currentTime(true))
         credListener(creds, searchFilter)
@@ -58,8 +50,21 @@ class OathViewModel : BaseViewModel() {
     fun clearCredentials() {
         creds.clear()
         selectedItem = null
-        credListener(creds, searchFilter)
-        updateRefreshJob()
+
+        // If we have a persistent device, we try to re-read the codes and update instead of clearing.
+        if (lastDeviceInfo.persistent) {
+            launch(EXEC) {
+                val refreshCreds = requestClient(lastDeviceInfo.id) {}
+                delay(100) //If we can't get the device in 100ms, give up and notify credListener.
+                if (refreshCreds.isActive) {
+                    credListener(creds, searchFilter)
+                    updateRefreshJob()
+                }
+            }
+        } else {
+            credListener(creds, searchFilter)
+            updateRefreshJob()
+        }
     }
 
     private fun currentTime(boost: Boolean = false) = System.currentTimeMillis() + if (!boost && lastDeviceInfo.persistent) 0 else 10000

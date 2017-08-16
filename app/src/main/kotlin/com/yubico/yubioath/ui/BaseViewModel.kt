@@ -10,6 +10,7 @@ import android.hardware.usb.UsbDevice
 import android.hardware.usb.UsbManager
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
+import com.yubico.yubioath.R
 import com.yubico.yubioath.client.KeyManager
 import com.yubico.yubioath.client.OathClient
 import com.yubico.yubioath.exc.PasswordRequiredException
@@ -18,25 +19,46 @@ import com.yubico.yubioath.protocol.YkOathApi
 import com.yubico.yubioath.transport.Backend
 import com.yubico.yubioath.transport.NfcBackend
 import com.yubico.yubioath.transport.UsbBackend
+import kotlinx.coroutines.experimental.Job
 import kotlinx.coroutines.experimental.android.UI
 import kotlinx.coroutines.experimental.asCoroutineDispatcher
 import kotlinx.coroutines.experimental.channels.Channel
+import kotlinx.coroutines.experimental.delay
 import kotlinx.coroutines.experimental.launch
 import nordpol.IsoCard
+import org.jetbrains.anko.toast
 import org.jetbrains.anko.usbManager
 import java.util.*
 import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
 
 /**
  * Created by Dain on 2017-08-10.
  */
 val EXEC = Executors.newSingleThreadExecutor().asCoroutineDispatcher()
 
+private class ClearingMemStore : KeyManager.MemStore {
+    private val map: MutableMap<String, MutableSet<String>> = hashMapOf()
+    private var clearJob: Job? = null
+
+    override fun get(key: String): MutableSet<String> {
+        clearJob?.cancel()
+        clearJob = launch(EXEC) {
+            delay(5, TimeUnit.MINUTES)  //Clear stored passwords after inactivity.
+            clear()
+        }
+        return map.getOrPut(key) { HashSet() }
+    }
+    override fun remove(key: String) { map.remove(key) }
+    override fun clear() = map.clear()
+}
+
 abstract class BaseViewModel : ViewModel() {
     companion object {
         const private val KEY_STORE = "NEO_STORE" //Name for legacy reasons...
         const private val ACTION_USB_PERMISSION = "com.yubico.yubioath.USB_PERMISSION"
         private val DUMMY_INFO = YkOathApi.DeviceInfo(byteArrayOf(), false, YkOathApi.Version(0, 0, 0))
+        private val MEM_STORE = ClearingMemStore()
     }
 
     protected data class Services(val context: Context, val usbManager: UsbManager, val keyManager: KeyManager)
@@ -50,12 +72,12 @@ abstract class BaseViewModel : ViewModel() {
     private val devicesPrompted: MutableSet<UsbDevice> = mutableSetOf()
     private val clientRequests = Channel<Pair<ByteArray?, (OathClient) -> Unit>>()
 
-    var ndefConsumed = false
-    var nfcWarned = false
+    internal var ndefConsumed = false
+    internal var nfcWarned = false
 
     protected open suspend fun onStart(services: Services) = Unit
     fun start(context: Context) = launch(EXEC) {
-        val keyManager = KeyManager(context.getSharedPreferences(KEY_STORE, Context.MODE_PRIVATE))
+        val keyManager = KeyManager(context.getSharedPreferences(KEY_STORE, Context.MODE_PRIVATE), MEM_STORE)
         services?.apply { usbReceiver?.let { context.unregisterReceiver(it) } }
         services = Services(context, context.usbManager, keyManager).apply {
             val filter = IntentFilter(ACTION_USB_PERMISSION)
@@ -117,18 +139,20 @@ abstract class BaseViewModel : ViewModel() {
 
     protected suspend fun checkUsb(services: Services) {
         val device = services.usbManager.deviceList.values.find { UsbBackend.isSupported(it) }
-        if (device == null) {
-            if (lastDeviceInfo.persistent) {
-                Log.d("yubioath", "Persistent device removed!")
-                lastDeviceInfo = DUMMY_INFO
+
+        when {
+            device == null -> {
+                if (lastDeviceInfo.persistent) {
+                    Log.d("yubioath", "Persistent device removed!")
+                    lastDeviceInfo = DUMMY_INFO
+                }
             }
-        } else {
-            if (services.usbManager.hasPermission(device)) {
+            services.usbManager.hasPermission(device) -> {
                 Log.d("yubioath", "USB device present")
                 useBackend(UsbBackend.connect(services.usbManager, device), services.keyManager)
-            } else if (device in devicesPrompted) {
-                Log.d("yubioath", "USB no permission, already requested!")
-            } else {
+            }
+            device in devicesPrompted -> Log.d("yubioath", "USB no permission, already requested!")
+            else -> {
                 Log.d("yubioath", "USB no permission, request")
                 devicesPrompted.add(device)
                 val mPermissionIntent = PendingIntent.getBroadcast(services.context, 0, Intent(ACTION_USB_PERMISSION), 0)
@@ -166,6 +190,11 @@ abstract class BaseViewModel : ViewModel() {
         } catch (e: Exception) {
             lastDeviceInfo = DUMMY_INFO
             Log.e("yubioath", "Error using OathClient", e)
+            launch(UI) {
+                services?.apply {
+                    context.toast(R.string.tag_error_retry)
+                }
+            }
         }
     }
 }

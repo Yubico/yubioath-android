@@ -38,22 +38,15 @@ import java.util.*
 import javax.crypto.SecretKeyFactory
 import javax.crypto.spec.PBEKeySpec
 
-/**
- * Created with IntelliJ IDEA.
- * User: dain
- * Date: 8/23/13
- * Time: 4:46 PM
- * To change this template use File | Settings | File Templates.
- */
-class KeyManager(private val store: SharedPreferences) {
-    private val memStore: MutableMap<String, MutableSet<String>> = HashMap()
+
+class KeyManager(private val store: SharedPreferences, private val memStore: MemStore) {
 
     fun getSecrets(id: ByteArray): Set<ByteArray> {
         val key = KEY + bytes2string(id)
         return strings2bytes(store.getStringSet(key, getMem(key)))
     }
 
-    private fun getMem(key: String): MutableSet<String> = memStore.getOrPut(key) { HashSet() }
+    private fun getMem(key: String): MutableSet<String> = memStore[key]
 
     private fun doStoreSecret(id: ByteArray, secret: ByteArray, remember: Boolean) {
         val key = KEY + bytes2string(id)
@@ -76,7 +69,6 @@ class KeyManager(private val store: SharedPreferences) {
     }
 
     fun storeSecret(id: ByteArray, secret: ByteArray, remember: Boolean) {
-        Log.d("yubioath", "Store secret: " + secret.joinToString("") { "%02x".format(it) })
         doStoreSecret(id, secret, remember)
     }
 
@@ -131,5 +123,11 @@ class KeyManager(private val store: SharedPreferences) {
         private fun string2bytes(string: String): ByteArray = Base64.decode(string, Base64.NO_WRAP)
 
         private fun strings2bytes(strings: Set<String>): Set<ByteArray> = strings.mapTo(HashSet()) { string2bytes(it) }
+    }
+
+    interface MemStore {
+        operator fun get(key:String): MutableSet<String>
+        fun remove(key:String): Unit
+        fun clear(): Unit
     }
 }

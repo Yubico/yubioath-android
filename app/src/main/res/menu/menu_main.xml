@@ -6,6 +6,19 @@
         android:id="@+id/menu_main_search"
         android:title="@string/search"
         android:icon="@drawable/ic_search_black_24dp"
-        app:showAsAction="collapseActionView|always"
+        app:showAsAction="collapseActionView|ifRoom"
         app:actionViewClass="android.support.v7.widget.SearchView" />
+
+    <item
+        android:id="@+id/action_password"
+        android:title="@string/change_password"
+        android:orderInCategory="100"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_settings"
+        android:title="@string/action_settings"
+        android:icon="@drawable/ic_settings_black_24dp"
+        android:orderInCategory="900"
+        app:showAsAction="never" />
 </menu>

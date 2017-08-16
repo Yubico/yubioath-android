@@ -1,0 +1,26 @@
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <SwitchPreferenceCompat
+        android:defaultValue="true"
+        android:key="warnNfc"
+        android:summary="@string/pref_description_warn_nfc"
+        android:title="@string/pref_title_warn_nfc"/>
+
+    <SwitchPreferenceCompat
+        android:defaultValue="true"
+        android:key="hideThumbnail"
+        android:summary="@string/pref_description_hide_thumbnail"
+        android:title="@string/pref_title_hide_thumbnail"/>
+
+    <SwitchPreferenceCompat
+        android:defaultValue="false"
+        android:key="fingerprint"
+        android:summary="@string/pref_description_fingerprint"
+        android:title="@string/pref_title_fingerprint"/>
+
+    <Preference
+        android:title="@string/pref_title_memclear"
+        android:key="memclear"
+        />
+
+</PreferenceScreen>
