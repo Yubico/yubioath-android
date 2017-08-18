@@ -3,13 +3,13 @@ apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
 
 android {
-    compileSdkVersion 25
-    buildToolsVersion "25.0.3"
+    compileSdkVersion 26
+    buildToolsVersion "26.0.1"
 
     defaultConfig {
         applicationId "com.yubico.yubioath"
         minSdkVersion 15
-        targetSdkVersion 25
+        targetSdkVersion 26
         versionCode 34
         versionName "1.2.1"
         vectorDrawables.useSupportLibrary = true
@@ -45,12 +45,12 @@ dependencies {
     compile 'org.jetbrains.anko:anko-sdk15:0.10.1'
     compile "org.jetbrains.anko:anko-coroutines:0.10.1"
 
-    compile 'com.android.support:appcompat-v7:25.3.1'
-    compile 'com.android.support:design:25.3.1'
-    compile 'com.android.support:preference-v7:25.3.1'
-    compile 'android.arch.lifecycle:runtime:1.0.0-alpha5'
-    compile 'android.arch.lifecycle:extensions:1.0.0-alpha5'
-    annotationProcessor 'android.arch.lifecycle:compiler:1.0.0-alpha5'
+    compile 'com.android.support:appcompat-v7:26.0.1'
+    compile 'com.android.support:design:26.0.1'
+    compile 'com.android.support:preference-v7:26.0.1'
+    compile 'android.arch.lifecycle:runtime:1.0.0-alpha9'
+    compile 'android.arch.lifecycle:extensions:1.0.0-alpha9'
+    annotationProcessor 'android.arch.lifecycle:compiler:1.0.0-alpha9'
 }
 repositories {
     mavenCentral()
