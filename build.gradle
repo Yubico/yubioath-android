@@ -32,6 +32,7 @@ repositories {
 dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib-jre8:$kotlin_version"
 }
+
 compileKotlin {
     kotlinOptions {
         jvmTarget = "1.8"

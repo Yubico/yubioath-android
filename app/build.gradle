@@ -31,9 +31,9 @@ android {
 }
 
 dependencies {
-    testCompile 'org.robolectric:robolectric:3.3.2'
+    testCompile 'org.robolectric:robolectric:3.4.2'
     testCompile 'junit:junit:4.12'
-    testCompile 'org.mockito:mockito-core:2.7.22'
+    testCompile 'org.mockito:mockito-core:2.8.47'
 
     compile 'commons-codec:commons-codec:1.5'
     compile group: 'com.fidesmo', name: 'nordpol-android', version: '0.1.21', ext: 'aar', transitive: true
@@ -54,4 +54,9 @@ dependencies {
 }
 repositories {
     mavenCentral()
+}
+kotlin {
+    experimental {
+        coroutines "enable"
+    }
 }
