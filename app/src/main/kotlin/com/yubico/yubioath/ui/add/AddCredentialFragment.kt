@@ -59,12 +59,9 @@ class AddCredentialFragment : Fragment() {
         super.onActivityCreated(savedInstanceState)
 
         credential_type.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onNothingSelected(parent: AdapterView<*>?) {
-                TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-            }
+            override fun onNothingSelected(parent: AdapterView<*>?) = Unit
 
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-                Log.d("yubioath", "Item selected: $id")
                 credential_period.isEnabled = id == 0L
             }
         }

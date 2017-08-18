@@ -39,10 +39,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import com.yubico.yubioath.MainActivity
 import com.yubico.yubioath.R
 import com.yubico.yubioath.client.KeyManager
-import com.yubico.yubioath.client.OathClient
 import kotlinx.android.synthetic.main.about_fragment.view.*
 
 /**
@@ -52,7 +50,7 @@ import kotlinx.android.synthetic.main.about_fragment.view.*
  * Time: 10:38 AM
  * To change this template use File | Settings | File Templates.
  */
-class AboutFragment : Fragment(), MainActivity.OnYubiKeyListener {
+class AboutFragment : Fragment() {
     private var toastInstance: Toast? = null
     private var clearCounter = 5
 
@@ -90,22 +88,6 @@ class AboutFragment : Fragment(), MainActivity.OnYubiKeyListener {
                 }
             }
 
-        }
-    }
-
-    override fun onPasswordMissing(manager: KeyManager, id: ByteArray, missing: Boolean) {
-        val ft = fragmentManager.beginTransaction()
-        val prev = fragmentManager.findFragmentByTag("dialog")
-        prev?.let { ft.remove(it) }
-        val dialog = RequirePasswordDialog.newInstance(manager, id, missing)
-        dialog.show(ft, "dialog")
-    }
-
-    override fun onYubiKey(oath: OathClient) {
-        activity.runOnUiThread {
-            val fragment = SwipeListFragment()
-            fragment.current.onYubiKey(oath)
-            (activity as MainActivity).openFragment(fragment)
         }
     }
 
