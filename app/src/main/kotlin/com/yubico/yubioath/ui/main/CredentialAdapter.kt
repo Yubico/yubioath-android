@@ -7,7 +7,6 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.support.v4.content.ContextCompat
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -19,7 +18,7 @@ import com.yubico.yubioath.R
 import com.yubico.yubioath.client.Code
 import com.yubico.yubioath.client.Credential
 import com.yubico.yubioath.protocol.OathType
-import kotlinx.android.synthetic.main.view_code.view.*
+import kotlinx.android.synthetic.main.view_credential.view.*
 import kotlinx.coroutines.experimental.Job
 import kotlinx.coroutines.experimental.android.UI
 import kotlinx.coroutines.experimental.delay
@@ -27,29 +26,10 @@ import kotlinx.coroutines.experimental.launch
 import org.jetbrains.anko.imageBitmap
 
 class CredentialAdapter(private val context: Context, private val actionHandler: ActionHandler, initialCreds: Map<Credential, Code?> = mapOf()) : BaseAdapter() {
-    companion object {
-        private val COLORS = listOf(
-                "#F44336",
-                "#E91E63",
-                "#9C27B0",
-                "#673AB7",
-                "#3F51B5",
-                "#2196F3",
-                "#009688",
-                "#FF5722",
-                "#795548",
-                "#607D8B",
-                "#039BE5",
-                "#0097A7",
-                "#43A047",
-                "#689F38",
-                "#827717",
-                "#EF6C00",
-                "#757575"
-        ).map { ColorStateList.valueOf(Color.parseColor(it)) }
-
-        private fun getColor(cred: Credential) = COLORS[Math.abs(cred.key.hashCode()) % COLORS.size]
+    private val colors = context.resources.obtainTypedArray(R.array.icon_colors).let {
+        (0 until it.length()).map { i -> ColorStateList.valueOf(it.getColor(i, 0)) }
     }
+    private fun getColor(cred: Credential) = colors[Math.abs(cred.key.hashCode()) % colors.size]
 
     private val inflater = LayoutInflater.from(context)
     var creds: Map<Credential, Code?> = initialCreds
@@ -98,7 +78,7 @@ class CredentialAdapter(private val context: Context, private val actionHandler:
     }
 
     override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View? {
-        return (convertView ?: inflater.inflate(R.layout.view_code, parent, false).apply {
+        return (convertView ?: inflater.inflate(R.layout.view_credential, parent, false).apply {
             (this as ViewGroup).descendantFocusability = ViewGroup.FOCUS_BLOCK_DESCENDANTS
             tag = CodeAdapterViewHolder(this)
         }).apply {
