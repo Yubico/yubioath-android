@@ -35,7 +35,7 @@ dependencies {
     testCompile 'junit:junit:4.12'
     testCompile 'org.mockito:mockito-core:2.8.47'
 
-    compile 'commons-codec:commons-codec:1.5'
+    compile 'commons-codec:commons-codec:1.6'
     compile group: 'com.fidesmo', name: 'nordpol-android', version: '0.1.21', ext: 'aar', transitive: true
     compile 'com.journeyapps:zxing-android-embedded:3.4.0'
 
@@ -45,9 +45,9 @@ dependencies {
     compile 'org.jetbrains.anko:anko-sdk15:0.10.1'
     compile "org.jetbrains.anko:anko-coroutines:0.10.1"
 
-    compile 'com.android.support:appcompat-v7:26.0.1'
-    compile 'com.android.support:design:26.0.1'
-    compile 'com.android.support:preference-v7:26.0.1'
+    compile 'com.android.support:appcompat-v7:26.0.2'
+    compile 'com.android.support:design:26.0.2'
+    compile 'com.android.support:preference-v14:26.0.2'
     compile 'android.arch.lifecycle:runtime:1.0.0-alpha9'
     compile 'android.arch.lifecycle:extensions:1.0.0-alpha9'
     annotationProcessor 'android.arch.lifecycle:compiler:1.0.0-alpha9'
