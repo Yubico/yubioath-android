@@ -21,7 +21,7 @@ class MainActivity : BaseActivity<OathViewModel>(OathViewModel::class.java) {
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.menu_main, menu)
 
-        val searchView = MenuItemCompat.getActionView(menu.findItem(R.id.menu_main_search)) as SearchView
+        val searchView = menu.findItem(R.id.menu_main_search).actionView as SearchView
         searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String): Boolean = false
 

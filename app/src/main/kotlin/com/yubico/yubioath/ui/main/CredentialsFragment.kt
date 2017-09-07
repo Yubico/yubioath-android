@@ -28,6 +28,7 @@ import com.yubico.yubioath.protocol.CredentialData
 import com.yubico.yubioath.protocol.OathType
 import kotlinx.android.synthetic.main.fragment_credentials.*
 import kotlinx.coroutines.experimental.android.UI
+import kotlinx.coroutines.experimental.delay
 import kotlinx.coroutines.experimental.launch
 import org.jetbrains.anko.clipboardManager
 
@@ -61,21 +62,28 @@ class CredentialsFragment : ListFragment() {
         val actions = object : CredentialAdapter.ActionHandler {
             override fun select(position: Int) = selectItem(position)
 
-            override fun calculate(credential: Credential, prompt: Boolean) {
+            override fun calculate(credential: Credential) {
                 viewModel.calculate(credential).let { job ->
-                    Snackbar.make(view!!, R.string.swipe_and_hold, Snackbar.LENGTH_INDEFINITE).apply {
-                        job.invokeOnCompletion {
-                            launch(UI) {
-                                dismiss()
-                                fab.show()
+                    launch(UI) {
+                        if (viewModel.lastDeviceInfo.persistent) {
+                            delay(100) // Delay enough to only prompt when touch is required.
+                        }
+                        if(job.isActive) {
+                            Snackbar.make(view!!, R.string.swipe_and_hold, Snackbar.LENGTH_INDEFINITE).apply {
+                                job.invokeOnCompletion {
+                                    launch(UI) {
+                                        dismiss()
+                                        fab.show()
+                                    }
+                                }
+                                setAction(R.string.cancel, { job.cancel() })
+                            }.show()
+                            if(fab.isShown) {
+                                fab.hide()
+                            } else {
+                                hideAddToolbar(false)
                             }
                         }
-                        setAction(R.string.cancel, { job.cancel() })
-                    }.show()
-                    if(fab.isShown) {
-                        fab.hide()
-                    } else {
-                        hideAddToolbar(false)
                     }
                 }
             }

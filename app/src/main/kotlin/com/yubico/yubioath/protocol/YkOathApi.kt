@@ -46,14 +46,14 @@ constructor(private var backend: Backend) : Closeable {
         random.nextBytes(myChallenge)
         val myResponse = hmacSha1(secret, myChallenge)
 
-        try {
+        return try {
             val resp = send(VALIDATE_INS) {
                 tlv(RESPONSE_TAG, response)
                 tlv(CHALLENGE_TAG, myChallenge)
             }
-            return Arrays.equals(myResponse, resp.parseTlv(RESPONSE_TAG))
+            Arrays.equals(myResponse, resp.parseTlv(RESPONSE_TAG))
         } catch(e: ApduError) {
-            return false
+            false
         }
     }
 

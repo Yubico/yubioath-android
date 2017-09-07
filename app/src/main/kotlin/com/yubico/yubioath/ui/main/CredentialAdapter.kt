@@ -118,7 +118,7 @@ class CredentialAdapter(private val context: Context, private val actionHandler:
                 codeView.isEnabled = code.valid()
 
                 fab.setOnClickListener { actionHandler.select(position) }
-                readButton.setOnClickListener { actionHandler.calculate(credential, true) }
+                readButton.setOnClickListener { actionHandler.calculate(credential) }
                 copyButton.setOnClickListener { code?.let { actionHandler.copy(it) } }
                 readButton.visibility = if (credential.type == OathType.HOTP && code.canRefresh() || credential.touch && !code.valid()) View.VISIBLE else View.GONE
                 copyButton.visibility = if (code != null) View.VISIBLE else View.GONE
@@ -181,7 +181,7 @@ class CredentialAdapter(private val context: Context, private val actionHandler:
 
     interface ActionHandler {
         fun select(position: Int)
-        fun calculate(credential: Credential, prompt: Boolean)
+        fun calculate(credential: Credential)
         fun copy(code: Code)
     }
 }
