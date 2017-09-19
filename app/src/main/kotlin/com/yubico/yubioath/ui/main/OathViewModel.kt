@@ -62,6 +62,7 @@ class OathViewModel : BaseViewModel() {
                 }
             }
         } else {
+            clearDevice()
             credListener(creds, searchFilter)
             updateRefreshJob()
         }

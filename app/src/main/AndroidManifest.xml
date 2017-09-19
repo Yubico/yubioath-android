@@ -74,6 +74,17 @@
         </activity>
 
         <activity
+            android:name=".ui.password.PasswordActivity"
+            android:label="@string/change_password"
+            android:configChanges="orientation|keyboard|keyboardHidden"
+            android:launchMode="singleTask">
+
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.yubico.yubioath.ui.main.MainActivity"/>
+        </activity>
+
+        <activity
             android:name=".ui.settings.SettingsActivity"
             android:label="@string/title_activity_settings"
             android:configChanges="orientation|keyboard|keyboardHidden">

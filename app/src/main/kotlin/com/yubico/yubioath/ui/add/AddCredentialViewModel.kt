@@ -5,9 +5,6 @@ import android.util.Log
 import com.yubico.yubioath.protocol.CredentialData
 import com.yubico.yubioath.ui.BaseViewModel
 
-/**
- * Created by Dain on 2017-08-10.
- */
 class AddCredentialViewModel : BaseViewModel() {
     private var handledUri: Uri? = null
     var data: CredentialData? = null
@@ -18,5 +15,10 @@ class AddCredentialViewModel : BaseViewModel() {
             data = CredentialData.from_uri(qrUri)
             Log.d("yubioath", "Updated credential data from URI!")
         }
+    }
+
+    fun addCredential(credentialData:CredentialData) = requestClient {
+        val credential = it.addCredential(credentialData)
+        Log.d("yubioath", "Credential added: ${credential.key}")
     }
 }

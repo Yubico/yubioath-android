@@ -26,11 +26,12 @@ constructor(private var backend: Backend) : Closeable {
 
             val id = resp.parseTlv(NAME_TAG)
 
-            deviceInfo = DeviceInfo(id, backend.persistent, version)
 
             if (resp.hasRemaining()) {
                 challenge = resp.parseTlv(CHALLENGE_TAG)
             }
+
+            deviceInfo = DeviceInfo(id, backend.persistent, version, challenge.isNotEmpty())
         } catch (e: ApduError) {
             throw AppletMissingException()
         }
@@ -161,9 +162,21 @@ constructor(private var backend: Backend) : Closeable {
         companion object {
             fun parse(data: ByteArray):Version = Version(data[0].toInt(), data[1].toInt(), data[2].toInt())
         }
+
+        fun compare(major:Int, minor:Int, micro:Int): Int {
+            return if(major > this.major || (major == this.major && (minor > this.minor || minor == this.minor && micro > this.micro))) {
+                -1
+            } else if(major == this.major && minor == this.minor && micro == this.micro) {
+                0
+            } else {
+                1
+            }
+        }
+
+        fun compare(version:Version): Int = compare(version.major, version.minor, version.micro)
     }
 
-    data class DeviceInfo(val id:ByteArray, val persistent: Boolean, val version:Version)
+    data class DeviceInfo(val id:ByteArray, val persistent: Boolean, val version: Version, val hasPassword: Boolean)
 
     class ResponseData(val key:String, val oathType: OathType, val touch:Boolean, val data:ByteArray)
 

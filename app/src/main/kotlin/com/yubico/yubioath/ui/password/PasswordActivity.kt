@@ -1,4 +1,4 @@
-package com.yubico.yubioath.ui.add
+package com.yubico.yubioath.ui.password
 
 import android.app.Activity
 import android.os.Bundle
@@ -12,41 +12,32 @@ import kotlinx.coroutines.experimental.android.UI
 import kotlinx.coroutines.experimental.delay
 import kotlinx.coroutines.experimental.launch
 
-class AddCredentialActivity : BaseActivity<AddCredentialViewModel>(AddCredentialViewModel::class.java) {
+class PasswordActivity : BaseActivity<PasswordViewModel>(PasswordViewModel::class.java) {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_add_credential)
+        setContentView(R.layout.activity_password)
 
         supportActionBar?.apply {
             setHomeAsUpIndicator(R.drawable.ic_close_black_24dp)
             setDisplayHomeAsUpEnabled(true)
         }
-
-        intent.data?.let {
-            viewModel.handleScanResults(it)
-        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        menuInflater.inflate(R.menu.menu_add_credential, menu)
+        menuInflater.inflate(R.menu.menu_password, menu)
         return true
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             android.R.id.home -> finish()
-            R.id.menu_add_credential_save -> (supportFragmentManager.findFragmentById(R.id.fragment) as AddCredentialFragment).apply {
+            R.id.menu_password_save -> (supportFragmentManager.findFragmentById(R.id.fragment) as PasswordFragment).apply {
                 val data = validateData()
                 if (data != null) {
-                    Log.d("yubioath", "Data: $data")
-                    isEnabled = false
-
-                    val job = viewModel.addCredential(data).apply {
+                    val job = viewModel.setPassword(data.new_password, data.remember).apply {
                         invokeOnCompletion {
                             launch(UI) {
-                                if (isCancelled) {
-                                    isEnabled = true
-                                } else {
+                                if (!isCancelled) {
                                     setResult(Activity.RESULT_OK)
                                     finish()
                                 }

@@ -32,9 +32,6 @@ import java.util.*
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
-/**
- * Created by Dain on 2017-08-10.
- */
 val EXEC = Executors.newSingleThreadExecutor().asCoroutineDispatcher()
 
 private class ClearingMemStore : KeyManager.MemStore {
@@ -49,7 +46,11 @@ private class ClearingMemStore : KeyManager.MemStore {
         }
         return map.getOrPut(key) { HashSet() }
     }
-    override fun remove(key: String) { map.remove(key) }
+
+    override fun remove(key: String) {
+        map.remove(key)
+    }
+
     override fun clear() = map.clear()
 }
 
@@ -57,14 +58,12 @@ abstract class BaseViewModel : ViewModel() {
     companion object {
         const private val KEY_STORE = "NEO_STORE" //Name for legacy reasons...
         const private val ACTION_USB_PERMISSION = "com.yubico.yubioath.USB_PERMISSION"
-        private val DUMMY_INFO = YkOathApi.DeviceInfo(byteArrayOf(), false, YkOathApi.Version(0, 0, 0))
+        private val DUMMY_INFO = YkOathApi.DeviceInfo(byteArrayOf(), false, YkOathApi.Version(0, 0, 0), false)
         private val MEM_STORE = ClearingMemStore()
+        private var sharedLastDeviceInfo = DUMMY_INFO
     }
 
     protected data class Services(val context: Context, val usbManager: UsbManager, val keyManager: KeyManager)
-
-    var lastDeviceInfo = DUMMY_INFO
-        private set
 
     protected var services: Services? = null
 
@@ -74,6 +73,8 @@ abstract class BaseViewModel : ViewModel() {
 
     internal var ndefConsumed = false
     internal var nfcWarned = false
+
+    val lastDeviceInfo: YkOathApi.DeviceInfo get() = sharedLastDeviceInfo
 
     protected open suspend fun onStart(services: Services) = Unit
     fun start(context: Context) = launch(EXEC) {
@@ -123,7 +124,7 @@ abstract class BaseViewModel : ViewModel() {
             try {
                 useBackend(NfcBackend(card), it.keyManager)
             } catch (e: Exception) {
-                lastDeviceInfo = DUMMY_INFO
+                sharedLastDeviceInfo = DUMMY_INFO
                 Log.e("yubioath", "Error using NFC device", e)
             }
         }
@@ -137,14 +138,18 @@ abstract class BaseViewModel : ViewModel() {
         clientRequests.send(Pair(id, func))
     }
 
+    protected fun clearDevice() {
+        sharedLastDeviceInfo = DUMMY_INFO
+    }
+
     protected suspend fun checkUsb(services: Services) {
         val device = services.usbManager.deviceList.values.find { UsbBackend.isSupported(it) }
 
         when {
             device == null -> {
-                if (lastDeviceInfo.persistent) {
+                if (sharedLastDeviceInfo.persistent) {
                     Log.d("yubioath", "Persistent device removed!")
-                    lastDeviceInfo = DUMMY_INFO
+                    sharedLastDeviceInfo = DUMMY_INFO
                 }
             }
             services.usbManager.hasPermission(device) -> {
@@ -165,7 +170,7 @@ abstract class BaseViewModel : ViewModel() {
     private suspend fun useBackend(backend: Backend, keyManager: KeyManager) {
         try {
             OathClient(backend, keyManager).use { client ->
-                lastDeviceInfo = client.deviceInfo
+                sharedLastDeviceInfo = client.deviceInfo
                 Log.d("yubioath", "Got API, checking requests...")
                 while (!clientRequests.isEmpty) {
                     clientRequests.receive().let { (id, func) ->
@@ -179,7 +184,7 @@ abstract class BaseViewModel : ViewModel() {
         } catch (e: PasswordRequiredException) {
             launch(UI) {
                 services?.apply {
-                    if(context is AppCompatActivity) {
+                    if (context is AppCompatActivity) {
                         val fragmentManager = context.supportFragmentManager
                         val ft = fragmentManager.beginTransaction()
                         fragmentManager.findFragmentByTag("dialog")?.let { ft.remove(it) }
@@ -188,7 +193,7 @@ abstract class BaseViewModel : ViewModel() {
                 }
             }
         } catch (e: Exception) {
-            lastDeviceInfo = DUMMY_INFO
+            sharedLastDeviceInfo = DUMMY_INFO
             Log.e("yubioath", "Error using OathClient", e)
             launch(UI) {
                 services?.apply {

@@ -116,12 +116,12 @@ Version: %1$s</p>
 
 <p><a href="https://developers.yubico.com/yubioath-android/">Web site</a><br/>
 <br/><a href="https://github.com/Yubico/yubioath-android/">Source code</a><br/>
-<br/><a href="http://www.youtube.com/watch?v=W7if0FW12D0">Demo video</a></p>
+<br/><a href="https://www.youtube.com/watch?v=W7if0FW12D0">Demo video</a></p>
 
-<p>Yubico Authenticator requires an NFC capable YubiKey with OATH functionality.</p>
+<p>Yubico Authenticator requires a YubiKey with OATH functionality, such as the YubiKey NEO or YubiKey 4.</p>
 
 <p>Copyright Yubico<br/>
-<a href="http://www.yubico.com/">http://www.yubico.com/</a></p>]]></string>
+<a href="https://www.yubico.com/">http://www.yubico.com/</a></p>]]></string>
     <string name="title_activity_new">NewActivity</string>
     <string name="action_settings">Settings</string>
     <string name="new_credential">New credential</string>
@@ -130,78 +130,12 @@ Version: %1$s</p>
     <string name="title_activity_settings">Settings</string>
 
     <!-- Strings related to Settings -->
-
-    <!-- Example General settings -->
-    <string name="pref_header_general">General</string>
-
     <string name="pref_title_fingerprint">Fingerprint lock</string>
     <string name="pref_description_fingerprint">Protect stored passwords with fingerprint</string>
     <string name="pref_title_memclear">Clear stored passwords…</string>
-    <string name="pref_title_hide_thumbnail">Hide thumbnail</string>
-    <string name="pref_description_hide_thumbnail">Don\'t show codes in the app thumbnail</string>
+    <string name="pref_title_hide_thumbnail">Hide app thumbnail</string>
+    <string name="pref_description_hide_thumbnail">Don\'t show codes in the app switcher</string>
     <string name="pref_title_warn_nfc">NFC warnings</string>
     <string name="pref_description_warn_nfc">Warn when NFC is disabled or missing</string>
-
-    <string name="pref_title_display_name">Display name</string>
-    <string name="pref_default_display_name">John Smith</string>
-
-    <string name="pref_title_add_friends_to_messages">Add friends to messages</string>
-    <string-array name="pref_example_list_titles">
-        <item>Always</item>
-        <item>When possible</item>
-        <item>Never</item>
-    </string-array>
-    <string-array name="pref_example_list_values">
-        <item>1</item>
-        <item>0</item>
-        <item>-1</item>
-    </string-array>
-
-    <!-- Example settings for Data & Sync -->
-    <string name="pref_header_data_sync">Data &amp; sync</string>
-
-    <string name="pref_title_sync_frequency">Sync frequency</string>
-    <string-array name="pref_sync_frequency_titles">
-        <item>15 minutes</item>
-        <item>30 minutes</item>
-        <item>1 hour</item>
-        <item>3 hours</item>
-        <item>6 hours</item>
-        <item>Never</item>
-    </string-array>
-    <string-array name="pref_sync_frequency_values">
-        <item>15</item>
-        <item>30</item>
-        <item>60</item>
-        <item>180</item>
-        <item>360</item>
-        <item>-1</item>
-    </string-array>
-
-    <string-array name="list_preference_entries">
-        <item>Entry 1</item>
-        <item>Entry 2</item>
-        <item>Entry 3</item>
-    </string-array>
-
-    <string-array name="list_preference_entry_values">
-        <item>1</item>
-        <item>2</item>
-        <item>3</item>
-    </string-array>
-
-    <string-array name="multi_select_list_preference_default_value"/>
-
-    <string name="pref_title_system_sync_settings">System sync settings</string>
-
-    <!-- Example settings for Notifications -->
-    <string name="pref_header_notifications">Notifications</string>
-
-    <string name="pref_title_new_message_notifications">New message notifications</string>
-
-    <string name="pref_title_ringtone">Ringtone</string>
-    <string name="pref_ringtone_silent">Silent</string>
-
-    <string name="pref_title_vibrate">Vibrate</string>
 
 </resources>

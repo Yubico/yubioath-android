@@ -83,6 +83,7 @@ class AddCredentialFragment : Fragment() {
                 OathType.HOTP -> 1
             })
             credential_period.setText(period.toString())
+            credential_digits.setSelection(digits - 6)
             credential_algo.setSelection(when (algorithm) {
                 Algorithm.SHA1 -> 0
                 Algorithm.SHA256 -> 1

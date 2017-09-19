@@ -3,9 +3,6 @@ package com.yubico.yubioath.protocol
 import android.net.Uri
 import org.apache.commons.codec.binary.Base32
 
-/**
- * Created by Dain on 2016-08-24.
- */
 
 data class CredentialData(val secret: ByteArray, var issuer: String?, var name: String, val oathType: OathType, val algorithm: Algorithm = Algorithm.SHA1, val digits: Byte = 6, val period: Int = 30, val counter: Int = 0, var touch: Boolean = false) {
     companion object {
@@ -31,7 +28,7 @@ data class CredentialData(val secret: ByteArray, var issuer: String?, var name: 
                 path
             }
 
-            val issuer = if(':' in name) {
+            val issuer = if (':' in name) {
                 val parts = name.split(':', limit = 2)
                 name = parts[1]
                 parts[0]
@@ -50,14 +47,11 @@ data class CredentialData(val secret: ByteArray, var issuer: String?, var name: 
                 else -> throw IllegalArgumentException("Invalid or missing HMAC algorithm")
             }
 
-            val digits = with(uri.getQueryParameter("digits")) {
-                if (isNullOrEmpty()) {
-                    6
-                } else try {
-                    toByte()
-                } catch (e: NumberFormatException) {
-                    throw IllegalArgumentException("Invalid value for digits")
-                }
+            val digits: Byte = when (uri.getQueryParameter("digits").orEmpty().trimStart('+', '0')) {
+                "", "6" -> 6
+                "7" -> 7
+                "8" -> 8
+                else -> throw IllegalArgumentException("Digits must be in range 6-8")
             }
 
             val period = with(uri.getQueryParameter("period")) {
@@ -84,5 +78,5 @@ data class CredentialData(val secret: ByteArray, var issuer: String?, var name: 
         }
     }
 
-    val encodedSecret:String = Base32().encodeToString(secret).trimEnd('=')
+    val encodedSecret: String = Base32().encodeToString(secret).trimEnd('=')
 }

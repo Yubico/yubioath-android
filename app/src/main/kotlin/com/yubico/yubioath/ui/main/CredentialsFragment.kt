@@ -10,12 +10,12 @@ import android.os.Bundle
 import android.support.v4.app.ListFragment
 import android.view.*
 import android.animation.AnimatorListenerAdapter
+import android.app.Activity
 import android.content.Intent
 import android.net.Uri
 import android.support.annotation.RequiresApi
 import android.support.annotation.StringRes
 import android.support.design.widget.*
-import android.util.Log
 import android.view.animation.*
 import android.widget.AdapterView
 import android.widget.ImageView
@@ -27,15 +27,18 @@ import com.yubico.yubioath.client.Credential
 import com.yubico.yubioath.protocol.CredentialData
 import com.yubico.yubioath.protocol.OathType
 import kotlinx.android.synthetic.main.fragment_credentials.*
+import kotlinx.coroutines.experimental.Job
 import kotlinx.coroutines.experimental.android.UI
 import kotlinx.coroutines.experimental.delay
 import kotlinx.coroutines.experimental.launch
 import org.jetbrains.anko.clipboardManager
+import org.jetbrains.anko.toast
 
-/**
- * A placeholder fragment containing a simple view.
- */
 class CredentialsFragment : ListFragment() {
+    companion object {
+        const private val REQEUST_ADD_CREDENTIAL = 1
+    }
+
     private val viewModel: OathViewModel by lazy { ViewModelProviders.of(activity).get(OathViewModel::class.java) }
     private val timerAnimation = object : Animation() {
         init {
@@ -68,22 +71,7 @@ class CredentialsFragment : ListFragment() {
                         if (viewModel.lastDeviceInfo.persistent) {
                             delay(100) // Delay enough to only prompt when touch is required.
                         }
-                        if(job.isActive) {
-                            Snackbar.make(view!!, R.string.swipe_and_hold, Snackbar.LENGTH_INDEFINITE).apply {
-                                job.invokeOnCompletion {
-                                    launch(UI) {
-                                        dismiss()
-                                        fab.show()
-                                    }
-                                }
-                                setAction(R.string.cancel, { job.cancel() })
-                            }.show()
-                            if(fab.isShown) {
-                                fab.hide()
-                            } else {
-                                hideAddToolbar(false)
-                            }
-                        }
+                        jobWithClient(job, 0, job.isActive)
                     }
                 }
             }
@@ -92,7 +80,7 @@ class CredentialsFragment : ListFragment() {
                 val clipboard = activity.clipboardManager as ClipboardManager
                 val clip = ClipData.newPlainText("OTP", code.value)
                 clipboard.primaryClip = clip
-                snackbarNotification(R.string.copied)
+                activity.toast(R.string.copied)
             }
         }
         listAdapter = CredentialAdapter(context, actions, viewModel.creds).apply {
@@ -136,7 +124,7 @@ class CredentialsFragment : ListFragment() {
         }
         btn_manual_entry.setOnClickListener {
             hideAddToolbar()
-            startActivity(Intent(context, AddCredentialActivity::class.java))
+            startActivityForResult(Intent(context, AddCredentialActivity::class.java), REQEUST_ADD_CREDENTIAL)
         }
 
         fixSwipeClearDrawable()
@@ -167,14 +155,22 @@ class CredentialsFragment : ListFragment() {
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        IntentIntegrator.parseActivityResult(requestCode, resultCode, data)?.contents?.let {
-            val uri = Uri.parse(it)
-            try {
-                CredentialData.from_uri(uri)
-                startActivity(Intent(Intent.ACTION_VIEW, uri, context, AddCredentialActivity::class.java))
-            } catch (e:IllegalArgumentException) {
-                snackbarNotification(R.string.invalid_barcode)
+        val qrActivityResult = IntentIntegrator.parseActivityResult(requestCode, resultCode, data)
+        if(qrActivityResult != null) {
+            qrActivityResult.contents?.let {
+                val uri = Uri.parse(it)
+                try {
+                    CredentialData.from_uri(uri)
+                    startActivity(Intent(Intent.ACTION_VIEW, uri, context, AddCredentialActivity::class.java))
+                } catch (e: IllegalArgumentException) {
+                    activity.toast(R.string.invalid_barcode)
+                }
             }
+        } else when(requestCode) {
+            REQEUST_ADD_CREDENTIAL -> if(resultCode == Activity.RESULT_OK) {
+                activity.toast(R.string.prog_success)
+            }
+            else -> super.onActivityResult(requestCode, resultCode, data)
         }
     }
 
@@ -209,7 +205,9 @@ class CredentialsFragment : ListFragment() {
             }.start()
         } else {
             toolbar_add.visibility = View.INVISIBLE
-            fab.show()
+            if(showFab) {
+                fab.show()
+            }
         }
     }
 
@@ -258,18 +256,36 @@ class CredentialsFragment : ListFragment() {
         }
     }
 
-    private fun snackbarNotification(@StringRes message: Int) {
-        Snackbar.make(view!!, message, Snackbar.LENGTH_SHORT).apply {
-            addCallback(object: BaseTransientBottomBar.BaseCallback<Snackbar>() {
+    private fun snackbar(@StringRes message: Int, duration: Int): Snackbar {
+        return Snackbar.make(view!!, message, duration).apply {
+            addCallback(object: Snackbar.Callback() {
                 override fun onDismissed(transientBottomBar: Snackbar?, event: Int) {
                     if (!fab.isShown && !toolbar_add.isShown) fab.show()
                 }
             })
-        }.show()
-        if (fab.isShown) {
-            fab.hide()
-        } else {
-            if (toolbar_add.isShown) hideAddToolbar(false)
+            if(toolbar_add.isShown) {
+                hideAddToolbar(false)
+            } else {
+                fab.hide()
+            }
+            show()
+        }
+    }
+
+    private fun jobWithClient(job:Job, @StringRes successMessage: Int, needsTouch: Boolean) {
+        job.invokeOnCompletion {
+            launch(UI) {
+                if(!job.isCancelled && successMessage != 0) {
+                    activity.toast(successMessage)
+                }
+            }
+        }
+
+        if(!viewModel.lastDeviceInfo.persistent || needsTouch) {
+            snackbar(R.string.swipe_and_hold, Snackbar.LENGTH_INDEFINITE).apply {
+                job.invokeOnCompletion { dismiss() }
+                setAction(R.string.cancel) { job.cancel() }
+            }
         }
     }
 
@@ -285,16 +301,7 @@ class CredentialsFragment : ListFragment() {
                     R.id.delete -> viewModel.apply {
                         selectedItem?.let {
                             selectedItem = null
-                            Snackbar.make(view!!, R.string.swipe_and_hold, Snackbar.LENGTH_INDEFINITE).apply {
-                                viewModel.delete(it).apply {
-                                    invokeOnCompletion {
-                                        launch(UI) {
-                                            snackbarNotification(R.string.deleted)
-                                        }
-                                    }
-                                    setAction(R.string.cancel, { cancel() })
-                                }
-                            }.show()
+                            jobWithClient(viewModel.delete(it), R.string.deleted, false)
                         }
                     }
                 }

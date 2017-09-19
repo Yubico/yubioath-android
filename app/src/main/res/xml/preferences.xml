@@ -12,12 +12,6 @@
         android:summary="@string/pref_description_hide_thumbnail"
         android:title="@string/pref_title_hide_thumbnail"/>
 
-    <SwitchPreferenceCompat
-        android:defaultValue="false"
-        android:key="fingerprint"
-        android:summary="@string/pref_description_fingerprint"
-        android:title="@string/pref_title_fingerprint"/>
-
     <Preference
         android:title="@string/pref_title_memclear"
         android:key="memclear"
