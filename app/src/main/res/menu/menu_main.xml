@@ -5,7 +5,7 @@
     <item
         android:id="@+id/menu_main_search"
         android:title="@string/search"
-        android:icon="@drawable/ic_search_black_24dp"
+        android:icon="@drawable/ic_search_24dp"
         app:showAsAction="collapseActionView|ifRoom"
         app:actionViewClass="android.support.v7.widget.SearchView" />
 
@@ -18,7 +18,7 @@
     <item
         android:id="@+id/menu_main_settings"
         android:title="@string/action_settings"
-        android:icon="@drawable/ic_settings_black_24dp"
+        android:icon="@drawable/ic_settings_24dp"
         android:orderInCategory="900"
         app:showAsAction="never" />
 </menu>

@@ -18,7 +18,7 @@ class AddCredentialActivity : BaseActivity<AddCredentialViewModel>(AddCredential
         setContentView(R.layout.activity_add_credential)
 
         supportActionBar?.apply {
-            setHomeAsUpIndicator(R.drawable.ic_close_black_24dp)
+            setHomeAsUpIndicator(R.drawable.ic_close_24dp)
             setDisplayHomeAsUpEnabled(true)
         }
 

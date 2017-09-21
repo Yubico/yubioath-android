@@ -178,7 +178,7 @@ class CredentialsFragment : ListFragment() {
         //Hack that changes the drawable using reflection.
         swipe_clear_layout.javaClass.getDeclaredField("mCircleView").apply {
             isAccessible = true
-            (get(swipe_clear_layout) as ImageView).setImageResource(R.drawable.ic_close_24dp)
+            (get(swipe_clear_layout) as ImageView).setImageResource(R.drawable.ic_close_gray_24dp)
         }
     }
 

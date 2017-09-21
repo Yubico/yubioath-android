@@ -18,7 +18,7 @@ class PasswordActivity : BaseActivity<PasswordViewModel>(PasswordViewModel::clas
         setContentView(R.layout.activity_password)
 
         supportActionBar?.apply {
-            setHomeAsUpIndicator(R.drawable.ic_close_black_24dp)
+            setHomeAsUpIndicator(R.drawable.ic_close_24dp)
             setDisplayHomeAsUpEnabled(true)
         }
     }
