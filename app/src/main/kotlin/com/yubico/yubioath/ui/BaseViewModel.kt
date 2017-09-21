@@ -173,10 +173,12 @@ abstract class BaseViewModel : ViewModel() {
             launch(UI) {
                 services?.apply {
                     if (context is AppCompatActivity) {
-                        val fragmentManager = context.supportFragmentManager
-                        val ft = fragmentManager.beginTransaction()
-                        fragmentManager.findFragmentByTag("dialog")?.let { ft.remove(it) }
-                        RequirePasswordDialog.newInstance(keyManager, e.id, e.isMissing).show(ft, "dialog")
+                        context.supportFragmentManager.apply {
+                            if(findFragmentByTag("dialog_require_password") == null) {
+                                val transaction = beginTransaction()
+                                RequirePasswordDialog.newInstance(keyManager, e.id, e.isMissing).show(transaction, "dialog_require_password")
+                            }
+                        }
                     }
                 }
             }

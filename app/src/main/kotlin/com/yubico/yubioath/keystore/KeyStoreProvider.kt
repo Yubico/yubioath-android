@@ -61,7 +61,7 @@ class KeyStoreProvider : KeyProvider {
             entries[deviceId].orEmpty().filter { it != secretId }.forEach {
                 keystore.deleteEntry("$deviceId,$it")
             }
-            entries[deviceId] = mutableSetOf("$deviceId,$secretId")
+            entries[deviceId] = mutableSetOf(secretId)
         }
     }
 }
