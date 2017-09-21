@@ -1,11 +1,13 @@
 package com.yubico.yubioath.protocol
 
+import android.util.Base64
 import com.yubico.yubioath.exc.*
 import com.yubico.yubioath.transport.ApduError
 import com.yubico.yubioath.transport.Backend
 import java.io.Closeable
 import java.io.IOException
 import java.nio.ByteBuffer
+import java.security.MessageDigest
 import java.security.SecureRandom
 import java.util.*
 import javax.crypto.Mac
@@ -14,6 +16,7 @@ import javax.crypto.spec.SecretKeySpec
 
 class YkOathApi @Throws(IOException::class, AppletSelectException::class)
 constructor(private var backend: Backend) : Closeable {
+    val deviceSalt: ByteArray
     val deviceInfo: DeviceInfo
     private var challenge: ByteArray = ByteArray(0)
 
@@ -24,8 +27,8 @@ constructor(private var backend: Backend) : Closeable {
             val version = Version.parse(resp.parseTlv(VERSION_TAG))
             checkVersion(version)
 
-            val id = resp.parseTlv(NAME_TAG)
-
+            deviceSalt = resp.parseTlv(NAME_TAG)
+            val id = getDeviceId(deviceSalt)
 
             if (resp.hasRemaining()) {
                 challenge = resp.parseTlv(CHALLENGE_TAG)
@@ -63,7 +66,9 @@ constructor(private var backend: Backend) : Closeable {
         val challenge = ByteArray(8)
         val random = SecureRandom()
         random.nextBytes(challenge)
-        val response = hmacSha1(secret, challenge)
+        val response = Mac.getInstance("HmacSHA1").apply {
+            init(SecretKeySpec(secret, algorithm))
+        }.doFinal(challenge)
 
         send(SET_CODE_INS) {
             tlv(KEY_TAG, byteArrayOf(OathType.TOTP.byteVal or Algorithm.SHA1.byteVal) + secret)
@@ -176,7 +181,7 @@ constructor(private var backend: Backend) : Closeable {
         fun compare(version:Version): Int = compare(version.major, version.minor, version.micro)
     }
 
-    data class DeviceInfo(val id:ByteArray, val persistent: Boolean, val version: Version, val hasPassword: Boolean)
+    data class DeviceInfo(val id:String, val persistent: Boolean, val version: Version, val hasPassword: Boolean)
 
     class ResponseData(val key:String, val oathType: OathType, val touch:Boolean, val data:ByteArray)
 
@@ -220,6 +225,14 @@ constructor(private var backend: Backend) : Closeable {
             // All versions currently
         }
 
+        private fun getDeviceId(id: ByteArray): String {
+            val digest = MessageDigest.getInstance("SHA256").apply {
+                update(id)
+            }.digest()
+
+            return Base64.encodeToString(digest.sliceArray(0 until 16), Base64.NO_PADDING or Base64.NO_WRAP)
+        }
+
         @Throws(IOException::class)
         private fun ByteBuffer.parseTlv(tag: Byte): ByteArray {
             val readTag = get()
@@ -227,12 +240,6 @@ constructor(private var backend: Backend) : Closeable {
                 throw IOException("Required tag: %02x, got %02x".format(tag, readTag))
             }
             return ByteArray(0xff and get().toInt()).apply { get(this) }
-        }
-
-        private fun hmacSha1(key: ByteArray, data: ByteArray): ByteArray {
-            return Mac.getInstance("HmacSHA1").apply {
-                init(SecretKeySpec(key, algorithm))
-            }.doFinal(data)
         }
 
         private fun ByteBuffer.tlv(tag: Byte, data: ByteArray = byteArrayOf()): ByteBuffer {

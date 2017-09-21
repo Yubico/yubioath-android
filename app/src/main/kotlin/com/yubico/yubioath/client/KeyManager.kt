@@ -41,8 +41,7 @@ import javax.crypto.spec.PBEKeySpec
 
 class KeyManager(private val permStore: KeyProvider, private val memStore: KeyProvider) {
 
-    fun getKeys(id: ByteArray): Sequence<StoredSigner> {
-        val deviceId = keyFromId(id)
+    fun getKeys(deviceId: String): Sequence<StoredSigner> {
         return if(permStore.hasKeys(deviceId)) {
             permStore.getKeys(deviceId)
         } else {
@@ -50,8 +49,7 @@ class KeyManager(private val permStore: KeyProvider, private val memStore: KeyPr
         }
     }
 
-    fun addKey(id: ByteArray, secret: ByteArray, remember: Boolean) {
-        val deviceId = keyFromId(id)
+    fun addKey(deviceId: String, secret: ByteArray, remember: Boolean) {
         if(remember) {
             memStore.clearKeys(deviceId)
             permStore.addKey(deviceId, secret)
@@ -61,8 +59,7 @@ class KeyManager(private val permStore: KeyProvider, private val memStore: KeyPr
         }
     }
 
-    fun clearKeys(id: ByteArray) {
-        val deviceId = keyFromId(id)
+    fun clearKeys(deviceId: String) {
         memStore.clearKeys(deviceId)
         permStore.clearKeys(deviceId)
     }
@@ -73,14 +70,6 @@ class KeyManager(private val permStore: KeyProvider, private val memStore: KeyPr
     }
 
     companion object {
-        fun keyFromId(id: ByteArray): String {
-            val digest = MessageDigest.getInstance("SHA256").apply {
-                update(id)
-            }.digest()
-
-            return Base64.encodeToString(digest.sliceArray(0 until 16), Base64.NO_PADDING or Base64.NO_WRAP)
-        }
-
         fun calculateSecret(password: String, id: ByteArray, legacy: Boolean): ByteArray {
             if (password.isEmpty()) {
                 return ByteArray(0)

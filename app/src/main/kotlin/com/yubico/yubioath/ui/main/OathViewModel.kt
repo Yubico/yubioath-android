@@ -34,13 +34,13 @@ class OathViewModel : BaseViewModel() {
         refreshJob = null
     }
 
-    fun calculate(credential: Credential) = requestClient(credential.parentId) {
+    fun calculate(credential: Credential) = requestClient(credential.deviceId) {
         creds[credential] = it.calculate(credential, currentTime(true))
         credListener(creds, searchFilter)
         Log.d("yubioath", "Calculated code: $credential: ${creds[credential]}")
     }
 
-    fun delete(credential: Credential) = requestClient(credential.parentId) {
+    fun delete(credential: Credential) = requestClient(credential.deviceId) {
         it.delete(credential)
         creds.remove(credential)
         credListener(creds, searchFilter)
@@ -90,7 +90,7 @@ class OathViewModel : BaseViewModel() {
     override suspend fun useClient(client: OathClient) {
         creds = client.refreshCodes(currentTime(), creds)
         selectedItem?.let {
-            if (!Arrays.equals(client.deviceInfo.id, it.parentId)) {
+            if (client.deviceInfo.id != it.deviceId) {
                 selectedItem = null
             }
         }

@@ -29,7 +29,6 @@ import kotlinx.coroutines.experimental.launch
 import nordpol.IsoCard
 import org.jetbrains.anko.toast
 import org.jetbrains.anko.usbManager
-import java.util.*
 import java.util.concurrent.Executors
 
 val EXEC = Executors.newSingleThreadExecutor().asCoroutineDispatcher()
@@ -39,7 +38,7 @@ abstract class BaseViewModel : ViewModel() {
         const private val ACTION_USB_PERMISSION = "com.yubico.yubioath.USB_PERMISSION"
         const private val SP_STORED_AUTH_KEYS = "com.yubico.yubioath.SP_STORED_AUTH_KEYS"
 
-        private val DUMMY_INFO = YkOathApi.DeviceInfo(byteArrayOf(), false, YkOathApi.Version(0, 0, 0), false)
+        private val DUMMY_INFO = YkOathApi.DeviceInfo("", false, YkOathApi.Version(0, 0, 0), false)
         private val MEM_STORE = ClearingMemProvider(EXEC)
         private var sharedLastDeviceInfo = DUMMY_INFO
     }
@@ -50,7 +49,7 @@ abstract class BaseViewModel : ViewModel() {
 
     private var usbReceiver: BroadcastReceiver? = null
     private val devicesPrompted: MutableSet<UsbDevice> = mutableSetOf()
-    private val clientRequests = Channel<Pair<ByteArray?, (OathClient) -> Unit>>()
+    private val clientRequests = Channel<Pair<String?, (OathClient) -> Unit>>()
 
     internal var ndefConsumed = false
     internal var nfcWarned = false
@@ -118,7 +117,7 @@ abstract class BaseViewModel : ViewModel() {
         }
     }
 
-    fun requestClient(id: ByteArray? = null, func: (api: OathClient) -> Unit) = launch(EXEC) {
+    fun requestClient(id: String? = null, func: (api: OathClient) -> Unit) = launch(EXEC) {
         Log.d("yubioath", "Requesting API...")
         services?.let {
             launch(EXEC) { checkUsb(it) }
@@ -162,7 +161,7 @@ abstract class BaseViewModel : ViewModel() {
                 Log.d("yubioath", "Got API, checking requests...")
                 while (!clientRequests.isEmpty) {
                     clientRequests.receive().let { (id, func) ->
-                        if (id == null || Arrays.equals(id, client.deviceInfo.id)) {
+                        if (id == null || id == client.deviceInfo.id) {
                             func(client)
                         }
                     }
@@ -176,7 +175,7 @@ abstract class BaseViewModel : ViewModel() {
                         context.supportFragmentManager.apply {
                             if(findFragmentByTag("dialog_require_password") == null) {
                                 val transaction = beginTransaction()
-                                RequirePasswordDialog.newInstance(keyManager, e.id, e.isMissing).show(transaction, "dialog_require_password")
+                                RequirePasswordDialog.newInstance(keyManager, e.deviceId, e.salt, e.isMissing).show(transaction, "dialog_require_password")
                             }
                         }
                     }

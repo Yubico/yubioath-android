@@ -37,4 +37,4 @@ package com.yubico.yubioath.exc
  * Time: 4:26 PM
  * To change this template use File | Settings | File Templates.
  */
-class PasswordRequiredException(message: String, val id: ByteArray, val isMissing: Boolean) : AppletSelectException(message)
+class PasswordRequiredException(message: String, val deviceId: String, val salt: ByteArray, val isMissing: Boolean) : AppletSelectException(message)

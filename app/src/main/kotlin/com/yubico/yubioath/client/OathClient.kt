@@ -5,7 +5,6 @@ import com.yubico.yubioath.protocol.*
 import com.yubico.yubioath.transport.Backend
 import java.io.Closeable
 import java.nio.ByteBuffer
-import java.util.*
 
 class OathClient(backend: Backend, private val keyManager: KeyManager) : Closeable {
     private val api: YkOathApi = YkOathApi(backend)
@@ -19,14 +18,14 @@ class OathClient(backend: Backend, private val keyManager: KeyManager) : Closeab
                 api.unlock(it)
             }?.apply {
                 promote()
-            } ?: throw PasswordRequiredException(if(missing) "Password is missing" else "Password is incorrect!", deviceInfo.id, missing)
+            } ?: throw PasswordRequiredException(if(missing) "Password is missing" else "Password is incorrect!", deviceInfo.id, api.deviceSalt, missing)
         }
     }
 
     override fun close() = api.close()
 
     private fun ensureOwnership(credential: Credential) {
-        if (!Arrays.equals(deviceInfo.id, credential.parentId)) {
+        if (deviceInfo.id != credential.deviceId) {
             throw IllegalArgumentException("Credential parent ID doesn't match!")
         }
     }
@@ -36,7 +35,7 @@ class OathClient(backend: Backend, private val keyManager: KeyManager) : Closeab
             api.unsetLockCode()
             keyManager.clearKeys(deviceInfo.id)
         } else {
-            val secret = KeyManager.calculateSecret(pw, deviceInfo.id, false)
+            val secret = KeyManager.calculateSecret(pw, api.deviceSalt, false)
             api.setLockCode(secret)
             keyManager.addKey(deviceInfo.id, secret, remember)
         }

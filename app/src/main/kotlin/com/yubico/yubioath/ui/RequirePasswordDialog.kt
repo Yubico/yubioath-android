@@ -41,12 +41,14 @@ import kotlinx.android.synthetic.main.require_password_dialog.view.*
 class RequirePasswordDialog : DialogFragment() {
     companion object {
         const private val DEVICE_ID = "deviceId"
+        const private val DEVICE_SALT = "deviceSalt"
         const private val MISSING = "missing"
 
-        internal fun newInstance(keyManager: KeyManager, id: ByteArray, missing: Boolean): RequirePasswordDialog {
+        internal fun newInstance(keyManager: KeyManager, deviceId: String, salt: ByteArray, missing: Boolean): RequirePasswordDialog {
             return RequirePasswordDialog().apply {
                 arguments = Bundle().apply {
-                    putByteArray(DEVICE_ID, id)
+                    putString(DEVICE_ID, deviceId)
+                    putByteArray(DEVICE_SALT, salt)
                     putBoolean(MISSING, missing)
                 }
                 setKeyManager(keyManager)
@@ -61,7 +63,8 @@ class RequirePasswordDialog : DialogFragment() {
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        val id = arguments.getByteArray(DEVICE_ID)
+        val deviceId = arguments.getString(DEVICE_ID)
+        val salt = arguments.getByteArray(DEVICE_SALT)
         val missing = arguments.getBoolean(MISSING)
 
         activity.layoutInflater.inflate(R.layout.require_password_dialog, null).let {
@@ -71,9 +74,9 @@ class RequirePasswordDialog : DialogFragment() {
                     .setPositiveButton(R.string.ok, { _, _ ->
                         val password = it.editPassword.text.toString().trim()
                         val remember = it.rememberPassword.isChecked
-                        keyManager.clearKeys(id)
-                        keyManager.addKey(id, KeyManager.calculateSecret(password, id, false), remember)
-                        keyManager.addKey(id, KeyManager.calculateSecret(password, id, true), remember)
+                        keyManager.clearKeys(deviceId)
+                        keyManager.addKey(deviceId, KeyManager.calculateSecret(password, salt, false), remember)
+                        keyManager.addKey(deviceId, KeyManager.calculateSecret(password, salt, true), remember)
                     })
                     .setNegativeButton(R.string.cancel) { dialog, _ -> dialog.cancel() }
                     .create()
