@@ -28,7 +28,7 @@
  * SUCH DAMAGE.
  */
 
-package com.yubico.yubioath.fragments
+package com.yubico.yubioath.ui
 
 import android.app.AlertDialog
 import android.app.Dialog
@@ -38,13 +38,6 @@ import com.yubico.yubioath.R
 import com.yubico.yubioath.client.KeyManager
 import kotlinx.android.synthetic.main.require_password_dialog.view.*
 
-/**
- * Created with IntelliJ IDEA.
- * User: dain
- * Date: 8/26/13
- * Time: 1:07 PM
- * To change this template use File | Settings | File Templates.
- */
 class RequirePasswordDialog : DialogFragment() {
     companion object {
         const private val DEVICE_ID = "deviceId"
@@ -78,9 +71,9 @@ class RequirePasswordDialog : DialogFragment() {
                     .setPositiveButton(R.string.ok, { _, _ ->
                         val password = it.editPassword.text.toString().trim()
                         val remember = it.rememberPassword.isChecked
-                        keyManager.clearAll()
-                        keyManager.storeSecret(id, KeyManager.calculateSecret(password, id, false), remember)
-                        keyManager.storeSecret(id, KeyManager.calculateSecret(password, id, true), remember)
+                        keyManager.clearKeys(id)
+                        keyManager.addKey(id, KeyManager.calculateSecret(password, id, false), remember)
+                        keyManager.addKey(id, KeyManager.calculateSecret(password, id, true), remember)
                     })
                     .setNegativeButton(R.string.cancel) { dialog, _ -> dialog.cancel() }
                     .create()

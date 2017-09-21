@@ -40,12 +40,12 @@ constructor(private var backend: Backend) : Closeable {
     fun isLocked(): Boolean = challenge.isNotEmpty()
 
     @Throws(IOException::class)
-    fun unlock(secret: ByteArray): Boolean {
-        val response = hmacSha1(secret, challenge)
+    fun unlock(signer: ChallengeSigner): Boolean {
+        val response = signer.sign(challenge)
         val myChallenge = ByteArray(8)
         val random = SecureRandom()
         random.nextBytes(myChallenge)
-        val myResponse = hmacSha1(secret, myChallenge)
+        val myResponse = signer.sign(myChallenge)
 
         return try {
             val resp = send(VALIDATE_INS) {

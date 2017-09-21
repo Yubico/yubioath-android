@@ -38,28 +38,10 @@ import android.text.method.LinkMovementMethod
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import com.yubico.yubioath.R
-import com.yubico.yubioath.client.KeyManager
 import kotlinx.android.synthetic.main.about_fragment.view.*
 
-/**
- * Created with IntelliJ IDEA.
- * User: dain
- * Date: 8/30/13
- * Time: 10:38 AM
- * To change this template use File | Settings | File Templates.
- */
 class AboutFragment : Fragment() {
-    private var toastInstance: Toast? = null
-    private var clearCounter = 5
-
-    private lateinit var keyManager: KeyManager
-
-    private fun setKeyManager(keyManager: KeyManager) {
-        this.keyManager = keyManager
-    }
-
     override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return inflater!!.inflate(R.layout.about_fragment, container, false).apply {
             val version: String = try {
@@ -72,30 +54,6 @@ class AboutFragment : Fragment() {
                 text = Html.fromHtml(getString(R.string.about_text, version))
                 movementMethod = LinkMovementMethod.getInstance()
             }
-
-            with(clearData) {
-                setOnClickListener {
-                    val message: String
-                    if (--clearCounter > 0) {
-                        message = getString(R.string.clear_countdown, clearCounter)
-                    } else {
-                        keyManager.clearAll()
-                        clearCounter = 5
-                        message = getString(R.string.data_cleared)
-                    }
-                    toastInstance?.cancel()
-                    toastInstance = Toast.makeText(activity, message, Toast.LENGTH_SHORT).apply { show() }
-                }
-            }
-
-        }
-    }
-
-    companion object {
-        fun newInstance(keyManager: KeyManager): AboutFragment {
-            val fragment = AboutFragment()
-            fragment.setKeyManager(keyManager)
-            return fragment
         }
     }
 }

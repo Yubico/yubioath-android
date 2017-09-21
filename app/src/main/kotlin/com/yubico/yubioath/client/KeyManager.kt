@@ -30,67 +30,57 @@
 
 package com.yubico.yubioath.client
 
-import android.content.SharedPreferences
 import android.util.Base64
-import android.util.Log
+import com.yubico.yubioath.keystore.KeyProvider
+import com.yubico.yubioath.keystore.StoredSigner
+import java.security.MessageDigest
 import java.security.NoSuchAlgorithmException
-import java.util.*
 import javax.crypto.SecretKeyFactory
 import javax.crypto.spec.PBEKeySpec
 
 
-class KeyManager(private val store: SharedPreferences, private val memStore: MemStore) {
+class KeyManager(private val permStore: KeyProvider, private val memStore: KeyProvider) {
 
-    fun getSecrets(id: ByteArray): Set<ByteArray> {
-        val key = KEY + bytes2string(id)
-        return strings2bytes(store.getStringSet(key, getMem(key)))
+    fun getKeys(id: ByteArray): Sequence<StoredSigner> {
+        val deviceId = keyFromId(id)
+        return if(permStore.hasKeys(deviceId)) {
+            permStore.getKeys(deviceId)
+        } else {
+            memStore.getKeys(deviceId)
+        }
     }
 
-    private fun getMem(key: String): MutableSet<String> = memStore[key]
-
-    private fun doStoreSecret(id: ByteArray, secret: ByteArray, remember: Boolean) {
-        val key = KEY + bytes2string(id)
-
-        store.edit().apply {
-            if (secret.isNotEmpty()) {
-                val value = bytes2string(secret)
-                val secrets = getMem(key)
-                secrets.add(value)
-                if (remember) {
-                    putStringSet(key, secrets)
-                } else {
-                    remove(key)
-                }
-            } else {
-                memStore.remove(key)
-                remove(key)
-            }
-        }.apply()
+    fun addKey(id: ByteArray, secret: ByteArray, remember: Boolean) {
+        val deviceId = keyFromId(id)
+        if(remember) {
+            memStore.clearKeys(deviceId)
+            permStore.addKey(deviceId, secret)
+        } else {
+            permStore.clearKeys(deviceId)
+            memStore.addKey(deviceId, secret)
+        }
     }
 
-    fun storeSecret(id: ByteArray, secret: ByteArray, remember: Boolean) {
-        doStoreSecret(id, secret, remember)
-    }
-
-    fun setOnlySecret(id: ByteArray, secret: ByteArray) {
-        val remember = store.contains(KEY + bytes2string(id))
-        doStoreSecret(id, ByteArray(0), true) // Clear memory
-        doStoreSecret(id, secret, remember)
+    fun clearKeys(id: ByteArray) {
+        val deviceId = keyFromId(id)
+        memStore.clearKeys(deviceId)
+        permStore.clearKeys(deviceId)
     }
 
     fun clearAll() {
-        memStore.clear()
-        store.edit().clear().apply()
-    }
-
-    fun clearMem() {
-        memStore.clear()
+        memStore.clearAll()
+        permStore.clearAll()
     }
 
     companion object {
-        private val KEY = "key_"
+        fun keyFromId(id: ByteArray): String {
+            val digest = MessageDigest.getInstance("SHA256").apply {
+                update(id)
+            }.digest()
 
-        @JvmStatic
+            return Base64.encodeToString(digest.sliceArray(0 until 16), Base64.NO_PADDING or Base64.NO_WRAP)
+        }
+
         fun calculateSecret(password: String, id: ByteArray, legacy: Boolean): ByteArray {
             if (password.isEmpty()) {
                 return ByteArray(0)
@@ -98,14 +88,14 @@ class KeyManager(private val store: SharedPreferences, private val memStore: Mem
 
             val factory: SecretKeyFactory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1")
 
-            try {
+            return try {
                 val legacyFactory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1And8bit")
-                return doCalculateSecret(if (legacy) legacyFactory else factory, password.toCharArray(), id)
+                doCalculateSecret(if (legacy) legacyFactory else factory, password.toCharArray(), id)
             } catch (e: NoSuchAlgorithmException) {
                 // Pre 4.4, standard key factory is wrong.
                 // Android < 4.4 only uses the lowest 8 bits of each character, so fix the char[].
                 val pwChars = if (legacy) password.toCharArray() else password.toByteArray(Charsets.UTF_8).map(Byte::toChar).toCharArray()
-                return doCalculateSecret(factory, pwChars, id)
+                doCalculateSecret(factory, pwChars, id)
             }
         }
 
@@ -117,17 +107,5 @@ class KeyManager(private val store: SharedPreferences, private val memStore: Mem
                 keyspec.clearPassword()
             }
         }
-
-        private fun bytes2string(bytes: ByteArray): String = Base64.encodeToString(bytes, Base64.NO_WRAP)
-
-        private fun string2bytes(string: String): ByteArray = Base64.decode(string, Base64.NO_WRAP)
-
-        private fun strings2bytes(strings: Set<String>): Set<ByteArray> = strings.mapTo(HashSet()) { string2bytes(it) }
-    }
-
-    interface MemStore {
-        operator fun get(key:String): MutableSet<String>
-        fun remove(key:String): Unit
-        fun clear(): Unit
     }
 }

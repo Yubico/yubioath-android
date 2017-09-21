@@ -13,17 +13,13 @@ class OathClient(backend: Backend, private val keyManager: KeyManager) : Closeab
 
     init {
         if (api.isLocked()) {
-            val secrets = keyManager.getSecrets(deviceInfo.id)
-
-            if (secrets.isEmpty()) {
-                throw PasswordRequiredException("Password is missing!", deviceInfo.id, true)
-            }
-
-            secrets.find {
+            var missing = true
+            keyManager.getKeys(deviceInfo.id).find {
+                missing = false
                 api.unlock(it)
             }?.apply {
-                keyManager.setOnlySecret(deviceInfo.id, this)
-            } ?: throw PasswordRequiredException("Password is incorrect!", deviceInfo.id, false)
+                promote()
+            } ?: throw PasswordRequiredException(if(missing) "Password is missing" else "Password is incorrect!", deviceInfo.id, missing)
         }
     }
 
@@ -38,11 +34,11 @@ class OathClient(backend: Backend, private val keyManager: KeyManager) : Closeab
     fun setPassword(pw: String?, remember:Boolean) {
         if (pw == null || pw.isEmpty()) {
             api.unsetLockCode()
-            keyManager.storeSecret(deviceInfo.id, byteArrayOf(), true)
+            keyManager.clearKeys(deviceInfo.id)
         } else {
             val secret = KeyManager.calculateSecret(pw, deviceInfo.id, false)
             api.setLockCode(secret)
-            keyManager.storeSecret(deviceInfo.id, secret, remember)
+            keyManager.addKey(deviceInfo.id, secret, remember)
         }
     }
 

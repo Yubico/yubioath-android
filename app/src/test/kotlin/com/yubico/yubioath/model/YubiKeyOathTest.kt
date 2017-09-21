@@ -1,6 +1,5 @@
 package com.yubico.yubioath.model
 
-import android.content.SharedPreferences
 import com.yubico.yubioath.BuildConfig
 import com.yubico.yubioath.client.KeyManager
 import com.yubico.yubioath.protocol.Algorithm
@@ -23,7 +22,7 @@ class YubiKeyOathTest {
 
     @Test
     fun testParsingKnownResponse() {
-        val keyManager = KeyManager(Mockito.mock(SharedPreferences::class.java), Mockito.mock(KeyManager.MemStore::class.java))
+        val keyManager = Mockito.mock(KeyManager::class.java)
         val tagMock = Mockito.mock(IsoCard::class.java)
         Mockito.`when`(tagMock.transceive(Mockito.any(ByteArray::class.java))).thenReturn(
                 byteArrayOf(0x79, 3, 0, 0, 0, 0x71, 0, 0x90.toByte(), 0x00), //SELECT
@@ -37,7 +36,7 @@ class YubiKeyOathTest {
 
     @Test
     fun ensureCorrectChallengeSent() {
-        val keyManager = KeyManager(Mockito.mock(SharedPreferences::class.java), Mockito.mock(KeyManager.MemStore::class.java))
+        val keyManager = Mockito.mock(KeyManager::class.java)
         val tagMock = Mockito.mock(IsoCard::class.java)
         Mockito.`when`(tagMock.transceive(Mockito.any(ByteArray::class.java))).thenReturn(
                 byteArrayOf(0x79, 3, 0, 0, 0, 0x71, 0, 0x90.toByte(), 0x00), //SELECT
@@ -53,7 +52,7 @@ class YubiKeyOathTest {
 
     @Test
     fun testStoreCodeInstruction() {
-        val keyManager = KeyManager(Mockito.mock(SharedPreferences::class.java), Mockito.mock(KeyManager.MemStore::class.java))
+        val keyManager = Mockito.mock(KeyManager::class.java)
         val tagMock = Mockito.mock(IsoCard::class.java)
         Mockito.`when`(tagMock.transceive(Mockito.any(ByteArray::class.java))).thenReturn(
                 byteArrayOf(0x79, 3, 0, 0, 0, 0x71, 0, 0x90.toByte(), 0x00), //SELECT
