@@ -15,10 +15,10 @@ class KeyStoreProvider : KeyProvider {
 
     init {
         keystore.load(null)
-        keystore.aliases().toList().map {
+        keystore.aliases().asSequence().map {
             it.split(',', limit = 2)
         }.forEach {
-            entries.getOrPut(it.component1(), { mutableSetOf() }).add(it.component2())
+            entries.getOrPut(it[0], { mutableSetOf() }).add(it[1])
         }
     }
 

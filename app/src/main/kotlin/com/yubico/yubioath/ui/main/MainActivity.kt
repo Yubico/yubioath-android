@@ -1,6 +1,7 @@
 package com.yubico.yubioath.ui.main
 
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.support.v7.widget.SearchView
@@ -21,6 +22,9 @@ class MainActivity : BaseActivity<OathViewModel>(OathViewModel::class.java) {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        // Clear storage from older version of app
+        getSharedPreferences("NEO_STORE", Context.MODE_PRIVATE).edit().clear().apply()
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {

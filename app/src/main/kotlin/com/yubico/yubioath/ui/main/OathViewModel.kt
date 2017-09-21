@@ -10,7 +10,6 @@ import com.yubico.yubioath.ui.EXEC
 import kotlinx.coroutines.experimental.Job
 import kotlinx.coroutines.experimental.delay
 import kotlinx.coroutines.experimental.launch
-import java.util.*
 
 class OathViewModel : BaseViewModel() {
     var creds: MutableMap<Credential, Code?> = mutableMapOf()
