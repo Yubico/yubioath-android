@@ -35,12 +35,18 @@ class PasswordActivity : BaseActivity<PasswordViewModel>(PasswordViewModel::clas
             R.id.menu_password_save -> (supportFragmentManager.findFragmentById(R.id.fragment) as PasswordFragment).apply {
                 val data = validateData()
                 if (data != null) {
-                    val job = viewModel.setPassword(data.new_password, data.remember).apply {
+                    val job = viewModel.setPassword(data.current_password, data.new_password, data.remember).apply {
                         invokeOnCompletion {
                             launch(UI) {
                                 if (!isCancelled) {
-                                    setResult(Activity.RESULT_OK)
-                                    finish()
+                                    val success = await()
+                                    if (success) {
+                                        setResult(Activity.RESULT_OK)
+                                        finish()
+                                    } else {
+                                        Log.d("yubioath", "Wrong password")
+                                        setWrongPassword()
+                                    }
                                 }
                             }
                         }
@@ -54,6 +60,11 @@ class PasswordActivity : BaseActivity<PasswordViewModel>(PasswordViewModel::clas
                                 setActionTextColor(ContextCompat.getColor(context, R.color.yubicoPrimaryGreen))
                                 setAction(R.string.cancel) {
                                     job.cancel()
+                                }
+                                job.invokeOnCompletion {
+                                    launch(UI) {
+                                        dismiss()
+                                    }
                                 }
                             }.show()
                         }

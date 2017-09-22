@@ -5,6 +5,8 @@ import com.yubico.yubioath.protocol.*
 import com.yubico.yubioath.transport.Backend
 import java.io.Closeable
 import java.nio.ByteBuffer
+import javax.crypto.Mac
+import javax.crypto.spec.SecretKeySpec
 
 class OathClient(backend: Backend, private val keyManager: KeyManager) : Closeable {
     private val api: YkOathApi = YkOathApi(backend)
@@ -18,7 +20,7 @@ class OathClient(backend: Backend, private val keyManager: KeyManager) : Closeab
                 api.unlock(it)
             }?.apply {
                 promote()
-            } ?: throw PasswordRequiredException(if(missing) "Password is missing" else "Password is incorrect!", deviceInfo.id, api.deviceSalt, missing)
+            } ?: throw PasswordRequiredException(if (missing) "Password is missing" else "Password is incorrect!", deviceInfo.id, api.deviceSalt, missing)
         }
     }
 
@@ -30,15 +32,31 @@ class OathClient(backend: Backend, private val keyManager: KeyManager) : Closeab
         }
     }
 
-    fun setPassword(pw: String?, remember:Boolean) {
-        if (pw == null || pw.isEmpty()) {
+    fun setPassword(oldPassword: String, newPassword: String, remember: Boolean): Boolean {
+        api.reselect()
+        if (api.isLocked()) {
+            if (oldPassword.isEmpty()) return false
+
+            sequenceOf(false, true).find { legacy ->
+                api.unlock(object : ChallengeSigner {
+                    override fun sign(input: ByteArray): ByteArray {
+                        return Mac.getInstance("HmacSHA1").apply {
+                            init(SecretKeySpec(KeyManager.calculateSecret(oldPassword, api.deviceSalt, legacy), algorithm))
+                        }.doFinal(input)
+                    }
+                })
+            } ?: return false
+        }
+
+        if (newPassword.isEmpty()) {
             api.unsetLockCode()
             keyManager.clearKeys(deviceInfo.id)
         } else {
-            val secret = KeyManager.calculateSecret(pw, api.deviceSalt, false)
+            val secret = KeyManager.calculateSecret(newPassword, api.deviceSalt, false)
             api.setLockCode(secret)
             keyManager.addKey(deviceInfo.id, secret, remember)
         }
+        return true
     }
 
     fun calculate(credential: Credential, timestamp: Long): Code {
@@ -60,7 +78,7 @@ class OathClient(backend: Backend, private val keyManager: KeyManager) : Closeab
         return Code(value, validFrom, validUntil)
     }
 
-    fun refreshCodes(timestamp: Long, existing:MutableMap<Credential, Code?>):MutableMap<Credential, Code?> {
+    fun refreshCodes(timestamp: Long, existing: MutableMap<Credential, Code?>): MutableMap<Credential, Code?> {
         // Default to 30 second period
         val timeStep = (timestamp / 1000 / 30)
         val challenge = ByteBuffer.allocate(8).putLong(timeStep).array()
@@ -71,7 +89,7 @@ class OathClient(backend: Backend, private val keyManager: KeyManager) : Closeab
             val code: Code? = if (it.data.size > 1) {
                 if (credential.period != 30 || credential.issuer == "Steam") {
                     //Recalculate needed for for periods != 30 or Steam credentials
-                    if(existingCode != null && existingCode.validUntil > timestamp) existingCode else calculate(credential, timestamp)
+                    if (existingCode != null && existingCode.validUntil > timestamp) existingCode else calculate(credential, timestamp)
                 } else {
                     Code(formatTruncated(it.data), timeStep * 30 * 1000, (timeStep + 1) * 30 * 1000)
                 }
@@ -88,10 +106,10 @@ class OathClient(backend: Backend, private val keyManager: KeyManager) : Closeab
 
     fun addCredential(data: CredentialData): Credential {
         with(data) {
-            if(issuer != null) {
+            if (issuer != null) {
                 name = "$issuer:$name"
             }
-            if(oathType == OathType.TOTP && period != 30) {
+            if (oathType == OathType.TOTP && period != 30) {
                 name = "$period/$name"
             }
             api.putCode(name, secret, oathType, algorithm, digits, counter, touch)

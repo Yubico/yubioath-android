@@ -24,6 +24,7 @@ import com.yubico.yubioath.transport.NfcBackend
 import com.yubico.yubioath.transport.UsbBackend
 import kotlinx.coroutines.experimental.android.UI
 import kotlinx.coroutines.experimental.asCoroutineDispatcher
+import kotlinx.coroutines.experimental.async
 import kotlinx.coroutines.experimental.channels.Channel
 import kotlinx.coroutines.experimental.launch
 import nordpol.IsoCard
@@ -43,13 +44,15 @@ abstract class BaseViewModel : ViewModel() {
         private var sharedLastDeviceInfo = DUMMY_INFO
     }
 
+    data class ClientRequest(val deviceId:String?, val func: suspend (OathClient) -> Unit)
+
     protected data class Services(val context: Context, val usbManager: UsbManager, val keyManager: KeyManager)
 
     protected var services: Services? = null
 
     private var usbReceiver: BroadcastReceiver? = null
     private val devicesPrompted: MutableSet<UsbDevice> = mutableSetOf()
-    private val clientRequests = Channel<Pair<String?, (OathClient) -> Unit>>()
+    private val clientRequests = Channel<ClientRequest>()
 
     internal var ndefConsumed = false
     internal var nfcWarned = false
@@ -117,12 +120,18 @@ abstract class BaseViewModel : ViewModel() {
         }
     }
 
-    fun requestClient(id: String? = null, func: (api: OathClient) -> Unit) = launch(EXEC) {
+    fun <T> requestClient(id: String? = null, func: (api: OathClient) -> T) = async(EXEC) {
         Log.d("yubioath", "Requesting API...")
         services?.let {
             launch(EXEC) { checkUsb(it) }
         }
-        clientRequests.send(Pair(id, func))
+
+        val responseChannel = Channel<T>()
+        clientRequests.send(ClientRequest(id, {
+            responseChannel.send(func(it))
+        }))
+
+        responseChannel.receive()
     }
 
     protected fun clearDevice() {

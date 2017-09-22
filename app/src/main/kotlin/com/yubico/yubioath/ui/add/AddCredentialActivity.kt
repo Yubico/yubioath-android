@@ -4,7 +4,6 @@ import android.app.Activity
 import android.os.Bundle
 import android.support.design.widget.Snackbar
 import android.support.v4.content.ContextCompat
-import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import com.yubico.yubioath.R
@@ -39,7 +38,6 @@ class AddCredentialActivity : BaseActivity<AddCredentialViewModel>(AddCredential
             R.id.menu_add_credential_save -> (supportFragmentManager.findFragmentById(R.id.fragment) as AddCredentialFragment).apply {
                 val data = validateData()
                 if (data != null) {
-                    Log.d("yubioath", "Data: $data")
                     isEnabled = false
 
                     val job = viewModel.addCredential(data).apply {
@@ -67,8 +65,6 @@ class AddCredentialActivity : BaseActivity<AddCredentialViewModel>(AddCredential
                             }.show()
                         }
                     }
-                } else {
-                    Log.d("yubioath", "Errors!")
                 }
             }
         }

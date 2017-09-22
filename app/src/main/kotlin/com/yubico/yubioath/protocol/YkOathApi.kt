@@ -18,7 +18,7 @@ class YkOathApi @Throws(IOException::class, AppletSelectException::class)
 constructor(private var backend: Backend) : Closeable {
     val deviceSalt: ByteArray
     val deviceInfo: DeviceInfo
-    private var challenge: ByteArray = ByteArray(0)
+    private var challenge = byteArrayOf()
 
     init {
         try {
@@ -41,6 +41,16 @@ constructor(private var backend: Backend) : Closeable {
     }
 
     fun isLocked(): Boolean = challenge.isNotEmpty()
+
+    fun reselect() {
+        send(0xa4.toByte(), p1 = 0x04) { put(AID) }.apply {
+            parseTlv(VERSION_TAG)
+            parseTlv(NAME_TAG)
+            challenge = if(hasRemaining()) {
+                parseTlv(CHALLENGE_TAG)
+            } else byteArrayOf()
+        }
+    }
 
     @Throws(IOException::class)
     fun unlock(signer: ChallengeSigner): Boolean {
@@ -75,11 +85,13 @@ constructor(private var backend: Backend) : Closeable {
             tlv(CHALLENGE_TAG, challenge)
             tlv(RESPONSE_TAG, response)
         }
+        deviceInfo.hasPassword = true
     }
 
     @Throws(IOException::class)
     fun unsetLockCode() {
         send(SET_CODE_INS) { tlv(KEY_TAG) }
+        deviceInfo.hasPassword = false
     }
 
     @Throws(IOException::class)
@@ -181,7 +193,10 @@ constructor(private var backend: Backend) : Closeable {
         fun compare(version:Version): Int = compare(version.major, version.minor, version.micro)
     }
 
-    data class DeviceInfo(val id:String, val persistent: Boolean, val version: Version, val hasPassword: Boolean)
+    class DeviceInfo(val id:String, val persistent: Boolean, val version: Version, initialHasPassword: Boolean) {
+        var hasPassword = initialHasPassword
+            internal set
+    }
 
     class ResponseData(val key:String, val oathType: OathType, val touch:Boolean, val data:ByteArray)
 
