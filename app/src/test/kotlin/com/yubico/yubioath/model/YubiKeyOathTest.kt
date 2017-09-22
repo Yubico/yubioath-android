@@ -2,10 +2,10 @@ package com.yubico.yubioath.model
 
 import com.yubico.yubioath.BuildConfig
 import com.yubico.yubioath.client.KeyManager
-import com.yubico.yubioath.protocol.Algorithm
-import com.yubico.yubioath.protocol.CredentialData
 import com.yubico.yubioath.client.OathClient
 import com.yubico.yubioath.keystore.KeyProvider
+import com.yubico.yubioath.protocol.Algorithm
+import com.yubico.yubioath.protocol.CredentialData
 import com.yubico.yubioath.protocol.OathType
 import com.yubico.yubioath.transport.NfcBackend
 import kotlinx.coroutines.experimental.runBlocking

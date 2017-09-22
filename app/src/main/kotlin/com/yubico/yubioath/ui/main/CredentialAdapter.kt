@@ -4,7 +4,6 @@ import android.content.Context
 import android.content.res.ColorStateList
 import android.graphics.Bitmap
 import android.graphics.Canvas
-import android.graphics.Color
 import android.graphics.Paint
 import android.support.v4.content.ContextCompat
 import android.view.LayoutInflater
@@ -29,6 +28,7 @@ class CredentialAdapter(private val context: Context, private val actionHandler:
     private val colors = context.resources.obtainTypedArray(R.array.icon_colors).let {
         (0 until it.length()).map { i -> ColorStateList.valueOf(it.getColor(i, 0)) }
     }
+
     private fun getColor(cred: Credential) = colors[Math.abs(cred.key.hashCode()) % colors.size]
 
     private val inflater = LayoutInflater.from(context)
@@ -37,7 +37,7 @@ class CredentialAdapter(private val context: Context, private val actionHandler:
 
     private var notifyTimeout: Job? = null
 
-    val setCredentials = fun(credentials: Map<Credential, Code?>, searchFilter:String) = launch(UI) {
+    val setCredentials = fun(credentials: Map<Credential, Code?>, searchFilter: String) = launch(UI) {
         creds = credentials.filterKeys { it.key.contains(searchFilter, true) }
         notifyDataSetChanged()
         notifyNextTimeout(credentials)
@@ -69,7 +69,7 @@ class CredentialAdapter(private val context: Context, private val actionHandler:
 
     private fun Credential.hasTimer(): Boolean = type == OathType.TOTP && period != 30
 
-    private fun Code?.formatValue(): String = when(this?.value?.length) {
+    private fun Code?.formatValue(): String = when (this?.value?.length) {
         null -> context.getString(R.string.press_for_code)
         8 -> value.slice(0..3) + " " + value.slice(4..7) //1234 5678
         7 -> value.slice(0..3) + " " + value.slice(4..6) //1234 567

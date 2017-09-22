@@ -1,7 +1,10 @@
 package com.yubico.yubioath.client
 
 import com.yubico.yubioath.exc.PasswordRequiredException
-import com.yubico.yubioath.protocol.*
+import com.yubico.yubioath.protocol.ChallengeSigner
+import com.yubico.yubioath.protocol.CredentialData
+import com.yubico.yubioath.protocol.OathType
+import com.yubico.yubioath.protocol.YkOathApi
 import com.yubico.yubioath.transport.Backend
 import java.io.Closeable
 import java.nio.ByteBuffer

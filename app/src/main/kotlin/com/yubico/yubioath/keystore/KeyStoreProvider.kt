@@ -50,7 +50,7 @@ class KeyStoreProvider : KeyProvider {
         entries.clear()
     }
 
-    private inner class KeyStoreStoredSigner(val deviceId: String, val secretId: String): StoredSigner {
+    private inner class KeyStoreStoredSigner(val deviceId: String, val secretId: String) : StoredSigner {
         val mac: Mac = Mac.getInstance(KeyProperties.KEY_ALGORITHM_HMAC_SHA1).apply {
             init(keystore.getKey("$deviceId,$secretId", null))
         }

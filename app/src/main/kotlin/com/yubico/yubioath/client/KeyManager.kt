@@ -30,10 +30,8 @@
 
 package com.yubico.yubioath.client
 
-import android.util.Base64
 import com.yubico.yubioath.keystore.KeyProvider
 import com.yubico.yubioath.keystore.StoredSigner
-import java.security.MessageDigest
 import java.security.NoSuchAlgorithmException
 import javax.crypto.SecretKeyFactory
 import javax.crypto.spec.PBEKeySpec
@@ -42,7 +40,7 @@ import javax.crypto.spec.PBEKeySpec
 class KeyManager(private val permStore: KeyProvider, private val memStore: KeyProvider) {
 
     fun getKeys(deviceId: String): Sequence<StoredSigner> {
-        return if(permStore.hasKeys(deviceId)) {
+        return if (permStore.hasKeys(deviceId)) {
             permStore.getKeys(deviceId)
         } else {
             memStore.getKeys(deviceId)
@@ -50,7 +48,7 @@ class KeyManager(private val permStore: KeyProvider, private val memStore: KeyPr
     }
 
     fun addKey(deviceId: String, secret: ByteArray, remember: Boolean) {
-        if(remember) {
+        if (remember) {
             memStore.clearKeys(deviceId)
             permStore.addKey(deviceId, secret)
         } else {

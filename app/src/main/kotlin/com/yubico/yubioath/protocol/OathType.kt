@@ -7,7 +7,7 @@ sealed class OathType(val byteVal: Byte) {
     object TOTP : OathType(0x20)
 
     companion object {
-        fun fromValue(byteVal: Byte) = when(byteVal) {
+        fun fromValue(byteVal: Byte) = when (byteVal) {
             0x10.toByte() -> HOTP
             0x20.toByte() -> TOTP
             else -> throw IllegalArgumentException()

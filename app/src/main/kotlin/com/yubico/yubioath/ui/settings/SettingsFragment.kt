@@ -5,7 +5,6 @@ import android.os.Bundle
 import android.support.v7.app.AlertDialog
 import android.support.v7.preference.Preference
 import android.support.v7.preference.PreferenceFragmentCompat
-import android.util.Log
 import android.view.WindowManager
 import com.yubico.yubioath.R
 
@@ -16,7 +15,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
         addPreferencesFromResource(R.xml.preferences)
 
         preferenceManager.findPreference("hideThumbnail").onPreferenceChangeListener = Preference.OnPreferenceChangeListener { _, hide ->
-            activity.window.setFlags(WindowManager.LayoutParams.FLAG_SECURE, if(hide == true) WindowManager.LayoutParams.FLAG_SECURE else 0)
+            activity.window.setFlags(WindowManager.LayoutParams.FLAG_SECURE, if (hide == true) WindowManager.LayoutParams.FLAG_SECURE else 0)
             true
         }
 
@@ -24,7 +23,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
             AlertDialog.Builder(context)
                     .setTitle(R.string.clear_data)
                     .setMessage(R.string.clear_data_message)
-                    .setPositiveButton(R.string.clear) {_, _ -> viewModel.clearStoredPasswords() }
+                    .setPositiveButton(R.string.clear) { _, _ -> viewModel.clearStoredPasswords() }
                     .setNegativeButton(R.string.cancel, null)
                     .show()
             true

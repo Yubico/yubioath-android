@@ -50,7 +50,7 @@ class UsbBackend(private val connection: UsbDeviceConnection, private val iface:
         var tries = 5
         do {
             read = connection.bulkTransfer(endpointBulkIn, bufIn, bufIn.size, TIMEOUT)
-            if((bufIn[5] != SLOT || bufIn[6] != sequence) && tries-- < 0) throw IOException("Failed to read response")
+            if ((bufIn[5] != SLOT || bufIn[6] != sequence) && tries-- < 0) throw IOException("Failed to read response")
         } while (bufIn[5] != SLOT || bufIn[6] != sequence || bufIn[7] == STATUS_TIME_EXTENSION)
         sequence++
 

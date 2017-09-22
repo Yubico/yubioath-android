@@ -43,13 +43,13 @@ class MainActivity : BaseActivity<OathViewModel>(OathViewModel::class.java) {
     }
 
     override fun onPrepareOptionsMenu(menu: Menu): Boolean {
-        menu.findItem(R.id.menu_main_password).isEnabled = viewModel.lastDeviceInfo.version.compare(0,0,0) > 0
+        menu.findItem(R.id.menu_main_password).isEnabled = viewModel.lastDeviceInfo.version.compare(0, 0, 0) > 0
 
         return super.onPrepareOptionsMenu(menu)
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when(item.itemId) {
+        when (item.itemId) {
             R.id.menu_main_password -> startActivityForResult(Intent(this, PasswordActivity::class.java), REQUEST_PASSWORD)
             R.id.menu_main_settings -> startActivity(Intent(this, SettingsActivity::class.java))
         }
@@ -58,7 +58,7 @@ class MainActivity : BaseActivity<OathViewModel>(OathViewModel::class.java) {
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        when(requestCode) {
+        when (requestCode) {
             REQUEST_PASSWORD -> if (resultCode == Activity.RESULT_OK) {
                 toast(R.string.password_updated)
             }

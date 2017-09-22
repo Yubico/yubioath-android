@@ -1,7 +1,10 @@
 package com.yubico.yubioath.protocol
 
 import android.util.Base64
-import com.yubico.yubioath.exc.*
+import com.yubico.yubioath.exc.AppletMissingException
+import com.yubico.yubioath.exc.AppletSelectException
+import com.yubico.yubioath.exc.StorageFullException
+import com.yubico.yubioath.exc.UnsupportedAppletException
 import com.yubico.yubioath.transport.ApduError
 import com.yubico.yubioath.transport.Backend
 import java.io.Closeable
@@ -46,7 +49,7 @@ constructor(private var backend: Backend) : Closeable {
         send(0xa4.toByte(), p1 = 0x04) { put(AID) }.apply {
             parseTlv(VERSION_TAG)
             parseTlv(NAME_TAG)
-            challenge = if(hasRemaining()) {
+            challenge = if (hasRemaining()) {
                 parseTlv(CHALLENGE_TAG)
             } else byteArrayOf()
         }
@@ -66,7 +69,7 @@ constructor(private var backend: Backend) : Closeable {
                 tlv(CHALLENGE_TAG, myChallenge)
             }
             Arrays.equals(myResponse, resp.parseTlv(RESPONSE_TAG))
-        } catch(e: ApduError) {
+        } catch (e: ApduError) {
             false
         }
     }
@@ -96,7 +99,7 @@ constructor(private var backend: Backend) : Closeable {
 
     @Throws(IOException::class)
     fun putCode(name: String, key: ByteArray, type: OathType, algorithm: Algorithm, digits: Byte, imf: Int, touch: Boolean) {
-        if(touch && deviceInfo.version.major < 4) {
+        if (touch && deviceInfo.version.major < 4) {
             throw IllegalArgumentException("Require touch requires YubiKey 4")
         }
 
@@ -118,7 +121,7 @@ constructor(private var backend: Backend) : Closeable {
     }
 
     @Throws(IOException::class)
-    fun calculate(name: String, challenge: ByteArray, truncate:Boolean = true): ByteArray {
+    fun calculate(name: String, challenge: ByteArray, truncate: Boolean = true): ByteArray {
         val resp = send(CALCULATE_INS, p2 = if (truncate) 1 else 0) {
             tlv(NAME_TAG, name.toByteArray())
             tlv(CHALLENGE_TAG, challenge)
@@ -175,32 +178,32 @@ constructor(private var backend: Backend) : Closeable {
         }
     }
 
-    data class Version(val major:Int, val minor:Int, val micro:Int) {
+    data class Version(val major: Int, val minor: Int, val micro: Int) {
         companion object {
-            fun parse(data: ByteArray):Version = Version(data[0].toInt(), data[1].toInt(), data[2].toInt())
+            fun parse(data: ByteArray): Version = Version(data[0].toInt(), data[1].toInt(), data[2].toInt())
         }
 
-        fun compare(major:Int, minor:Int, micro:Int): Int {
-            return if(major > this.major || (major == this.major && (minor > this.minor || minor == this.minor && micro > this.micro))) {
+        fun compare(major: Int, minor: Int, micro: Int): Int {
+            return if (major > this.major || (major == this.major && (minor > this.minor || minor == this.minor && micro > this.micro))) {
                 -1
-            } else if(major == this.major && minor == this.minor && micro == this.micro) {
+            } else if (major == this.major && minor == this.minor && micro == this.micro) {
                 0
             } else {
                 1
             }
         }
 
-        fun compare(version:Version): Int = compare(version.major, version.minor, version.micro)
+        fun compare(version: Version): Int = compare(version.major, version.minor, version.micro)
     }
 
-    class DeviceInfo(val id:String, val persistent: Boolean, val version: Version, initialHasPassword: Boolean) {
+    class DeviceInfo(val id: String, val persistent: Boolean, val version: Version, initialHasPassword: Boolean) {
         var hasPassword = initialHasPassword
             internal set
     }
 
-    class ResponseData(val key:String, val oathType: OathType, val touch:Boolean, val data:ByteArray)
+    class ResponseData(val key: String, val oathType: OathType, val touch: Boolean, val data: ByteArray)
 
-    private infix fun Byte.or(b:Byte):Byte = (toInt() or b.toInt()).toByte()
+    private infix fun Byte.or(b: Byte): Byte = (toInt() or b.toInt()).toByte()
 
     companion object {
         const private val APDU_OK = 0x9000

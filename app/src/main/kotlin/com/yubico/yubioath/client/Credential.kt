@@ -4,7 +4,7 @@ import android.os.Parcel
 import android.os.Parcelable
 import com.yubico.yubioath.protocol.OathType
 
-data class Credential(val deviceId: String, val key: String, val type: OathType, val touch: Boolean): Parcelable {
+data class Credential(val deviceId: String, val key: String, val type: OathType, val touch: Boolean) : Parcelable {
     val issuer: String?
     val name: String
     val period: Int

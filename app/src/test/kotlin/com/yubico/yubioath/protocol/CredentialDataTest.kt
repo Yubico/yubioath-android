@@ -32,8 +32,6 @@ package com.yubico.yubioath.protocol
 
 import android.net.Uri
 import com.yubico.yubioath.BuildConfig
-import com.yubico.yubioath.protocol.CredentialData
-import org.hamcrest.Matchers
 import org.junit.Assert
 import org.junit.Assert.fail
 import org.junit.Test

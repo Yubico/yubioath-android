@@ -53,7 +53,7 @@ class PasswordActivity : BaseActivity<PasswordViewModel>(PasswordViewModel::clas
                         if (viewModel.lastDeviceInfo.persistent) {
                             delay(100)
                         }
-                        if(job.isActive) {
+                        if (job.isActive) {
                             Snackbar.make(view!!, R.string.swipe_and_hold, Snackbar.LENGTH_INDEFINITE).apply {
                                 setActionTextColor(ContextCompat.getColor(context, R.color.yubicoPrimaryGreen))
                                 setAction(R.string.cancel) {

@@ -3,7 +3,7 @@ package com.yubico.yubioath.client
 import android.os.Parcel
 import android.os.Parcelable
 
-data class Code(val value: String, val validFrom: Long, val validUntil: Long): Parcelable {
+data class Code(val value: String, val validFrom: Long, val validUntil: Long) : Parcelable {
     constructor(parcel: Parcel) : this(
             parcel.readString(),
             parcel.readLong(),

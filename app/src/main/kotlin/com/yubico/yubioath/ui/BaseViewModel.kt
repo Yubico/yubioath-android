@@ -44,7 +44,7 @@ abstract class BaseViewModel : ViewModel() {
         private var sharedLastDeviceInfo = DUMMY_INFO
     }
 
-    data class ClientRequest(val deviceId:String?, val func: suspend (OathClient) -> Unit)
+    data class ClientRequest(val deviceId: String?, val func: suspend (OathClient) -> Unit)
 
     protected data class Services(val context: Context, val usbManager: UsbManager, val keyManager: KeyManager)
 
@@ -182,7 +182,7 @@ abstract class BaseViewModel : ViewModel() {
                 services?.apply {
                     if (context is AppCompatActivity) {
                         context.supportFragmentManager.apply {
-                            if(findFragmentByTag("dialog_require_password") == null) {
+                            if (findFragmentByTag("dialog_require_password") == null) {
                                 val transaction = beginTransaction()
                                 RequirePasswordDialog.newInstance(keyManager, e.deviceId, e.salt, e.isMissing).show(transaction, "dialog_require_password")
                             }

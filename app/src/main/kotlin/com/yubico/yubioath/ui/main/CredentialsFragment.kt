@@ -1,32 +1,32 @@
 package com.yubico.yubioath.ui.main
 
 import android.animation.Animator
+import android.animation.AnimatorListenerAdapter
+import android.app.Activity
 import android.arch.lifecycle.ViewModelProviders
 import android.content.ClipData
 import android.content.ClipboardManager
+import android.content.Intent
 import android.database.DataSetObserver
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import android.support.v4.app.ListFragment
-import android.view.*
-import android.animation.AnimatorListenerAdapter
-import android.app.Activity
-import android.content.Intent
-import android.net.Uri
 import android.support.annotation.RequiresApi
 import android.support.annotation.StringRes
-import android.support.design.widget.*
+import android.support.design.widget.Snackbar
+import android.support.v4.app.ListFragment
 import android.support.v4.content.ContextCompat
+import android.view.*
 import android.view.animation.*
 import android.widget.AdapterView
 import android.widget.ImageView
 import com.google.zxing.integration.android.IntentIntegrator
-import com.yubico.yubioath.ui.add.AddCredentialActivity
 import com.yubico.yubioath.R
 import com.yubico.yubioath.client.Code
 import com.yubico.yubioath.client.Credential
 import com.yubico.yubioath.protocol.CredentialData
 import com.yubico.yubioath.protocol.OathType
+import com.yubico.yubioath.ui.add.AddCredentialActivity
 import kotlinx.android.synthetic.main.fragment_credentials.*
 import kotlinx.coroutines.experimental.Job
 import kotlinx.coroutines.experimental.android.UI
@@ -157,7 +157,7 @@ class CredentialsFragment : ListFragment() {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         val qrActivityResult = IntentIntegrator.parseActivityResult(requestCode, resultCode, data)
-        if(qrActivityResult != null) {
+        if (qrActivityResult != null) {
             qrActivityResult.contents?.let {
                 val uri = Uri.parse(it)
                 try {
@@ -167,11 +167,11 @@ class CredentialsFragment : ListFragment() {
                     activity.toast(R.string.invalid_barcode)
                 }
             }
-        } else when(requestCode) {
-            REQEUST_ADD_CREDENTIAL -> if(resultCode == Activity.RESULT_OK && data != null) {
+        } else when (requestCode) {
+            REQEUST_ADD_CREDENTIAL -> if (resultCode == Activity.RESULT_OK && data != null) {
                 activity.toast(R.string.add_credential_success)
-                val credential:Credential = data.getParcelableExtra(AddCredentialActivity.EXTRA_CREDENTIAL)
-                val code: Code? = if(data.hasExtra(AddCredentialActivity.EXTRA_CODE)) data.getParcelableExtra(AddCredentialActivity.EXTRA_CODE) else null
+                val credential: Credential = data.getParcelableExtra(AddCredentialActivity.EXTRA_CREDENTIAL)
+                val code: Code? = if (data.hasExtra(AddCredentialActivity.EXTRA_CODE)) data.getParcelableExtra(AddCredentialActivity.EXTRA_CODE) else null
                 viewModel.insertCredential(credential, code)
             }
             else -> super.onActivityResult(requestCode, resultCode, data)
@@ -186,7 +186,7 @@ class CredentialsFragment : ListFragment() {
         }
     }
 
-    private fun hideAddToolbar(showFab:Boolean = true) {
+    private fun hideAddToolbar(showFab: Boolean = true) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             //Hide toolbar
             val cx = (fab.left + fab.right) / 2 - toolbar_add.x.toInt()
@@ -196,7 +196,7 @@ class CredentialsFragment : ListFragment() {
                     override fun onAnimationEnd(animation: Animator?) {
                         toolbar_add.visibility = View.INVISIBLE
                         //Show fab
-                        if(showFab) {
+                        if (showFab) {
                             val deltaY = (toolbar_add.top + toolbar_add.bottom - (fab.top + fab.bottom)) / 2f
                             fab.startAnimation(TranslateAnimation(0f, 0f, deltaY, 0f).apply {
                                 interpolator = DecelerateInterpolator()
@@ -209,7 +209,7 @@ class CredentialsFragment : ListFragment() {
             }.start()
         } else {
             toolbar_add.visibility = View.INVISIBLE
-            if(showFab) {
+            if (showFab) {
                 fab.show()
             }
         }
@@ -263,12 +263,12 @@ class CredentialsFragment : ListFragment() {
     private fun snackbar(@StringRes message: Int, duration: Int): Snackbar {
         return Snackbar.make(view!!, message, duration).apply {
             setActionTextColor(ContextCompat.getColor(context, R.color.yubicoPrimaryGreen))
-            addCallback(object: Snackbar.Callback() {
+            addCallback(object : Snackbar.Callback() {
                 override fun onDismissed(transientBottomBar: Snackbar?, event: Int) {
                     if (!fab.isShown && !toolbar_add.isShown) fab.show()
                 }
             })
-            if(toolbar_add.isShown) {
+            if (toolbar_add.isShown) {
                 hideAddToolbar(false)
             } else {
                 fab.hide()
@@ -277,16 +277,16 @@ class CredentialsFragment : ListFragment() {
         }
     }
 
-    private fun jobWithClient(job:Job, @StringRes successMessage: Int, needsTouch: Boolean) {
+    private fun jobWithClient(job: Job, @StringRes successMessage: Int, needsTouch: Boolean) {
         job.invokeOnCompletion {
             launch(UI) {
-                if(!job.isCancelled && successMessage != 0) {
+                if (!job.isCancelled && successMessage != 0) {
                     activity.toast(successMessage)
                 }
             }
         }
 
-        if(!viewModel.lastDeviceInfo.persistent || needsTouch) {
+        if (!viewModel.lastDeviceInfo.persistent || needsTouch) {
             snackbar(R.string.swipe_and_hold, Snackbar.LENGTH_INDEFINITE).apply {
                 job.invokeOnCompletion { dismiss() }
                 setAction(R.string.cancel) { job.cancel() }
@@ -294,15 +294,15 @@ class CredentialsFragment : ListFragment() {
         }
     }
 
-    private fun selectItem(position: Int, updateViewModel:Boolean = true) {
+    private fun selectItem(position: Int, updateViewModel: Boolean = true) {
         val credential = adapter.getItem(position).key
-        if(updateViewModel) {
+        if (updateViewModel) {
             viewModel.selectedItem = credential
         }
 
         val mode = actionMode ?: activity.startActionMode(object : ActionMode.Callback {
             override fun onActionItemClicked(mode: ActionMode, item: MenuItem): Boolean {
-                when(item.itemId) {
+                when (item.itemId) {
                     R.id.delete -> viewModel.apply {
                         selectedItem?.let {
                             selectedItem = null

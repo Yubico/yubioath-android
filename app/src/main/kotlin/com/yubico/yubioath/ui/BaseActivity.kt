@@ -15,7 +15,6 @@ import nordpol.android.AndroidCard
 import nordpol.android.OnDiscoveredTagListener
 import nordpol.android.TagDispatcher
 import nordpol.android.TagDispatcherBuilder
-import org.jetbrains.anko.defaultSharedPreferences
 import org.jetbrains.anko.toast
 
 abstract class BaseActivity<T : BaseViewModel>(private var modelClass: Class<T>) : AppCompatActivity() {
@@ -66,13 +65,13 @@ abstract class BaseActivity<T : BaseViewModel>(private var modelClass: Class<T>)
         val warnNfc = prefs.getBoolean("warnNfc", true) && !viewModel.nfcWarned
         when (tagDispatcher.enableExclusiveNfc()) {
             TagDispatcher.NfcStatus.AVAILABLE_DISABLED -> {
-                if(warnNfc) {
+                if (warnNfc) {
                     toast(R.string.nfc_off)
                     viewModel.nfcWarned = true
                 }
             }
             TagDispatcher.NfcStatus.NOT_AVAILABLE -> {
-                if(warnNfc) {
+                if (warnNfc) {
                     toast(R.string.no_nfc)
                     viewModel.nfcWarned = true
                 }
