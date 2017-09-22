@@ -16,6 +16,7 @@ import android.net.Uri
 import android.support.annotation.RequiresApi
 import android.support.annotation.StringRes
 import android.support.design.widget.*
+import android.support.v4.content.ContextCompat
 import android.view.animation.*
 import android.widget.AdapterView
 import android.widget.ImageView
@@ -258,6 +259,7 @@ class CredentialsFragment : ListFragment() {
 
     private fun snackbar(@StringRes message: Int, duration: Int): Snackbar {
         return Snackbar.make(view!!, message, duration).apply {
+            setActionTextColor(ContextCompat.getColor(context, R.color.yubicoPrimaryGreen))
             addCallback(object: Snackbar.Callback() {
                 override fun onDismissed(transientBottomBar: Snackbar?, event: Int) {
                     if (!fab.isShown && !toolbar_add.isShown) fab.show()

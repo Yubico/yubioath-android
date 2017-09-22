@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#9aca3c</color>
-    <color name="colorPrimaryDark">#333333</color>
-    <color name="colorAccent">#284c61</color>
-    <color name="colorTitleIcon">#ffffff</color>
+    <color name="yubicoPrimaryGreen">#9aca3c</color>
+    <color name="yubicoPrimaryWhite">#ffffff</color>
+
+    <color name="yubicoSecondaryBlue">#284c61</color>
+    <color name="yubicoSecondaryLightGray">#939598</color>
+    <color name="yubicoSecondaryDarkGray">#333333</color>
 </resources>

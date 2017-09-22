@@ -3,6 +3,7 @@ package com.yubico.yubioath.ui.password
 import android.app.Activity
 import android.os.Bundle
 import android.support.design.widget.Snackbar
+import android.support.v4.content.ContextCompat
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
@@ -50,6 +51,7 @@ class PasswordActivity : BaseActivity<PasswordViewModel>(PasswordViewModel::clas
                         }
                         if(job.isActive) {
                             Snackbar.make(view!!, R.string.swipe_and_hold, Snackbar.LENGTH_INDEFINITE).apply {
+                                setActionTextColor(ContextCompat.getColor(context, R.color.yubicoPrimaryGreen))
                                 setAction(R.string.cancel) {
                                     job.cancel()
                                 }

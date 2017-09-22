@@ -5,9 +5,9 @@
         <item name="preferenceTheme">@style/PreferenceThemeOverlay.v14.Material</item>
 
         <!-- Customize your theme here. -->
-        <item name="colorPrimary">@color/colorPrimary</item>
-        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
-        <item name="colorAccent">@color/colorAccent</item>
+        <item name="colorPrimary">@color/yubicoPrimaryGreen</item>
+        <item name="colorPrimaryDark">@color/yubicoSecondaryDarkGray</item>
+        <item name="colorAccent">@color/yubicoSecondaryBlue</item>
     </style>
 
     <style name="activated" parent="AppTheme">
