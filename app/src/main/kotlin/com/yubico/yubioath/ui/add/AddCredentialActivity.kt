@@ -1,6 +1,7 @@
 package com.yubico.yubioath.ui.add
 
 import android.app.Activity
+import android.content.Intent
 import android.os.Bundle
 import android.support.design.widget.Snackbar
 import android.support.v4.content.ContextCompat
@@ -13,6 +14,11 @@ import kotlinx.coroutines.experimental.delay
 import kotlinx.coroutines.experimental.launch
 
 class AddCredentialActivity : BaseActivity<AddCredentialViewModel>(AddCredentialViewModel::class.java) {
+    companion object {
+        const val EXTRA_CREDENTIAL = "credential"
+        const val EXTRA_CODE = "code"
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_add_credential)
@@ -46,7 +52,13 @@ class AddCredentialActivity : BaseActivity<AddCredentialViewModel>(AddCredential
                                 if (isCancelled) {
                                     isEnabled = true
                                 } else {
-                                    setResult(Activity.RESULT_OK)
+                                    val (credential, code) = await()
+                                    setResult(Activity.RESULT_OK, Intent().apply {
+                                        putExtra(EXTRA_CREDENTIAL, credential)
+                                        code?.let {
+                                            putExtra(EXTRA_CODE, it)
+                                        }
+                                    })
                                     finish()
                                 }
                             }

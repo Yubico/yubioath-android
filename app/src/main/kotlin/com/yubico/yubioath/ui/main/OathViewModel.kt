@@ -46,6 +46,12 @@ class OathViewModel : BaseViewModel() {
         Log.d("yubioath", "Deleted credential: $credential")
     }
 
+    fun insertCredential(credential: Credential, code: Code?) {
+        if (lastDeviceInfo.id.isNotEmpty() && credential.deviceId != lastDeviceInfo.id) throw IllegalArgumentException("Credential belongs to different device!")
+        creds[credential] = code
+        credListener(creds, searchFilter)
+    }
+
     fun clearCredentials() {
         creds.clear()
         selectedItem = null

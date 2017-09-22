@@ -155,7 +155,7 @@ class CredentialsFragment : ListFragment() {
         }
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent) {
         val qrActivityResult = IntentIntegrator.parseActivityResult(requestCode, resultCode, data)
         if(qrActivityResult != null) {
             qrActivityResult.contents?.let {
@@ -170,6 +170,9 @@ class CredentialsFragment : ListFragment() {
         } else when(requestCode) {
             REQEUST_ADD_CREDENTIAL -> if(resultCode == Activity.RESULT_OK) {
                 activity.toast(R.string.prog_success)
+                val credential:Credential = data.getParcelableExtra(AddCredentialActivity.EXTRA_CREDENTIAL)
+                val code: Code? = if(data.hasExtra(AddCredentialActivity.EXTRA_CODE)) data.getParcelableExtra(AddCredentialActivity.EXTRA_CODE) else null
+                viewModel.insertCredential(credential, code)
             }
             else -> super.onActivityResult(requestCode, resultCode, data)
         }
@@ -324,7 +327,7 @@ class CredentialsFragment : ListFragment() {
                 viewModel.selectedItem = null
             }
         }).apply { actionMode = this }
-        mode.title = credential.name
+        mode.title = (credential.issuer?.let { it + ": " } ?: "") + credential.name
 
         listView.setItemChecked(position, true)
     }

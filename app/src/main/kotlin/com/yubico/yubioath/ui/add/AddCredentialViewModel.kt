@@ -1,9 +1,12 @@
 package com.yubico.yubioath.ui.add
 
 import android.net.Uri
-import android.util.Log
+import com.yubico.yubioath.client.Code
+import com.yubico.yubioath.client.Credential
 import com.yubico.yubioath.protocol.CredentialData
+import com.yubico.yubioath.protocol.OathType
 import com.yubico.yubioath.ui.BaseViewModel
+import kotlinx.coroutines.experimental.Deferred
 
 class AddCredentialViewModel : BaseViewModel() {
     private var handledUri: Uri? = null
@@ -13,12 +16,12 @@ class AddCredentialViewModel : BaseViewModel() {
         if(qrUri != handledUri) {
             handledUri = qrUri
             data = CredentialData.from_uri(qrUri)
-            Log.d("yubioath", "Updated credential data from URI!")
         }
     }
 
-    fun addCredential(credentialData:CredentialData) = requestClient {
-        val credential = it.addCredential(credentialData)
-        Log.d("yubioath", "Credential added: ${credential.key}")
+    fun addCredential(credentialData:CredentialData): Deferred<Pair<Credential, Code?>> = requestClient { client ->
+        client.addCredential(credentialData).let {
+            Pair(it, if (!(it.touch || it.type == OathType.HOTP)) client.calculate(it, System.currentTimeMillis()) else null)
+        }
     }
 }
