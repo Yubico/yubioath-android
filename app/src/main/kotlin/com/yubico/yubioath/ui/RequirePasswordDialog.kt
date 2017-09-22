@@ -69,7 +69,7 @@ class RequirePasswordDialog : DialogFragment() {
 
         activity.layoutInflater.inflate(R.layout.require_password_dialog, null).let {
             return AlertDialog.Builder(activity)
-                    .setTitle(if (missing) R.string.password_required else R.string.wrong_password)
+                    .setTitle(if (missing) R.string.password_required else R.string.password_wrong)
                     .setView(it)
                     .setPositiveButton(R.string.ok, { _, _ ->
                         val password = it.editPassword.text.toString().trim()

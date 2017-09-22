@@ -9,9 +9,6 @@ import android.util.Log
 import android.view.WindowManager
 import com.yubico.yubioath.R
 
-/**
- * Created by Dain on 2017-08-15.
- */
 class SettingsFragment : PreferenceFragmentCompat() {
     private val viewModel: SettingsViewModel by lazy { ViewModelProviders.of(activity).get(SettingsViewModel::class.java) }
 
@@ -23,7 +20,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
             true
         }
 
-        preferenceManager.findPreference("memclear").onPreferenceClickListener = Preference.OnPreferenceClickListener {
+        preferenceManager.findPreference("clearPasswords").onPreferenceClickListener = Preference.OnPreferenceClickListener {
             AlertDialog.Builder(context)
                     .setTitle(R.string.clear_data)
                     .setMessage(R.string.clear_data_message)
@@ -31,6 +28,10 @@ class SettingsFragment : PreferenceFragmentCompat() {
                     .setNegativeButton(R.string.cancel, null)
                     .show()
             true
+        }
+
+        preferenceManager.findPreference("about").onPreferenceClickListener = Preference.OnPreferenceClickListener {
+            TODO("About")
         }
     }
 }

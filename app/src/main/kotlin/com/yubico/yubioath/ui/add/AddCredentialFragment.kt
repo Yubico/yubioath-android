@@ -33,7 +33,6 @@ package com.yubico.yubioath.ui.add
 import android.arch.lifecycle.ViewModelProviders
 import android.os.Bundle
 import android.support.v4.app.Fragment
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -123,14 +122,14 @@ class AddCredentialFragment : Fragment() {
             credential_secret_wrapper.error = null
             decoder.decode(encodedSecret)
         } else {
-            credential_secret_wrapper.error = "Invalid value for secret"
+            credential_secret_wrapper.error = getString(R.string.add_credential_secret_invalid)
             valid = false
             byteArrayOf()
         }
         val issuer = credential_issuer.text.toString().let { if (it.isEmpty()) null else it }
         val name = credential_account.text.toString()
         if (name.isEmpty()) {
-            credential_account_wrapper.error = "Account name must not be empty"
+            credential_account_wrapper.error = getString(R.string.add_credential_account_empty)
             valid = false
         } else {
             credential_account_wrapper.error = null

@@ -5,7 +5,6 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.support.v7.widget.SearchView
-import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import com.yubico.yubioath.R
@@ -44,14 +43,12 @@ class MainActivity : BaseActivity<OathViewModel>(OathViewModel::class.java) {
     }
 
     override fun onPrepareOptionsMenu(menu: Menu): Boolean {
-        Log.d("yubioath", "lastDevice: ${viewModel.lastDeviceInfo}")
         menu.findItem(R.id.menu_main_password).isEnabled = viewModel.lastDeviceInfo.version.compare(0,0,0) > 0
 
         return super.onPrepareOptionsMenu(menu)
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        Log.d("yubioath", "MENU: $item")
         when(item.itemId) {
             R.id.menu_main_password -> startActivityForResult(Intent(this, PasswordActivity::class.java), REQEUST_PASSWORD)
             R.id.menu_main_settings -> startActivity(Intent(this, SettingsActivity::class.java))

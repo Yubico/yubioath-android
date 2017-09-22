@@ -86,7 +86,7 @@
 
         <activity
             android:name=".ui.settings.SettingsActivity"
-            android:label="@string/title_activity_settings"
+            android:label="@string/settings"
             android:configChanges="orientation|keyboard|keyboardHidden">
 
             <meta-data

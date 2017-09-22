@@ -3,18 +3,21 @@
     <SwitchPreferenceCompat
         android:defaultValue="true"
         android:key="warnNfc"
-        android:summary="@string/pref_description_warn_nfc"
-        android:title="@string/pref_title_warn_nfc"/>
+        android:summary="@string/warn_nfc_description"
+        android:title="@string/warn_nfc_title" />
 
     <SwitchPreferenceCompat
         android:defaultValue="true"
         android:key="hideThumbnail"
-        android:summary="@string/pref_description_hide_thumbnail"
-        android:title="@string/pref_title_hide_thumbnail"/>
+        android:summary="@string/hide_thumbnail_description"
+        android:title="@string/hide_thumbnail_title" />
 
     <Preference
-        android:title="@string/pref_title_memclear"
-        android:key="memclear"
-        />
+        android:key="clearPasswords"
+        android:title="@string/clear_passwords_title" />
+
+    <Preference
+        android:key="about"
+        android:title="@string/about_title" />
 
 </PreferenceScreen>

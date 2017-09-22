@@ -155,21 +155,21 @@ class CredentialsFragment : ListFragment() {
         }
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent) {
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         val qrActivityResult = IntentIntegrator.parseActivityResult(requestCode, resultCode, data)
         if(qrActivityResult != null) {
             qrActivityResult.contents?.let {
                 val uri = Uri.parse(it)
                 try {
                     CredentialData.from_uri(uri)
-                    startActivity(Intent(Intent.ACTION_VIEW, uri, context, AddCredentialActivity::class.java))
+                    startActivityForResult(Intent(Intent.ACTION_VIEW, uri, context, AddCredentialActivity::class.java), REQEUST_ADD_CREDENTIAL)
                 } catch (e: IllegalArgumentException) {
                     activity.toast(R.string.invalid_barcode)
                 }
             }
         } else when(requestCode) {
-            REQEUST_ADD_CREDENTIAL -> if(resultCode == Activity.RESULT_OK) {
-                activity.toast(R.string.prog_success)
+            REQEUST_ADD_CREDENTIAL -> if(resultCode == Activity.RESULT_OK && data != null) {
+                activity.toast(R.string.add_credential_success)
                 val credential:Credential = data.getParcelableExtra(AddCredentialActivity.EXTRA_CREDENTIAL)
                 val code: Code? = if(data.hasExtra(AddCredentialActivity.EXTRA_CODE)) data.getParcelableExtra(AddCredentialActivity.EXTRA_CODE) else null
                 viewModel.insertCredential(credential, code)

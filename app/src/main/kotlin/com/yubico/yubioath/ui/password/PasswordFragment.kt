@@ -28,7 +28,7 @@ class PasswordFragment : Fragment() {
         current_password_wrapper.error = null
 
         if(viewModel.lastDeviceInfo.hasPassword && current_password.text.toString().isEmpty()) {
-            current_password_wrapper.error = "Password required"
+            current_password_wrapper.error = getString(R.string.password_required)
             return null
         }
 
@@ -38,7 +38,7 @@ class PasswordFragment : Fragment() {
         val remember = remember_password.isChecked
 
         if (pw1 != pw2) {
-            verify_password_wrapper.error = "Passwords do not match"
+            verify_password_wrapper.error = getString(R.string.password_mismatch)
         } else {
             verify_password_wrapper.error = null
             return PasswordData(current, pw1, remember)
@@ -48,7 +48,7 @@ class PasswordFragment : Fragment() {
     }
 
     fun setWrongPassword() {
-        current_password_wrapper.error = "Wrong password"
+        current_password_wrapper.error = getString(R.string.password_wrong)
         current_password.apply {
             text.clear()
             requestFocus()

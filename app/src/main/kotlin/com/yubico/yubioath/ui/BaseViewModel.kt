@@ -195,7 +195,7 @@ abstract class BaseViewModel : ViewModel() {
             Log.e("yubioath", "Error using OathClient", e)
             launch(UI) {
                 services?.apply {
-                    context.toast(R.string.tag_error_retry)
+                    context.toast(R.string.tag_error)
                 }
             }
         }
