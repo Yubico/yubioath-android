@@ -55,18 +55,27 @@
     <string name="deleted">Credential deleted!</string>
 
     <!-- Add credential -->
+    <string name="add_credential_issuer">Issuer (optional)</string>
+    <string name="add_credential_secret">Secret key</string>
     <string name="add_credential_secret_invalid">Invalid value for secret</string>
+    <string name="add_credential_account">Account name</string>
     <string name="add_credential_account_empty">Account name must not be empty</string>
     <string name="add_credential_success">Credential added!</string>
+    <string name="require_touch">Require touch</string>
+    <string name="period">Period</string>
+    <string name="period_30">30</string>
+    <string name="credential_type">Type</string>
     <string-array name="credential_type">
         <item>Time based</item>
         <item>Counter based</item>
     </string-array>
+    <string name="algorithm">Algorithm</string>
     <string-array name="credential_algo">
         <item>SHA-1</item>
         <item>SHA-256</item>
         <item>SHA-512</item>
     </string-array>
+    <string name="digits">Digits</string>
     <string-array name="credential_digits">
         <item>6</item>
         <item>7</item>

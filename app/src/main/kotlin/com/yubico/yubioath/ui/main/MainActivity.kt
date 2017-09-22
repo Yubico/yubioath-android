@@ -15,7 +15,7 @@ import org.jetbrains.anko.toast
 
 class MainActivity : BaseActivity<OathViewModel>(OathViewModel::class.java) {
     companion object {
-        const private val REQEUST_PASSWORD = 2
+        const private val REQUEST_PASSWORD = 2
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -50,7 +50,7 @@ class MainActivity : BaseActivity<OathViewModel>(OathViewModel::class.java) {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when(item.itemId) {
-            R.id.menu_main_password -> startActivityForResult(Intent(this, PasswordActivity::class.java), REQEUST_PASSWORD)
+            R.id.menu_main_password -> startActivityForResult(Intent(this, PasswordActivity::class.java), REQUEST_PASSWORD)
             R.id.menu_main_settings -> startActivity(Intent(this, SettingsActivity::class.java))
         }
 
@@ -59,7 +59,7 @@ class MainActivity : BaseActivity<OathViewModel>(OathViewModel::class.java) {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         when(requestCode) {
-            REQEUST_PASSWORD -> if (resultCode == Activity.RESULT_OK) {
+            REQUEST_PASSWORD -> if (resultCode == Activity.RESULT_OK) {
                 toast(R.string.password_updated)
             }
         }

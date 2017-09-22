@@ -67,7 +67,7 @@ class AddCredentialFragment : Fragment() {
 
         credential_period.onFocusChangeListener = View.OnFocusChangeListener { _, hasFocus ->
             if (!hasFocus && credential_period.text.isEmpty()) {
-                credential_period.setText("30", TextView.BufferType.NORMAL)
+                credential_period.setText(R.string.period_30, TextView.BufferType.NORMAL)
             }
         }
 

@@ -31,6 +31,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
         }
 
         preferenceManager.findPreference("about").onPreferenceClickListener = Preference.OnPreferenceClickListener {
+
             TODO("About")
         }
     }
