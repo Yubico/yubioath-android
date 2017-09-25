@@ -43,6 +43,7 @@ import com.yubico.yubioath.R
 import com.yubico.yubioath.protocol.Algorithm
 import com.yubico.yubioath.protocol.CredentialData
 import com.yubico.yubioath.protocol.OathType
+import com.yubico.yubioath.protocol.YkOathApi
 import kotlinx.android.synthetic.main.fragment_add_credential.*
 import org.apache.commons.codec.binary.Base32
 import org.jetbrains.anko.inputMethodManager

@@ -5,10 +5,12 @@ import android.content.Intent
 import android.os.Bundle
 import android.support.design.widget.Snackbar
 import android.support.v4.content.ContextCompat
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import com.yubico.yubioath.R
 import com.yubico.yubioath.ui.BaseActivity
+import kotlinx.coroutines.experimental.CancellationException
 import kotlinx.coroutines.experimental.android.UI
 import kotlinx.coroutines.experimental.delay
 import kotlinx.coroutines.experimental.launch
@@ -46,24 +48,15 @@ class AddCredentialActivity : BaseActivity<AddCredentialViewModel>(AddCredential
                 if (data != null) {
                     isEnabled = false
 
-                    val job = viewModel.addCredential(data).apply {
-                        invokeOnCompletion {
+                    val job = viewModel.addCredential(data)
+                    job.invokeOnCompletion {
+                        if(job.isCompletedExceptionally) {
                             launch(UI) {
-                                if (isCancelled) {
-                                    isEnabled = true
-                                } else {
-                                    val (credential, code) = await()
-                                    setResult(Activity.RESULT_OK, Intent().apply {
-                                        putExtra(EXTRA_CREDENTIAL, credential)
-                                        code?.let {
-                                            putExtra(EXTRA_CODE, it)
-                                        }
-                                    })
-                                    finish()
-                                }
+                                isEnabled = true
                             }
                         }
                     }
+
                     launch(UI) {
                         if (viewModel.lastDeviceInfo.persistent) {
                             delay(100)
@@ -71,10 +64,21 @@ class AddCredentialActivity : BaseActivity<AddCredentialViewModel>(AddCredential
                         if (job.isActive) {
                             Snackbar.make(view!!, R.string.swipe_and_hold, Snackbar.LENGTH_INDEFINITE).apply {
                                 setActionTextColor(ContextCompat.getColor(context, R.color.yubicoPrimaryGreen))
-                                setAction(R.string.cancel) {
-                                    job.cancel()
-                                }
+                                job.invokeOnCompletion { dismiss() }
+                                setAction(R.string.cancel) { job.cancel() }
                             }.show()
+                        }
+                        try {
+                            val (credential, code) = job.await()
+                            setResult(Activity.RESULT_OK, Intent().apply {
+                                putExtra(EXTRA_CREDENTIAL, credential)
+                                code?.let {
+                                    putExtra(EXTRA_CODE, it)
+                                }
+                            })
+                            finish()
+                        } catch (e: Exception) {
+                            Log.e("yubioath", "exception", e)
                         }
                     }
                 }

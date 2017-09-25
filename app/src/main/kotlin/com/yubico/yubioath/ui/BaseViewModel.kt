@@ -22,6 +22,7 @@ import com.yubico.yubioath.protocol.YkOathApi
 import com.yubico.yubioath.transport.Backend
 import com.yubico.yubioath.transport.NfcBackend
 import com.yubico.yubioath.transport.UsbBackend
+import kotlinx.coroutines.experimental.Deferred
 import kotlinx.coroutines.experimental.android.UI
 import kotlinx.coroutines.experimental.asCoroutineDispatcher
 import kotlinx.coroutines.experimental.async
@@ -44,6 +45,7 @@ abstract class BaseViewModel : ViewModel() {
         private var sharedLastDeviceInfo = DUMMY_INFO
     }
 
+    data class ClientResult<T>(val result:T?, val error: Throwable?)
     data class ClientRequest(val deviceId: String?, val func: suspend (OathClient) -> Unit)
 
     protected data class Services(val context: Context, val usbManager: UsbManager, val keyManager: KeyManager)
@@ -120,18 +122,26 @@ abstract class BaseViewModel : ViewModel() {
         }
     }
 
-    fun <T> requestClient(id: String? = null, func: (api: OathClient) -> T) = async(EXEC) {
+    fun <T> requestClient(id: String? = null, func: (api: OathClient) -> T): Deferred<T> = async(EXEC) {
         Log.d("yubioath", "Requesting API...")
         services?.let {
             launch(EXEC) { checkUsb(it) }
         }
 
-        val responseChannel = Channel<T>()
+        val responseChannel = Channel<ClientResult<T>>()
         clientRequests.send(ClientRequest(id, {
-            responseChannel.send(func(it))
+            val result: ClientResult<T> = try {
+                ClientResult(func(it), null)
+            } catch (e: Throwable) {
+                ClientResult(null, e)
+            }
+            responseChannel.send(result)
         }))
 
-        responseChannel.receive()
+        responseChannel.receive().let {
+            it.error?.let { throw it }
+            it.result!!
+        }
     }
 
     protected fun clearDevice() {
