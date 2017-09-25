@@ -115,6 +115,10 @@ class AddCredentialFragment : Fragment() {
         activity.currentFocus?.let {
             activity.inputMethodManager.hideSoftInputFromWindow(it.applicationWindowToken, 0)
         }
+
+        credential_touch_wrapper.error = null
+        credential_algo_wrapper.error = null
+
         var valid = true
 
         val encodedSecret = credential_secret.text.toString().replace(" ", "").toUpperCase()
@@ -153,5 +157,15 @@ class AddCredentialFragment : Fragment() {
         return if (valid) {
             CredentialData(secret, issuer, name, type, algo, digits, period, touch = touch)
         } else null
+    }
+
+    fun validateVersion(data: CredentialData, version: YkOathApi.Version) {
+        // These TextInputLayouts don't contain EditTexts, and need two leading spaces for alignment.
+        if (data.touch && version.compare(4, 0, 0) < 0) {
+            credential_touch_wrapper.error = "  " + getString(R.string.add_credential_touch_version)
+        }
+        if (data.algorithm == Algorithm.SHA512 && version.compare(4, 3, 1) < 0) {
+            credential_algo_wrapper.error = "  " + getString(R.string.add_credential_algo_512)
+        }
     }
 }

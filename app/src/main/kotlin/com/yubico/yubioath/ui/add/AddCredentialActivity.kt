@@ -77,8 +77,10 @@ class AddCredentialActivity : BaseActivity<AddCredentialViewModel>(AddCredential
                                 }
                             })
                             finish()
+                        } catch(e: CancellationException) {
                         } catch (e: Exception) {
                             Log.e("yubioath", "exception", e)
+                            validateVersion(data, viewModel.lastDeviceInfo.version)
                         }
                     }
                 }

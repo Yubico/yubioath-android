@@ -62,6 +62,8 @@
     <string name="add_credential_account_empty">Account name must not be empty</string>
     <string name="add_credential_success">Credential added!</string>
     <string name="require_touch">Require touch</string>
+    <string name="add_credential_touch_version">Requires YubiKey 4 or later</string>
+    <string name="add_credential_algo_512">SHA-512 requires YubiKey 4.3.1 or later</string>
     <string name="period">Period</string>
     <string name="period_30">30</string>
     <string name="credential_type">Type</string>
