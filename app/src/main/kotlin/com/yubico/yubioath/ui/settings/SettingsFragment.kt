@@ -1,11 +1,15 @@
 package com.yubico.yubioath.ui.settings
 
 import android.arch.lifecycle.ViewModelProviders
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.support.v7.app.AlertDialog
 import android.support.v7.preference.Preference
 import android.support.v7.preference.PreferenceFragmentCompat
+import android.text.Html
+import android.text.method.LinkMovementMethod
 import android.view.WindowManager
+import android.widget.TextView
 import com.yubico.yubioath.R
 
 class SettingsFragment : PreferenceFragmentCompat() {
@@ -30,8 +34,17 @@ class SettingsFragment : PreferenceFragmentCompat() {
         }
 
         preferenceManager.findPreference("about").onPreferenceClickListener = Preference.OnPreferenceClickListener {
+            val version: String = activity.packageManager.getPackageInfo(activity.packageName, 0).versionName
 
-            TODO("About")
+            AlertDialog.Builder(context)
+                    .setTitle(R.string.about_title)
+                    .setMessage(Html.fromHtml(String.format(getString(R.string.about_text), version)))
+                    .create().apply {
+                show()
+                findViewById<TextView>(android.R.id.message)?.movementMethod = LinkMovementMethod.getInstance()
+            }
+
+            true
         }
     }
 }

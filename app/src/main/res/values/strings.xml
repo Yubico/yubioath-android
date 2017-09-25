@@ -108,10 +108,10 @@
     <string name="hide_thumbnail_description">Don\'t show codes in the app switcher</string>
     <string name="warn_nfc_title">NFC warnings</string>
     <string name="warn_nfc_description">Warn when NFC is disabled or missing</string>
-    <string name="clear_passwords_title">Clear stored passwords…</string>
-    <string name="about_title">About Yubico Authenticator…</string>
+    <string name="clear_passwords_action">Clear stored passwords…</string>
+    <string name="about_action">About Yubico Authenticator…</string>
+    <string name="about_title">About</string>
     <string name="about_text"><![CDATA[
-<p><b>About</b><br/>
 Yubico Authenticator for Android<br/>
 Version: %1$s</p>
 
