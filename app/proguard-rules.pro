@@ -28,6 +28,8 @@
 
 -dontwarn kotlin.**
 
-# These are only needed for Anko 0.9.0, and should be removed when Anko 0.9.1 is out.
--keep class org.jetbrains.anko.internals.** { *; }
--dontwarn org.jetbrains.anko.internals.**
+# We use reflection to change the icon of the SwipeRefreshLayout
+-keep  class android.support.v4.widget.SwipeRefreshLayout { *; }
+
+# Needed to set the OnQueryTextListener
+-keep class android.support.v7.widget.SearchView { *; }
