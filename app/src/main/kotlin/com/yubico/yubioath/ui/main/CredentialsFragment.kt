@@ -303,6 +303,9 @@ class CredentialsFragment : ListFragment() {
         val mode = actionMode ?: activity.startActionMode(object : ActionMode.Callback {
             override fun onActionItemClicked(mode: ActionMode, item: MenuItem): Boolean {
                 when (item.itemId) {
+                    R.id.pin -> {
+                        adapter.setPinned(credential, !adapter.isPinned(credential))
+                    }
                     R.id.delete -> viewModel.apply {
                         selectedItem?.let {
                             selectedItem = null
@@ -326,7 +329,10 @@ class CredentialsFragment : ListFragment() {
                 listView.setItemChecked(listView.checkedItemPosition, false)
                 viewModel.selectedItem = null
             }
-        }).apply { actionMode = this }
+        }).apply {
+            menu.findItem(R.id.pin).setIcon(if (adapter.isPinned(credential)) R.drawable.ic_star_24dp else R.drawable.ic_star_border_24dp)
+            actionMode = this
+        }
         mode.title = (credential.issuer?.let { it + ": " } ?: "") + credential.name
 
         listView.setItemChecked(position, true)

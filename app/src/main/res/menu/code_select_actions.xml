@@ -33,9 +33,17 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
+        android:id="@+id/pin"
+        android:icon="@drawable/ic_star_filled_24dp"
+        android:orderInCategory="100"
+        android:title="Star credential"
+        app:showAsAction="ifRoom" />
+
+    <item
         android:id="@+id/delete"
         android:icon="@drawable/ic_delete_forever_24dp"
-        android:orderInCategory="100"
+        android:orderInCategory="200"
         android:title="@string/delete_cred"
         app:showAsAction="always" />
+
 </menu>

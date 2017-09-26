@@ -99,7 +99,7 @@ class OathClient(backend: Backend, private val keyManager: KeyManager) : Closeab
             } else existingCode
 
             Pair(credential, code)
-        }.toMap().toSortedMap(compareBy<Credential> { it.issuer }.thenBy { it.name })
+        }.toMap().toMutableMap()
     }
 
     fun delete(credential: Credential) {

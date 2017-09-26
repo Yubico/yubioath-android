@@ -25,15 +25,23 @@ import kotlinx.coroutines.experimental.launch
 import org.jetbrains.anko.imageBitmap
 
 class CredentialAdapter(private val context: Context, private val actionHandler: ActionHandler, initialCreds: Map<Credential, Code?> = mapOf()) : BaseAdapter() {
+    companion object {
+        private const val CREDENTIAL_STORAGE = "CREDENTIAL_STORAGE"
+        private const val IS_PINNED = "IS_PINNED"
+    }
+
+    private val credentialStorage = context.getSharedPreferences(CREDENTIAL_STORAGE, Context.MODE_PRIVATE)
+
+
     private val colors = context.resources.obtainTypedArray(R.array.icon_colors).let {
         (0 until it.length()).map { i -> ColorStateList.valueOf(it.getColor(i, 0)) }
     }
 
-    private fun getColor(cred: Credential) = colors[Math.abs(cred.key.hashCode()) % colors.size]
-
     private val inflater = LayoutInflater.from(context)
     var creds: Map<Credential, Code?> = initialCreds
-        private set
+        private set(value) {
+            field = value.toSortedMap(compareBy<Credential> { if(isPinned(it)) 0 else 1 }.thenBy { it.issuer }.thenBy { it.name })
+        }
 
     private var notifyTimeout: Job? = null
 
@@ -41,6 +49,30 @@ class CredentialAdapter(private val context: Context, private val actionHandler:
         creds = credentials.filterKeys { it.key.contains(searchFilter, true) }
         notifyDataSetChanged()
         notifyNextTimeout(credentials)
+    }
+
+    private fun Code?.valid(): Boolean = this != null && validUntil > System.currentTimeMillis()
+    private fun Code?.canRefresh(): Boolean = this == null || validFrom + 5000 < System.currentTimeMillis()
+
+    private fun Credential.hasTimer(): Boolean = type == OathType.TOTP && period != 30
+
+    private val Credential.color: ColorStateList
+        get() = colors[Math.abs(key.hashCode()) % colors.size]
+
+    fun isPinned(credential: Credential): Boolean = credentialStorage.getBoolean("$IS_PINNED/${credential.deviceId}/${credential.key}", false)
+
+    fun setPinned(credential: Credential, value:Boolean) {
+        credentialStorage.edit().putBoolean("$IS_PINNED/${credential.deviceId}/${credential.key}", value).apply()
+        creds = creds  //Force re-sort
+        notifyDataSetChanged()
+    }
+
+    private fun Code?.formatValue(): String = when (this?.value?.length) {
+        null -> context.getString(R.string.press_for_code)
+        8 -> value.slice(0..3) + " " + value.slice(4..7) //1234 5678
+        7 -> value.slice(0..3) + " " + value.slice(4..6) //1234 567
+        6 -> value.slice(0..2) + " " + value.slice(3..5) //123 456
+        else -> value
     }
 
     private suspend fun notifyNextTimeout(credentials: Map<Credential, Code?>) {
@@ -64,19 +96,6 @@ class CredentialAdapter(private val context: Context, private val actionHandler:
 
     fun getPosition(credential: Credential): Int = creds.keys.indexOf(credential)
 
-    private fun Code?.valid(): Boolean = this != null && validUntil > System.currentTimeMillis()
-    private fun Code?.canRefresh(): Boolean = this == null || validFrom + 5000 < System.currentTimeMillis()
-
-    private fun Credential.hasTimer(): Boolean = type == OathType.TOTP && period != 30
-
-    private fun Code?.formatValue(): String = when (this?.value?.length) {
-        null -> context.getString(R.string.press_for_code)
-        8 -> value.slice(0..3) + " " + value.slice(4..7) //1234 5678
-        7 -> value.slice(0..3) + " " + value.slice(4..6) //1234 567
-        6 -> value.slice(0..2) + " " + value.slice(3..5) //123 456
-        else -> value
-    }
-
     override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View? {
         return (convertView ?: inflater.inflate(R.layout.view_credential, parent, false).apply {
             (this as ViewGroup).descendantFocusability = ViewGroup.FOCUS_BLOCK_DESCENDANTS
@@ -98,13 +117,15 @@ class CredentialAdapter(private val context: Context, private val actionHandler:
                     Canvas(this).drawText(letter, 24f, -paint.ascent(), paint)
                 }
 
-                fab.backgroundTintList = getColor(credential)
+                fab.backgroundTintList = credential.color
                 issuerView.run {
                     visibility = if (credential.issuer != null) {
                         text = credential.name
                         View.VISIBLE
                     } else View.GONE
                 }
+
+                pin_icon.visibility = if (isPinned(credential)) View.VISIBLE else View.GONE
 
                 if (credential.issuer != null) {
                     issuerView.text = credential.issuer
