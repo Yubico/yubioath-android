@@ -42,6 +42,8 @@ class CredentialsFragment : ListFragment() {
 
     private val viewModel: OathViewModel by lazy { ViewModelProviders.of(activity).get(OathViewModel::class.java) }
     private val timerAnimation = object : Animation() {
+        var deadline: Long = 0
+
         init {
             duration = 30000
             interpolator = LinearInterpolator()
@@ -245,24 +247,28 @@ class CredentialsFragment : ListFragment() {
 
     private fun updateProgressBar() {
         progressBar?.apply {
-            val now = System.currentTimeMillis()
             val validFrom = adapter.creds.filterKeys { it.type == OathType.TOTP && it.period == 30 && !it.touch }.values.firstOrNull()?.validFrom
             if (validFrom != null) {
                 val validTo = validFrom + 30000
-                startAnimation(timerAnimation.apply {
-                    duration = validTo - Math.min(now, validFrom)
-                    startOffset = Math.min(0, validFrom - now)
-                })
+                if(!timerAnimation.hasStarted() || timerAnimation.deadline != validTo) {
+                    val now = System.currentTimeMillis()
+                    startAnimation(timerAnimation.apply {
+                        deadline = validTo
+                        duration = validTo - Math.min(now, validFrom)
+                        startOffset = Math.min(0, validFrom - now)
+                    })
+                }
             } else {
                 clearAnimation()
                 progress = 0
+                timerAnimation.deadline = 0
             }
         }
     }
 
     private fun snackbar(@StringRes message: Int, duration: Int): Snackbar {
         return Snackbar.make(view!!, message, duration).apply {
-            setActionTextColor(ContextCompat.getColor(context, R.color.yubicoPrimaryGreen))
+            setActionTextColor(ContextCompat.getColor(context, R.color.yubicoPrimaryGreen)) //This doesn't seem to be directly styleable, unfortunately.
             addCallback(object : Snackbar.Callback() {
                 override fun onDismissed(transientBottomBar: Snackbar?, event: Int) {
                     if (!fab.isShown && !toolbar_add.isShown) fab.show()

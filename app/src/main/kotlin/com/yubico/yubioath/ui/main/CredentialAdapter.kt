@@ -144,12 +144,13 @@ class CredentialAdapter(private val context: Context, private val actionHandler:
                 readButton.visibility = if (credential.type == OathType.HOTP && code.canRefresh() || credential.touch && !code.valid()) View.VISIBLE else View.GONE
                 copyButton.visibility = if (code != null) View.VISIBLE else View.GONE
 
-                timeoutBar.run {
+                timeoutBar.apply {
                     if (credential.hasTimer()) {
                         visibility = View.VISIBLE
                         if (code != null && code.valid()) {
-                            if (animation == null || animation.hasEnded()) {
+                            if (animation == null || animation.hasEnded() || timeoutAt != code.validUntil) {
                                 val now = System.currentTimeMillis()
+                                timeoutAt = code.validUntil
                                 startAnimation(timeoutAnimation.apply {
                                     duration = code.validUntil - Math.min(now, code.validFrom)
                                     startOffset = Math.min(0, code.validFrom - now)
@@ -165,10 +166,12 @@ class CredentialAdapter(private val context: Context, private val actionHandler:
                         } else {
                             clearAnimation()
                             progress = 0
+                            timeoutAt = 0
                         }
                     } else {
                         clearAnimation()
                         visibility = View.GONE
+                        timeoutAt = 0
                     }
                 }
             }
@@ -198,6 +201,7 @@ class CredentialAdapter(private val context: Context, private val actionHandler:
                 timeoutBar.progress = ((1.0 - interpolatedTime) * 1000).toInt()
             }
         }
+        var timeoutAt: Long = 0
     }
 
     interface ActionHandler {
