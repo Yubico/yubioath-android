@@ -1,3 +1,9 @@
+* Version 2.0.0-alpha1 released 2017-09-26
+ ** First alpha release of redesigned UI.
+ ** Support for 7 digit credentials.
+ ** Support for non-standard time periods.
+ ** Credential pinning and filtering.
+
 * Version 1.2.1 released 2017-05-05
  ** Better handling of errors.
  ** No longer require NFC to be enabled when available.
