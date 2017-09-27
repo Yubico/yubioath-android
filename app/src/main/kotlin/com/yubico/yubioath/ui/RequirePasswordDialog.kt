@@ -36,7 +36,7 @@ import android.os.Bundle
 import android.support.v4.app.DialogFragment
 import com.yubico.yubioath.R
 import com.yubico.yubioath.client.KeyManager
-import kotlinx.android.synthetic.main.require_password_dialog.view.*
+import kotlinx.android.synthetic.main.dialog_require_password.view.*
 
 class RequirePasswordDialog : DialogFragment() {
     companion object {
@@ -67,7 +67,7 @@ class RequirePasswordDialog : DialogFragment() {
         val salt = arguments.getByteArray(DEVICE_SALT)
         val missing = arguments.getBoolean(MISSING)
 
-        activity.layoutInflater.inflate(R.layout.require_password_dialog, null).let {
+        activity.layoutInflater.inflate(R.layout.dialog_require_password, null).let {
             return AlertDialog.Builder(activity)
                     .setTitle(if (missing) R.string.password_required else R.string.password_wrong)
                     .setView(it)
