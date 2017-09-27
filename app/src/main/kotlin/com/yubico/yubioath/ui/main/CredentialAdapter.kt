@@ -40,7 +40,11 @@ class CredentialAdapter(private val context: Context, private val actionHandler:
     private val inflater = LayoutInflater.from(context)
     var creds: Map<Credential, Code?> = initialCreds
         private set(value) {
-            field = value.toSortedMap(compareBy<Credential> { if(isPinned(it)) 0 else 1 }.thenBy { it.issuer }.thenBy { it.name })
+            field = value.toSortedMap(
+                    compareBy<Credential> { if (isPinned(it)) 0 else 1 }
+                            .thenBy { it.issuer?.toLowerCase() ?: it.name.toLowerCase() }
+                            .thenBy { it.name.toLowerCase() }
+            )
         }
 
     private var notifyTimeout: Job? = null
@@ -61,7 +65,7 @@ class CredentialAdapter(private val context: Context, private val actionHandler:
 
     fun isPinned(credential: Credential): Boolean = credentialStorage.getBoolean("$IS_PINNED/${credential.deviceId}/${credential.key}", false)
 
-    fun setPinned(credential: Credential, value:Boolean) {
+    fun setPinned(credential: Credential, value: Boolean) {
         credentialStorage.edit().putBoolean("$IS_PINNED/${credential.deviceId}/${credential.key}", value).apply()
         creds = creds  //Force re-sort
         notifyDataSetChanged()
