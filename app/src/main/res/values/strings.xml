@@ -49,6 +49,7 @@
     <string name="add_account_scan">Scan QR-code</string>
     <string name="add_account_manual">Manual entry</string>
     <string name="invalid_barcode">The scanned barcode is invalid</string>
+    <string name="invalid_image">Error loading image</string>
     <string name="read_hotp">Read a HOTP code</string>
     <string name="search">Search</string>
     <string name="delete_cred">Delete credential</string>

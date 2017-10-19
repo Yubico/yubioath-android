@@ -11,11 +11,13 @@ import android.database.DataSetObserver
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.provider.MediaStore
 import android.support.annotation.RequiresApi
 import android.support.annotation.StringRes
 import android.support.design.widget.Snackbar
 import android.support.v4.app.ListFragment
 import android.support.v4.content.ContextCompat
+import android.util.Log
 import android.view.*
 import android.view.animation.*
 import android.widget.AdapterView
@@ -34,10 +36,12 @@ import kotlinx.coroutines.experimental.delay
 import kotlinx.coroutines.experimental.launch
 import org.jetbrains.anko.clipboardManager
 import org.jetbrains.anko.toast
+import java.io.IOException
 
 class CredentialsFragment : ListFragment() {
     companion object {
-        const private val REQEUST_ADD_CREDENTIAL = 1
+        const private val REQUEST_ADD_CREDENTIAL = 1
+        const private val REQUEST_SELECT_ICON = 2
     }
 
     private val viewModel: OathViewModel by lazy { ViewModelProviders.of(activity).get(OathViewModel::class.java) }
@@ -57,6 +61,8 @@ class CredentialsFragment : ListFragment() {
     private var actionMode: ActionMode? = null
 
     private val adapter: CredentialAdapter by lazy { listAdapter as CredentialAdapter }
+
+    private val iconProvider: IconProvider by lazy { IconProvider(context) }
 
     override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return inflater?.inflate(R.layout.fragment_credentials, container, false)
@@ -127,7 +133,7 @@ class CredentialsFragment : ListFragment() {
         }
         btn_manual_entry.setOnClickListener {
             hideAddToolbar()
-            startActivityForResult(Intent(context, AddCredentialActivity::class.java), REQEUST_ADD_CREDENTIAL)
+            startActivityForResult(Intent(context, AddCredentialActivity::class.java), REQUEST_ADD_CREDENTIAL)
         }
 
         fixSwipeClearDrawable()
@@ -164,17 +170,33 @@ class CredentialsFragment : ListFragment() {
                 val uri = Uri.parse(it)
                 try {
                     CredentialData.from_uri(uri)
-                    startActivityForResult(Intent(Intent.ACTION_VIEW, uri, context, AddCredentialActivity::class.java), REQEUST_ADD_CREDENTIAL)
+                    startActivityForResult(Intent(Intent.ACTION_VIEW, uri, context, AddCredentialActivity::class.java), REQUEST_ADD_CREDENTIAL)
                 } catch (e: IllegalArgumentException) {
                     activity.toast(R.string.invalid_barcode)
                 }
             }
         } else when (requestCode) {
-            REQEUST_ADD_CREDENTIAL -> if (resultCode == Activity.RESULT_OK && data != null) {
+            REQUEST_ADD_CREDENTIAL -> if (resultCode == Activity.RESULT_OK && data != null) {
                 activity.toast(R.string.add_credential_success)
                 val credential: Credential = data.getParcelableExtra(AddCredentialActivity.EXTRA_CREDENTIAL)
                 val code: Code? = if (data.hasExtra(AddCredentialActivity.EXTRA_CODE)) data.getParcelableExtra(AddCredentialActivity.EXTRA_CODE) else null
                 viewModel.insertCredential(credential, code)
+            }
+            REQUEST_SELECT_ICON -> {
+                if(resultCode == Activity.RESULT_OK && data != null) {
+                    viewModel.selectedItem?.let { credential ->
+                        try {
+                            iconProvider.setIcon(credential.key, MediaStore.Images.Media.getBitmap(activity.contentResolver, data.data))
+                        } catch (e: IOException) {
+                            activity.toast(R.string.invalid_image)
+                        }
+                    }
+                } else {
+                    viewModel.selectedItem?.let { credential ->
+                        iconProvider.removeIcon(credential.key)
+                    }
+                }
+                actionMode?.finish()
             }
             else -> super.onActivityResult(requestCode, resultCode, data)
         }
@@ -311,6 +333,13 @@ class CredentialsFragment : ListFragment() {
                 when (item.itemId) {
                     R.id.pin -> {
                         adapter.setPinned(credential, !adapter.isPinned(credential))
+                    }
+                    R.id.change_icon -> {
+                        startActivityForResult(Intent.createChooser(Intent().apply {
+                            type = "image/*"
+                            action = Intent.ACTION_GET_CONTENT
+                        }, "Select icon"), REQUEST_SELECT_ICON)
+                        return true
                     }
                     R.id.delete -> viewModel.apply {
                         selectedItem?.let {

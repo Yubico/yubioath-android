@@ -40,6 +40,13 @@
         app:showAsAction="ifRoom" />
 
     <item
+        android:id="@+id/change_icon"
+        android:icon="@drawable/ic_image_24dp"
+        android:orderInCategory="100"
+        android:title="Change icon"
+        app:showAsAction="ifRoom" />
+
+    <item
         android:id="@+id/delete"
         android:icon="@drawable/ic_delete_forever_24dp"
         android:orderInCategory="200"

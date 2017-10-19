@@ -1,11 +1,6 @@
 package com.yubico.yubioath.ui.main
 
 import android.content.Context
-import android.content.res.ColorStateList
-import android.graphics.Bitmap
-import android.graphics.Canvas
-import android.graphics.Paint
-import android.support.v4.content.ContextCompat
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -32,11 +27,7 @@ class CredentialAdapter(private val context: Context, private val actionHandler:
 
     private val credentialStorage = context.getSharedPreferences(CREDENTIAL_STORAGE, Context.MODE_PRIVATE)
 
-
-    private val colors = context.resources.obtainTypedArray(R.array.icon_colors).let {
-        (0 until it.length()).map { i -> ColorStateList.valueOf(it.getColor(i, 0)) }
-    }
-
+    private val iconProvider = IconProvider(context)
     private val inflater = LayoutInflater.from(context)
     var creds: Map<Credential, Code?> = initialCreds
         private set(value) {
@@ -59,9 +50,6 @@ class CredentialAdapter(private val context: Context, private val actionHandler:
     private fun Code?.canRefresh(): Boolean = this == null || validFrom + 5000 < System.currentTimeMillis()
 
     private fun Credential.hasTimer(): Boolean = type == OathType.TOTP && period != 30
-
-    private val Credential.color: ColorStateList
-        get() = colors[Math.abs(key.hashCode()) % colors.size]
 
     fun isPinned(credential: Credential): Boolean = credentialStorage.getBoolean("$IS_PINNED/${credential.deviceId}/${credential.key}", false)
 
@@ -111,17 +99,8 @@ class CredentialAdapter(private val context: Context, private val actionHandler:
                 return null
             }
             with(tag as CodeAdapterViewHolder) {
-                fab.imageBitmap = Bitmap.createBitmap(48, 48, Bitmap.Config.ARGB_8888).apply {
-                    val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-                        textSize = 40f
-                        textAlign = Paint.Align.CENTER
-                        color = ContextCompat.getColor(context, android.R.color.primary_text_dark)
-                    }
-                    val letter = (if (credential.issuer.isNullOrEmpty()) credential.name else credential.issuer!!).substring(0, 1).toUpperCase()
-                    Canvas(this).drawText(letter, 24f, -paint.ascent(), paint)
-                }
+                icon.imageBitmap = iconProvider.getIcon(credential)
 
-                fab.backgroundTintList = credential.color
                 issuerView.run {
                     visibility = if (credential.issuer != null) {
                         text = credential.name
@@ -142,7 +121,7 @@ class CredentialAdapter(private val context: Context, private val actionHandler:
                 codeView.text = code.formatValue()
                 codeView.isEnabled = code.valid()
 
-                fab.setOnClickListener { actionHandler.select(position) }
+                icon.setOnClickListener { actionHandler.select(position) }
                 readButton.setOnClickListener { actionHandler.calculate(credential) }
                 copyButton.setOnClickListener { code?.let { actionHandler.copy(it) } }
                 readButton.visibility = if (credential.type == OathType.HOTP && code.canRefresh() || credential.touch && !code.valid()) View.VISIBLE else View.GONE
@@ -189,7 +168,7 @@ class CredentialAdapter(private val context: Context, private val actionHandler:
     override fun getCount(): Int = creds.size
 
     private class CodeAdapterViewHolder(view: View) {
-        val fab = view.credential_fab!!
+        val icon = view.credential_icon!!
         val issuerView = view.issuer!!
         val labelView = view.label!!
         val codeView = view.code!!
