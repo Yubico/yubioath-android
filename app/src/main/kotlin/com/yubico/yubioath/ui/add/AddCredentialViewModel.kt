@@ -15,7 +15,7 @@ class AddCredentialViewModel : BaseViewModel() {
     fun handleScanResults(qrUri: Uri) {
         if (qrUri != handledUri) {
             handledUri = qrUri
-            data = CredentialData.from_uri(qrUri)
+            data = CredentialData.fromUri(qrUri)
         }
     }
 

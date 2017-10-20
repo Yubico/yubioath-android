@@ -9,6 +9,7 @@ import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import com.yubico.yubioath.R
+import com.yubico.yubioath.exc.DuplicateKeyException
 import com.yubico.yubioath.ui.BaseActivity
 import kotlinx.coroutines.experimental.CancellationException
 import kotlinx.coroutines.experimental.android.UI
@@ -77,7 +78,9 @@ class AddCredentialActivity : BaseActivity<AddCredentialViewModel>(AddCredential
                                 }
                             })
                             finish()
-                        } catch(e: CancellationException) {
+                        } catch (e: CancellationException) {
+                        } catch (e: DuplicateKeyException) {
+                            markDuplicateName()
                         } catch (e: Exception) {
                             Log.e("yubioath", "exception", e)
                             validateVersion(data, viewModel.lastDeviceInfo.version)

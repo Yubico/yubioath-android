@@ -116,6 +116,7 @@ class AddCredentialFragment : Fragment() {
             activity.inputMethodManager.hideSoftInputFromWindow(it.applicationWindowToken, 0)
         }
 
+        credential_account_wrapper.error = null
         credential_touch_wrapper.error = null
         credential_algo_wrapper.error = null
 
@@ -167,5 +168,9 @@ class AddCredentialFragment : Fragment() {
         if (data.algorithm == Algorithm.SHA512 && version.compare(4, 3, 1) < 0) {
             credential_algo_wrapper.error = "  " + getString(R.string.add_credential_algo_512)
         }
+    }
+
+    fun markDuplicateName() {
+        credential_account_wrapper.error = "Credential with this issuer and name already exists!"
     }
 }

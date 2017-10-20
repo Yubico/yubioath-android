@@ -1,5 +1,6 @@
 package com.yubico.yubioath.client
 
+import com.yubico.yubioath.exc.DuplicateKeyException
 import com.yubico.yubioath.exc.PasswordRequiredException
 import com.yubico.yubioath.protocol.ChallengeSigner
 import com.yubico.yubioath.protocol.CredentialData
@@ -114,6 +115,9 @@ class OathClient(backend: Backend, private val keyManager: KeyManager) : Closeab
             }
             if (oathType == OathType.TOTP && period != 30) {
                 name = "$period/$name"
+            }
+            if (api.listCredentials().contains(name)) {
+                throw DuplicateKeyException()
             }
             api.putCode(name, secret, oathType, algorithm, digits, counter, touch)
             return Credential(deviceInfo.id, name, oathType, touch)

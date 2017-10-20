@@ -6,7 +6,7 @@ import org.apache.commons.codec.binary.Base32
 
 data class CredentialData(val secret: ByteArray, var issuer: String?, var name: String, val oathType: OathType, val algorithm: Algorithm = Algorithm.SHA1, val digits: Byte = 6, val period: Int = 30, val counter: Int = 0, var touch: Boolean = false) {
     companion object {
-        fun from_uri(uri: Uri): CredentialData {
+        fun fromUri(uri: Uri): CredentialData {
             val scheme = uri.scheme
             if (!uri.isHierarchical || scheme == null || scheme != "otpauth") {
                 throw IllegalArgumentException("Uri scheme must be otpauth://")

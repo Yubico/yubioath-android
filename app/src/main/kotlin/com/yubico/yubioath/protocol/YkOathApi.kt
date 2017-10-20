@@ -55,7 +55,6 @@ constructor(private var backend: Backend) : Closeable {
         }
     }
 
-    @Throws(IOException::class)
     fun unlock(signer: ChallengeSigner): Boolean {
         val response = signer.sign(challenge)
         val myChallenge = ByteArray(8)
@@ -74,7 +73,6 @@ constructor(private var backend: Backend) : Closeable {
         }
     }
 
-    @Throws(IOException::class)
     fun setLockCode(secret: ByteArray) {
         val challenge = ByteArray(8)
         val random = SecureRandom()
@@ -91,13 +89,22 @@ constructor(private var backend: Backend) : Closeable {
         deviceInfo.hasPassword = true
     }
 
-    @Throws(IOException::class)
     fun unsetLockCode() {
         send(SET_CODE_INS) { tlv(KEY_TAG) }
         deviceInfo.hasPassword = false
     }
 
-    @Throws(IOException::class)
+    fun listCredentials(): List<String> {
+        val resp = send(LIST_INS)
+
+        return mutableListOf<String>().apply {
+            while (resp.hasRemaining()) {
+                val nameBytes = resp.parseTlv(NAME_LIST_TAG)
+                add(String(nameBytes, 1, nameBytes.size - 1)) //First byte is algorithm
+            }
+        }
+    }
+
     fun putCode(name: String, key: ByteArray, type: OathType, algorithm: Algorithm, digits: Byte, imf: Int, touch: Boolean) {
         if (touch && deviceInfo.version.major < 4) {
             throw IllegalArgumentException("Require touch requires YubiKey 4")
@@ -115,12 +122,10 @@ constructor(private var backend: Backend) : Closeable {
         }
     }
 
-    @Throws(IOException::class)
     fun deleteCode(name: String) {
         send(DELETE_INS) { tlv(NAME_TAG, name.toByteArray()) }
     }
 
-    @Throws(IOException::class)
     fun calculate(name: String, challenge: ByteArray, truncate: Boolean = true): ByteArray {
         val resp = send(CALCULATE_INS, p2 = if (truncate) 1 else 0) {
             tlv(NAME_TAG, name.toByteArray())
@@ -129,7 +134,6 @@ constructor(private var backend: Backend) : Closeable {
         return resp.parseTlv(resp.slice().get())
     }
 
-    @Throws(IOException::class)
     fun calculateAll(challenge: ByteArray): List<ResponseData> {
         val resp = send(CALCULATE_ALL_INS, p2 = 1) {
             tlv(CHALLENGE_TAG, challenge)
@@ -148,7 +152,6 @@ constructor(private var backend: Backend) : Closeable {
         }
     }
 
-    @Throws(IOException::class)
     private fun send(ins: Byte, p1: Byte = 0, p2: Byte = 0, data: ByteBuffer.() -> Unit = {}): ByteBuffer {
         val apdu = ByteBuffer.allocate(256).put(0).put(ins).put(p1).put(p2).put(0).apply(data).let {
             it.put(4, (it.position() - 5).toByte()).array().copyOfRange(0, it.position())
@@ -168,7 +171,6 @@ constructor(private var backend: Backend) : Closeable {
         }
     }
 
-    @Throws(IOException::class)
     override fun close() {
         backend.close()
         backend = object : Backend {

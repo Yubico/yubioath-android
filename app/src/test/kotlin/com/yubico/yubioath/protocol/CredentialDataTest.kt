@@ -48,7 +48,7 @@ class CredentialDataTest {
         val failingUris = listOf("http://example.com/", "otpauth://foobar?secret=kaka", "foobar", "otpauth://totp/Example:alice@google.com?secret=balhonga1&issuer=Example", "otpauth:///foo:mallory@example.com?secret=kaka")
         for (uri in failingUris) {
             try {
-                CredentialData.from_uri(Uri.parse(uri))
+                CredentialData.fromUri(Uri.parse(uri))
                 fail("URL $uri did not fail")
             } catch (e: IllegalArgumentException) {
                 // Should fail.
@@ -62,7 +62,7 @@ class CredentialDataTest {
         val goodUris = listOf("otpauth://totp/Example:alice@google.com?secret=JBSWY3DPEHPK3PXP&issuer=Example", "otpauth://hotp/foobar:bob@example.com?secret=blahonga2")
         for (uri in goodUris) {
             try {
-                CredentialData.from_uri(Uri.parse(uri))
+                CredentialData.fromUri(Uri.parse(uri))
             } catch (e: IllegalArgumentException) {
                 System.err.println("Failed at uri: " + uri)
                 throw e
@@ -72,13 +72,13 @@ class CredentialDataTest {
 
     @Test
     fun testParseIssuer() {
-        val noIssuer = CredentialData.from_uri(Uri.parse("otpauth://totp/account?secret=abba"))
+        val noIssuer = CredentialData.fromUri(Uri.parse("otpauth://totp/account?secret=abba"))
         Assert.assertNull(noIssuer.issuer)
-        val usingParam = CredentialData.from_uri(Uri.parse("otpauth://totp/account?secret=abba&issuer=Issuer"))
+        val usingParam = CredentialData.fromUri(Uri.parse("otpauth://totp/account?secret=abba&issuer=Issuer"))
         Assert.assertEquals(usingParam.issuer, "Issuer")
-        val usingSeparator = CredentialData.from_uri(Uri.parse("otpauth://totp/Issuer:account?secret=abba"))
+        val usingSeparator = CredentialData.fromUri(Uri.parse("otpauth://totp/Issuer:account?secret=abba"))
         Assert.assertEquals(usingSeparator.issuer, "Issuer")
-        val usingBoth = CredentialData.from_uri(Uri.parse("otpauth://totp/IssuerA:account?secret=abba&issuer=IssuerB"))
+        val usingBoth = CredentialData.fromUri(Uri.parse("otpauth://totp/IssuerA:account?secret=abba&issuer=IssuerB"))
         Assert.assertEquals(usingBoth.issuer, "IssuerA")
     }
 }

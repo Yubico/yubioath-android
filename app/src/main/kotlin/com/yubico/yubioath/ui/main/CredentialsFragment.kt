@@ -167,7 +167,7 @@ class CredentialsFragment : ListFragment() {
             qrActivityResult.contents?.let {
                 val uri = Uri.parse(it)
                 try {
-                    CredentialData.from_uri(uri)
+                    CredentialData.fromUri(uri)
                     startActivityForResult(Intent(Intent.ACTION_VIEW, uri, context, AddCredentialActivity::class.java), REQUEST_ADD_CREDENTIAL)
                 } catch (e: IllegalArgumentException) {
                     activity.toast(R.string.invalid_barcode)
