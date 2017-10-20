@@ -11,7 +11,7 @@ import com.yubico.yubioath.R
 import com.yubico.yubioath.client.Credential
 import java.io.ByteArrayOutputStream
 
-class IconProvider(private val context:Context) {
+class IconManager(context:Context) {
     companion object {
         private const val ICON_STORAGE = "ICON_STORAGE"
         private const val SIZE = 128
@@ -30,20 +30,22 @@ class IconProvider(private val context:Context) {
         color = ContextCompat.getColor(context, android.R.color.primary_text_dark)
     }
 
-    fun setIcon(key: String, icon: Bitmap) {
+    fun setIcon(credential: Credential, icon: Bitmap) {
         val baos = ByteArrayOutputStream()
         Bitmap.createScaledBitmap(icon, SIZE, SIZE, true).compress(Bitmap.CompressFormat.PNG, 100, baos)
         val bytes = baos.toByteArray()
-        iconStorage.edit().putString(key, Base64.encodeToString(bytes, Base64.DEFAULT)).apply()
+        iconStorage.edit().putString(credential.key, Base64.encodeToString(bytes, Base64.DEFAULT)).apply()
     }
 
-    fun removeIcon(key: String) {
-        iconStorage.edit().remove(key).apply()
+    fun removeIcon(credential: Credential) {
+        iconStorage.edit().remove(credential.key).apply()
     }
 
     fun clearIcons() {
         iconStorage.edit().clear().apply()
     }
+
+    fun hasIcon(credential: Credential) = iconStorage.contains(credential.key)
 
     fun getIcon(credential: Credential): Bitmap {
         return iconStorage.getString(credential.key, null)?.let {

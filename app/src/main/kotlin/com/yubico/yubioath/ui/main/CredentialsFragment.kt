@@ -62,8 +62,6 @@ class CredentialsFragment : ListFragment() {
 
     private val adapter: CredentialAdapter by lazy { listAdapter as CredentialAdapter }
 
-    private val iconProvider: IconProvider by lazy { IconProvider(context) }
-
     override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return inflater?.inflate(R.layout.fragment_credentials, container, false)
     }
@@ -186,14 +184,10 @@ class CredentialsFragment : ListFragment() {
                 if(resultCode == Activity.RESULT_OK && data != null) {
                     viewModel.selectedItem?.let { credential ->
                         try {
-                            iconProvider.setIcon(credential.key, MediaStore.Images.Media.getBitmap(activity.contentResolver, data.data))
+                            adapter.setIcon(credential, MediaStore.Images.Media.getBitmap(activity.contentResolver, data.data))
                         } catch (e: IOException) {
                             activity.toast(R.string.invalid_image)
                         }
-                    }
-                } else {
-                    viewModel.selectedItem?.let { credential ->
-                        iconProvider.removeIcon(credential.key)
                     }
                 }
                 actionMode?.finish()
@@ -328,7 +322,7 @@ class CredentialsFragment : ListFragment() {
             viewModel.selectedItem = credential
         }
 
-        val mode = actionMode ?: activity.startActionMode(object : ActionMode.Callback {
+        (actionMode ?: activity.startActionMode(object : ActionMode.Callback {
             override fun onActionItemClicked(mode: ActionMode, item: MenuItem): Boolean {
                 when (item.itemId) {
                     R.id.pin -> {
@@ -336,10 +330,15 @@ class CredentialsFragment : ListFragment() {
                         actionMode?.finish()
                     }
                     R.id.change_icon -> {
-                        startActivityForResult(Intent.createChooser(Intent().apply {
-                            type = "image/*"
-                            action = Intent.ACTION_GET_CONTENT
-                        }, "Select icon"), REQUEST_SELECT_ICON)
+                        if (adapter.hasIcon(credential)) {
+                            adapter.removeIcon(credential)
+                            actionMode?.finish()
+                        } else {
+                            startActivityForResult(Intent.createChooser(Intent().apply {
+                                type = "image/*"
+                                action = Intent.ACTION_GET_CONTENT
+                            }, "Select icon"), REQUEST_SELECT_ICON)
+                        }
                     }
                     R.id.delete -> viewModel.apply {
                         selectedItem?.let {
@@ -372,10 +371,12 @@ class CredentialsFragment : ListFragment() {
                 viewModel.selectedItem = null
             }
         }).apply {
-            menu.findItem(R.id.pin).setIcon(if (adapter.isPinned(credential)) R.drawable.ic_star_24dp else R.drawable.ic_star_border_24dp)
             actionMode = this
+        }).apply {
+            menu.findItem(R.id.pin).setIcon(if (adapter.isPinned(credential)) R.drawable.ic_star_24dp else R.drawable.ic_star_border_24dp)
+            menu.findItem(R.id.change_icon).setIcon(if (adapter.hasIcon(credential)) R.drawable.ic_image_delete_24dp else R.drawable.ic_image_24dp)
+            title = (credential.issuer?.let { it + ": " } ?: "") + credential.name
         }
-        mode.title = (credential.issuer?.let { it + ": " } ?: "") + credential.name
 
         listView.setItemChecked(position, true)
     }

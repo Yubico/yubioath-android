@@ -22,10 +22,20 @@ class SettingsFragment : PreferenceFragmentCompat() {
             true
         }
 
+        preferenceManager.findPreference("clearIcons").onPreferenceClickListener = Preference.OnPreferenceClickListener {
+            AlertDialog.Builder(context)
+                    .setTitle(R.string.clear_icons)
+                    .setMessage(R.string.clear_icons_message)
+                    .setPositiveButton(R.string.clear) { _, _ -> viewModel.clearIcons() }
+                    .setNegativeButton(R.string.cancel, null)
+                    .show()
+            true
+        }
+
         preferenceManager.findPreference("clearPasswords").onPreferenceClickListener = Preference.OnPreferenceClickListener {
             AlertDialog.Builder(context)
-                    .setTitle(R.string.clear_data)
-                    .setMessage(R.string.clear_data_message)
+                    .setTitle(R.string.clear_passwords)
+                    .setMessage(R.string.clear_passwords_message)
                     .setPositiveButton(R.string.clear) { _, _ -> viewModel.clearStoredPasswords() }
                     .setNegativeButton(R.string.cancel, null)
                     .show()
