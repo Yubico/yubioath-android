@@ -52,7 +52,9 @@
     <string name="invalid_image">Error loading image</string>
     <string name="read_hotp">Read a HOTP code</string>
     <string name="search">Search</string>
+    <string name="delete">Delete</string>
     <string name="delete_cred">Delete credential</string>
+    <string name="delete_cred_message">This will delete the credential from your YubiKey. This action cannot be undone.</string>
     <string name="deleted">Credential deleted!</string>
 
     <!-- Add credential -->

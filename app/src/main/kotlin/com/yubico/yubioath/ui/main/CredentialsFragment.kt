@@ -17,7 +17,7 @@ import android.support.annotation.StringRes
 import android.support.design.widget.Snackbar
 import android.support.v4.app.ListFragment
 import android.support.v4.content.ContextCompat
-import android.util.Log
+import android.support.v7.app.AlertDialog
 import android.view.*
 import android.view.animation.*
 import android.widget.AdapterView
@@ -333,22 +333,29 @@ class CredentialsFragment : ListFragment() {
                 when (item.itemId) {
                     R.id.pin -> {
                         adapter.setPinned(credential, !adapter.isPinned(credential))
+                        actionMode?.finish()
                     }
                     R.id.change_icon -> {
                         startActivityForResult(Intent.createChooser(Intent().apply {
                             type = "image/*"
                             action = Intent.ACTION_GET_CONTENT
                         }, "Select icon"), REQUEST_SELECT_ICON)
-                        return true
                     }
                     R.id.delete -> viewModel.apply {
                         selectedItem?.let {
-                            selectedItem = null
-                            jobWithClient(viewModel.delete(it), R.string.deleted, false)
+                            AlertDialog.Builder(context)
+                                    .setTitle(R.string.delete_cred)
+                                    .setMessage(R.string.delete_cred_message)
+                                    .setPositiveButton(R.string.delete) { _, _ ->
+                                        selectedItem = null
+                                        jobWithClient(viewModel.delete(it), R.string.deleted, false)
+                                        actionMode?.finish()
+                                    }
+                                    .setNegativeButton(R.string.cancel, null)
+                                    .show()
                         }
                     }
                 }
-                actionMode?.finish()
                 return true
             }
 
