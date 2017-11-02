@@ -108,4 +108,9 @@
         <item>#37474F</item>
         <item>#263238</item>
     </array>
+
+    <string-array name="icon_choices">
+        <item>Select an image…</item>
+        <item>Use default icon</item>
+    </string-array>
 </resources>

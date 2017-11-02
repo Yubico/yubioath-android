@@ -38,6 +38,7 @@ dependencies {
     compile 'commons-codec:commons-codec:1.6'
     compile group: 'com.fidesmo', name: 'nordpol-android', version: '0.1.21', ext: 'aar', transitive: true
     compile 'com.journeyapps:zxing-android-embedded:3.4.0'
+    compile 'com.pixplicity.sharp:library:1.1.0'
 
     compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
     compile 'org.jetbrains.kotlinx:kotlinx-coroutines-core:0.17'

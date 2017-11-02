@@ -23,6 +23,7 @@ import android.view.animation.*
 import android.widget.AdapterView
 import android.widget.ImageView
 import com.google.zxing.integration.android.IntentIntegrator
+import com.pixplicity.sharp.Sharp
 import com.yubico.yubioath.R
 import com.yubico.yubioath.client.Code
 import com.yubico.yubioath.client.Credential
@@ -191,11 +192,17 @@ class CredentialsFragment : ListFragment() {
                 viewModel.insertCredential(credential, code)
             }
             REQUEST_SELECT_ICON -> {
-                if(resultCode == Activity.RESULT_OK && data != null) {
+                if (resultCode == Activity.RESULT_OK && data != null) {
                     viewModel.selectedItem?.let { credential ->
                         try {
-                            adapter.setIcon(credential, MediaStore.Images.Media.getBitmap(activity.contentResolver, data.data))
-                        } catch (e: IOException) {
+                            try {
+                                val icon = MediaStore.Images.Media.getBitmap(activity.contentResolver, data.data)
+                                adapter.setIcon(credential, icon)
+                            } catch (e: IllegalStateException) {
+                                val svg = Sharp.loadInputStream(activity.contentResolver.openInputStream(data.data))
+                                adapter.setIcon(credential, svg.drawable)
+                            }
+                        } catch (e: Exception) {
                             activity.toast(R.string.invalid_image)
                         }
                     }
@@ -340,15 +347,23 @@ class CredentialsFragment : ListFragment() {
                         actionMode?.finish()
                     }
                     R.id.change_icon -> {
-                        if (adapter.hasIcon(credential)) {
-                            adapter.removeIcon(credential)
-                            actionMode?.finish()
-                        } else {
-                            startActivityForResult(Intent.createChooser(Intent().apply {
-                                type = "image/*"
-                                action = Intent.ACTION_GET_CONTENT
-                            }, "Select icon"), REQUEST_SELECT_ICON)
-                        }
+                        AlertDialog.Builder(context)
+                                .setTitle("Select icon")
+                                .setItems(R.array.icon_choices, { _, choice ->
+                                    when (choice) {
+                                        0 -> startActivityForResult(Intent.createChooser(Intent().apply {
+                                            type = "image/*"
+                                            action = Intent.ACTION_GET_CONTENT
+                                        }, "Select icon"), REQUEST_SELECT_ICON)
+                                        1 -> {
+                                            adapter.removeIcon(credential)
+                                            actionMode?.finish()
+                                        }
+                                    }
+                                })
+                                .setNegativeButton(R.string.cancel, null)
+                                .show()
+                        return true
                     }
                     R.id.delete -> viewModel.apply {
                         selectedItem?.let {
@@ -384,7 +399,6 @@ class CredentialsFragment : ListFragment() {
             actionMode = this
         }).apply {
             menu.findItem(R.id.pin).setIcon(if (adapter.isPinned(credential)) R.drawable.ic_star_24dp else R.drawable.ic_star_border_24dp)
-            menu.findItem(R.id.change_icon).setIcon(if (adapter.hasIcon(credential)) R.drawable.ic_image_delete_24dp else R.drawable.ic_image_24dp)
             title = (credential.issuer?.let { it + ": " } ?: "") + credential.name
         }
 

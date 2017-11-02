@@ -2,6 +2,7 @@ package com.yubico.yubioath.ui.main
 
 import android.content.Context
 import android.graphics.Bitmap
+import android.graphics.drawable.Drawable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -9,6 +10,7 @@ import android.view.animation.Animation
 import android.view.animation.LinearInterpolator
 import android.view.animation.Transformation
 import android.widget.BaseAdapter
+import com.pixplicity.sharp.Sharp
 import com.yubico.yubioath.R
 import com.yubico.yubioath.client.Code
 import com.yubico.yubioath.client.Credential
@@ -63,6 +65,7 @@ class CredentialAdapter(private val context: Context, private val actionHandler:
     fun hasIcon(credential: Credential): Boolean = iconManager.hasIcon(credential)
 
     fun setIcon(credential: Credential, icon: Bitmap) = iconManager.setIcon(credential, icon)
+    fun setIcon(credential: Credential, icon: Drawable) = iconManager.setIcon(credential, icon)
 
     fun removeIcon(credential: Credential) = iconManager.removeIcon(credential)
 
@@ -115,7 +118,7 @@ class CredentialAdapter(private val context: Context, private val actionHandler:
                     } else View.GONE
                 }
 
-                pin_icon.visibility = if (isPinned(credential)) View.VISIBLE else View.GONE
+                pinIcon.visibility = if (isPinned(credential)) View.VISIBLE else View.GONE
 
                 if (credential.issuer != null) {
                     issuerView.text = credential.issuer
@@ -176,6 +179,7 @@ class CredentialAdapter(private val context: Context, private val actionHandler:
 
     private class CodeAdapterViewHolder(view: View) {
         val icon = view.credential_icon!!
+        val pinIcon = view.pin_icon!!
         val issuerView = view.issuer!!
         val labelView = view.label!!
         val codeView = view.code!!

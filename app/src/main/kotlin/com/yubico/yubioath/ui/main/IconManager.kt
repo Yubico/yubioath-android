@@ -1,10 +1,8 @@
 package com.yubico.yubioath.ui.main
 
 import android.content.Context
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import android.graphics.Canvas
-import android.graphics.Paint
+import android.graphics.*
+import android.graphics.drawable.Drawable
 import android.support.v4.content.ContextCompat
 import android.util.Base64
 import com.yubico.yubioath.R
@@ -35,6 +33,13 @@ class IconManager(context:Context) {
         Bitmap.createScaledBitmap(icon, SIZE, SIZE, true).compress(Bitmap.CompressFormat.PNG, 100, baos)
         val bytes = baos.toByteArray()
         iconStorage.edit().putString(credential.key, Base64.encodeToString(bytes, Base64.DEFAULT)).apply()
+    }
+
+    fun setIcon(credential: Credential, icon: Drawable) {
+        setIcon(credential, Bitmap.createBitmap(SIZE, SIZE, Bitmap.Config.ARGB_8888).apply {
+            icon.bounds = Rect(0, 0, SIZE, SIZE)
+            icon.draw(Canvas(this))
+        })
     }
 
     fun removeIcon(credential: Credential) {
