@@ -38,7 +38,7 @@ import kotlinx.coroutines.experimental.launch
 import org.jetbrains.anko.clipboardManager
 import org.jetbrains.anko.toast
 
-class CredentialsFragment : ListFragment() {
+class CredentialFragment : ListFragment() {
     companion object {
         const private val REQUEST_ADD_CREDENTIAL = 1
         const private val REQUEST_SELECT_ICON = 2

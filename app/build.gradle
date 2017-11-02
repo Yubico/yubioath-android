@@ -10,8 +10,8 @@ android {
         applicationId "com.yubico.yubioath"
         minSdkVersion 15
         targetSdkVersion 26
-        versionCode 19901
-        versionName "2.0.0-alpha2"
+        versionCode 19902
+        versionName "2.0.0-alpha3"
         vectorDrawables.useSupportLibrary = true
     }
     buildTypes {
@@ -31,27 +31,26 @@ android {
 }
 
 dependencies {
-    testCompile 'org.robolectric:robolectric:3.4.2'
-    testCompile 'junit:junit:4.12'
-    testCompile 'org.mockito:mockito-core:2.8.47'
+    testImplementation 'org.robolectric:robolectric:3.5.1'
+    testImplementation 'junit:junit:4.12'
+    testImplementation 'org.mockito:mockito-core:2.11.0'
 
-    compile 'commons-codec:commons-codec:1.6'
-    compile group: 'com.fidesmo', name: 'nordpol-android', version: '0.1.21', ext: 'aar', transitive: true
-    compile 'com.journeyapps:zxing-android-embedded:3.4.0'
-    compile 'com.pixplicity.sharp:library:1.1.0'
+    implementation 'commons-codec:commons-codec:1.11'
+    implementation group: 'com.fidesmo', name: 'nordpol-android', version: '0.1.22', ext: 'aar', transitive: true
+    implementation 'com.journeyapps:zxing-android-embedded:3.4.0'
+    implementation 'com.pixplicity.sharp:library:1.1.0'
 
-    compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
-    compile 'org.jetbrains.kotlinx:kotlinx-coroutines-core:0.17'
-    compile 'org.jetbrains.anko:anko-common:0.10.1'
-    compile 'org.jetbrains.anko:anko-sdk15:0.10.1'
-    compile "org.jetbrains.anko:anko-coroutines:0.10.1"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:0.19.3'
+    implementation 'org.jetbrains.anko:anko-common:0.10.2'
+    implementation 'org.jetbrains.anko:anko-sdk15:0.10.2'
+    implementation "org.jetbrains.anko:anko-coroutines:0.10.2"
 
-    compile 'com.android.support:appcompat-v7:26.1.0'
-    compile 'com.android.support:design:26.1.0'
-    compile 'com.android.support:preference-v14:26.1.0'
-    compile 'android.arch.lifecycle:runtime:1.0.0'
-    compile 'android.arch.lifecycle:extensions:1.0.0-alpha9-1'
-    annotationProcessor 'android.arch.lifecycle:compiler:1.0.0-alpha9-1'
+    implementation 'com.android.support:appcompat-v7:26.1.0'
+    implementation 'com.android.support:design:26.1.0'
+    implementation 'com.android.support:preference-v14:26.1.0'
+
+    implementation "android.arch.lifecycle:extensions:1.0.0-rc1"
 }
 repositories {
     mavenCentral()
