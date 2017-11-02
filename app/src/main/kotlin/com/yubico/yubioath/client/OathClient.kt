@@ -87,7 +87,7 @@ class OathClient(backend: Backend, private val keyManager: KeyManager) : Closeab
         val timeStep = (timestamp / 1000 / 30)
         val challenge = ByteBuffer.allocate(8).putLong(timeStep).array()
 
-        return api.calculateAll(challenge).map {
+        return api.calculateAll(challenge).filter { !it.key.startsWith("_hidden:") }.map {
             val credential = Credential(deviceInfo.id, it.key, it.oathType, it.touch)
             val existingCode = existing[credential]
             val code: Code? = if (it.data.size > 1) {
