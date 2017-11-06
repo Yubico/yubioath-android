@@ -11,6 +11,7 @@ import com.yubico.yubioath.ui.BaseActivity
 import kotlinx.coroutines.experimental.android.UI
 import kotlinx.coroutines.experimental.delay
 import kotlinx.coroutines.experimental.launch
+import org.jetbrains.anko.toast
 
 class PasswordActivity : BaseActivity<PasswordViewModel>(PasswordViewModel::class.java) {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -38,12 +39,15 @@ class PasswordActivity : BaseActivity<PasswordViewModel>(PasswordViewModel::clas
                         invokeOnCompletion {
                             launch(UI) {
                                 if (!isCancelled) {
-                                    val success = await()
-                                    if (success) {
-                                        setResult(Activity.RESULT_OK)
-                                        finish()
-                                    } else {
-                                        setWrongPassword()
+                                    try {
+                                        if (await()) {
+                                            setResult(Activity.RESULT_OK)
+                                            finish()
+                                        } else {
+                                            setWrongPassword()
+                                        }
+                                    } catch (e: Exception) {
+                                        toast(R.string.tag_error)
                                     }
                                 }
                             }
