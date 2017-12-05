@@ -44,13 +44,13 @@ dependencies {
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:0.19.3'
     implementation 'org.jetbrains.anko:anko-common:0.10.2'
     implementation 'org.jetbrains.anko:anko-sdk15:0.10.2'
-    implementation "org.jetbrains.anko:anko-coroutines:0.10.2"
+    implementation "org.jetbrains.anko:anko-coroutines:0.10.3"
 
     implementation 'com.android.support:appcompat-v7:26.1.0'
     implementation 'com.android.support:design:26.1.0'
     implementation 'com.android.support:preference-v14:26.1.0'
 
-    implementation "android.arch.lifecycle:extensions:1.0.0-rc1"
+    implementation "android.arch.lifecycle:extensions:1.0.0"
 }
 repositories {
     mavenCentral()
