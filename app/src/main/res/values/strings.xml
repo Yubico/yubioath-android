@@ -42,7 +42,7 @@
     <string name="storage_full">YubiKey OATH storage is full!</string>
 
     <!-- View credentials -->
-    <string name="swipe_to_list">Tap your YubiKey to view credentials</string>
+    <string name="no_credentials">No credentials stored</string>
     <string name="press_for_code">Press button for code…</string>
     <string name="copy_to_clipboard">Copy</string>
     <string name="copied">Code copied to clipboard</string>

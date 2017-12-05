@@ -1,6 +1,7 @@
 package com.yubico.yubioath.ui.main
 
 import android.util.Log
+import com.yubico.yubioath.R
 import com.yubico.yubioath.client.Code
 import com.yubico.yubioath.client.Credential
 import com.yubico.yubioath.client.OathClient
@@ -8,8 +9,10 @@ import com.yubico.yubioath.protocol.OathType
 import com.yubico.yubioath.ui.BaseViewModel
 import com.yubico.yubioath.ui.EXEC
 import kotlinx.coroutines.experimental.Job
+import kotlinx.coroutines.experimental.android.UI
 import kotlinx.coroutines.experimental.delay
 import kotlinx.coroutines.experimental.launch
+import org.jetbrains.anko.toast
 
 class OathViewModel : BaseViewModel() {
     var creds: MutableMap<Credential, Code?> = mutableMapOf()
@@ -79,7 +82,13 @@ class OathViewModel : BaseViewModel() {
         refreshJob?.cancel()
         refreshJob = launch(EXEC) {
             while (true) {
-                services?.let { checkUsb(it) }
+                services?.let {
+                    try {
+                        checkUsb(it)
+                    } catch (e: Exception) {
+                        Log.d("yubioath", "Error checking USB", e)
+                    }
+                }
 
                 delay(if (creds.isEmpty()) {
                     1000L
@@ -100,5 +109,12 @@ class OathViewModel : BaseViewModel() {
             }
         }
         credListener(creds, searchFilter)
+        if (creds.isEmpty()) {
+            launch(UI) {
+                services?.apply {
+                    context.toast(R.string.no_credentials)
+                }
+            }
+        }
     }
 }
