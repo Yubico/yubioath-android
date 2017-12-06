@@ -26,10 +26,7 @@ constructor(private var backend: Backend) : Closeable {
     init {
         try {
             val resp = send(0xa4.toByte(), p1 = 0x04) { put(AID) }
-
             val version = Version.parse(resp.parseTlv(VERSION_TAG))
-            checkVersion(version)
-
             deviceSalt = resp.parseTlv(NAME_TAG)
             val id = getDeviceId(deviceSalt)
 
@@ -185,6 +182,8 @@ constructor(private var backend: Backend) : Closeable {
             fun parse(data: ByteArray): Version = Version(data[0].toInt(), data[1].toInt(), data[2].toInt())
         }
 
+        override fun toString(): String = "%d.%d.%d".format(major, minor, micro)
+
         fun compare(major: Int, minor: Int, micro: Int): Int {
             return if (major > this.major || (major == this.major && (minor > this.minor || minor == this.minor && micro > this.micro))) {
                 -1
@@ -239,11 +238,6 @@ constructor(private var backend: Backend) : Closeable {
         const private val SEND_REMAINING_INS = 0xa5.toByte()
 
         private val AID = byteArrayOf(0xa0.toByte(), 0x00, 0x00, 0x05, 0x27, 0x21, 0x01, 0x01)
-
-        @Throws(UnsupportedAppletException::class)
-        private fun checkVersion(version: Version) {
-            // All versions currently
-        }
 
         private fun getDeviceId(id: ByteArray): String {
             val digest = MessageDigest.getInstance("SHA256").apply {

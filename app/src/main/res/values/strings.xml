@@ -118,9 +118,11 @@
     <string name="clear_passwords_action">Clear stored passwords…</string>
     <string name="about_action">About Yubico Authenticator…</string>
     <string name="about_title">About</string>
+    <string name="no_device">No YubiKey present</string>
     <string name="about_text"><![CDATA[
-Yubico Authenticator for Android<br/>
-Version: %1$s</p>
+<p>Yubico Authenticator for Android<br/>
+Version: %1$s<br/>
+OATH Version: %2$s</p>
 
 <p><a href="https://developers.yubico.com/yubioath-android/">Web site</a><br/>
 <br/><a href="https://github.com/Yubico/yubioath-android/">Source code</a><br/>

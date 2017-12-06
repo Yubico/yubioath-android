@@ -43,14 +43,20 @@ class SettingsFragment : PreferenceFragmentCompat() {
         }
 
         preferenceManager.findPreference("about").onPreferenceClickListener = Preference.OnPreferenceClickListener {
-            val version: String = activity.packageManager.getPackageInfo(activity.packageName, 0).versionName
+            val appVersion: String = activity.packageManager.getPackageInfo(activity.packageName, 0).versionName
+            val oathVersion = with(viewModel.lastDeviceInfo) { if (id.isNotEmpty()) "$version" else getString(com.yubico.yubioath.R.string.no_device) }
 
             AlertDialog.Builder(context)
                     .setTitle(R.string.about_title)
-                    .setMessage(Html.fromHtml(String.format(getString(R.string.about_text), version)))
+                    .setMessage(Html.fromHtml(String.format(getString(R.string.about_text), appVersion, oathVersion)))
                     .create().apply {
                 show()
                 findViewById<TextView>(android.R.id.message)?.movementMethod = LinkMovementMethod.getInstance()
+                viewModel.onDeviceRefresh = {
+                    if(isShowing) {
+                        setMessage(Html.fromHtml(String.format(getString(R.string.about_text), appVersion, it.version)))
+                    }
+                }
             }
 
             true
