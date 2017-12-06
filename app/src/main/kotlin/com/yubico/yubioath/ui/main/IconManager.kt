@@ -28,11 +28,13 @@ class IconManager(context:Context) {
         color = ContextCompat.getColor(context, android.R.color.primary_text_dark)
     }
 
+    private val Credential.iconKey: String get() = issuer ?: ":$name"
+
     fun setIcon(credential: Credential, icon: Bitmap) {
         val baos = ByteArrayOutputStream()
         Bitmap.createScaledBitmap(icon, SIZE, SIZE, true).compress(Bitmap.CompressFormat.PNG, 100, baos)
         val bytes = baos.toByteArray()
-        iconStorage.edit().putString(credential.key, Base64.encodeToString(bytes, Base64.DEFAULT)).apply()
+        iconStorage.edit().putString(credential.iconKey, Base64.encodeToString(bytes, Base64.DEFAULT)).apply()
     }
 
     fun setIcon(credential: Credential, icon: Drawable) {
@@ -43,17 +45,17 @@ class IconManager(context:Context) {
     }
 
     fun removeIcon(credential: Credential) {
-        iconStorage.edit().remove(credential.key).apply()
+        iconStorage.edit().remove(credential.iconKey).apply()
     }
 
     fun clearIcons() {
         iconStorage.edit().clear().apply()
     }
 
-    fun hasIcon(credential: Credential) = iconStorage.contains(credential.key)
+    fun hasIcon(credential: Credential) = iconStorage.contains(credential.iconKey)
 
     fun getIcon(credential: Credential): Bitmap {
-        return iconStorage.getString(credential.key, null)?.let {
+        return iconStorage.getString(credential.iconKey, null)?.let {
             getSavedIcon(it)
         } ?: getLetterIcon(credential)
     }
@@ -62,9 +64,9 @@ class IconManager(context:Context) {
         return Bitmap.createBitmap(SIZE, SIZE, Bitmap.Config.ARGB_8888).apply {
             Canvas(this).apply {
                 drawCircle(RADIUS, RADIUS, RADIUS, Paint(Paint.ANTI_ALIAS_FLAG).apply {
-                    color = colors[Math.abs(credential.key.hashCode()) % colors.size]
+                    color = colors[Math.abs(credential.iconKey.hashCode()) % colors.size]
                 })
-                val letter = (if (credential.issuer.isNullOrEmpty()) credential.name else credential.issuer!!).substring(0, 1).toUpperCase()
+                val letter = (credential.issuer ?: credential.name).substring(0, 1).toUpperCase()
                 drawText(letter, RADIUS, RADIUS - (textPaint.descent() + textPaint.ascent()) / 2, textPaint)
             }
         }
