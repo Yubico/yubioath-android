@@ -10,8 +10,8 @@ android {
         applicationId "com.yubico.yubioath"
         minSdkVersion 15
         targetSdkVersion 27
-        versionCode 19902
-        versionName "2.0.0-alpha3"
+        versionCode 19903
+        versionName "2.0.0-rc1"
         vectorDrawables.useSupportLibrary = true
     }
     buildTypes {
