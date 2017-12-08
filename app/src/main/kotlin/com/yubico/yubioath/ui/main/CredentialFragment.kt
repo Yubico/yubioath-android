@@ -44,7 +44,7 @@ class CredentialFragment : ListFragment() {
         const private val REQUEST_SELECT_ICON = 2
     }
 
-    private val viewModel: OathViewModel by lazy { ViewModelProviders.of(activity).get(OathViewModel::class.java) }
+    private val viewModel: OathViewModel by lazy { ViewModelProviders.of(activity!!).get(OathViewModel::class.java) }
     private val timerAnimation = object : Animation() {
         var deadline: Long = 0
 
@@ -92,14 +92,18 @@ class CredentialFragment : ListFragment() {
             }
 
             override fun copy(code: Code) {
-                val clipboard = activity.clipboardManager as ClipboardManager
-                val clip = ClipData.newPlainText("OTP", code.value)
-                clipboard.primaryClip = clip
-                activity.toast(R.string.copied)
+                activity?.let {
+                    val clipboard = it.clipboardManager as ClipboardManager
+                    val clip = ClipData.newPlainText("OTP", code.value)
+                    clipboard.primaryClip = clip
+                    it.toast(R.string.copied)
+                }
             }
         }
-        listAdapter = CredentialAdapter(context, actions, viewModel.creds).apply {
-            viewModel.credListener = setCredentials
+        context?.let {
+            listAdapter = CredentialAdapter(it, actions, viewModel.creds).apply {
+                viewModel.credListener = setCredentials
+            }
         }
 
         listView.onItemClickListener = AdapterView.OnItemClickListener { _, _, position, _ ->
@@ -174,42 +178,44 @@ class CredentialFragment : ListFragment() {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         val qrActivityResult = IntentIntegrator.parseActivityResult(requestCode, resultCode, data)
-        if (qrActivityResult != null) {
-            qrActivityResult.contents?.let {
-                val uri = Uri.parse(it)
-                try {
-                    CredentialData.fromUri(uri)
-                    startActivityForResult(Intent(Intent.ACTION_VIEW, uri, context, AddCredentialActivity::class.java), REQUEST_ADD_CREDENTIAL)
-                } catch (e: IllegalArgumentException) {
-                    activity.toast(R.string.invalid_barcode)
-                }
-            }
-        } else when (requestCode) {
-            REQUEST_ADD_CREDENTIAL -> if (resultCode == Activity.RESULT_OK && data != null) {
-                activity.toast(R.string.add_credential_success)
-                val credential: Credential = data.getParcelableExtra(AddCredentialActivity.EXTRA_CREDENTIAL)
-                val code: Code? = if (data.hasExtra(AddCredentialActivity.EXTRA_CODE)) data.getParcelableExtra(AddCredentialActivity.EXTRA_CODE) else null
-                viewModel.insertCredential(credential, code)
-            }
-            REQUEST_SELECT_ICON -> {
-                if (resultCode == Activity.RESULT_OK && data != null) {
-                    viewModel.selectedItem?.let { credential ->
-                        try {
-                            try {
-                                val icon = MediaStore.Images.Media.getBitmap(activity.contentResolver, data.data)
-                                adapter.setIcon(credential, icon)
-                            } catch (e: IllegalStateException) {
-                                val svg = Sharp.loadInputStream(activity.contentResolver.openInputStream(data.data))
-                                adapter.setIcon(credential, svg.drawable)
-                            }
-                        } catch (e: Exception) {
-                            activity.toast(R.string.invalid_image)
-                        }
+        activity?.apply {
+            if (qrActivityResult != null) {
+                qrActivityResult.contents?.let {
+                    val uri = Uri.parse(it)
+                    try {
+                        CredentialData.fromUri(uri)
+                        startActivityForResult(Intent(Intent.ACTION_VIEW, uri, context, AddCredentialActivity::class.java), REQUEST_ADD_CREDENTIAL)
+                    } catch (e: IllegalArgumentException) {
+                        toast(R.string.invalid_barcode)
                     }
                 }
-                actionMode?.finish()
+            } else when (requestCode) {
+                REQUEST_ADD_CREDENTIAL -> if (resultCode == Activity.RESULT_OK && data != null) {
+                    toast(R.string.add_credential_success)
+                    val credential: Credential = data.getParcelableExtra(AddCredentialActivity.EXTRA_CREDENTIAL)
+                    val code: Code? = if (data.hasExtra(AddCredentialActivity.EXTRA_CODE)) data.getParcelableExtra(AddCredentialActivity.EXTRA_CODE) else null
+                    viewModel.insertCredential(credential, code)
+                }
+                REQUEST_SELECT_ICON -> {
+                    if (resultCode == Activity.RESULT_OK && data != null) {
+                        viewModel.selectedItem?.let { credential ->
+                            try {
+                                try {
+                                    val icon = MediaStore.Images.Media.getBitmap(contentResolver, data.data)
+                                    adapter.setIcon(credential, icon)
+                                } catch (e: IllegalStateException) {
+                                    val svg = Sharp.loadInputStream(contentResolver.openInputStream(data.data))
+                                    adapter.setIcon(credential, svg.drawable)
+                                }
+                            } catch (e: Exception) {
+                                toast(R.string.invalid_image)
+                            }
+                        }
+                    }
+                    actionMode?.finish()
+                }
+                else -> super.onActivityResult(requestCode, resultCode, data)
             }
-            else -> super.onActivityResult(requestCode, resultCode, data)
         }
     }
 
@@ -320,7 +326,7 @@ class CredentialFragment : ListFragment() {
         job.invokeOnCompletion {
             launch(UI) {
                 if (!job.isCancelled && successMessage != 0) {
-                    activity.toast(successMessage)
+                    activity?.toast(successMessage)
                 }
             }
         }
@@ -339,67 +345,69 @@ class CredentialFragment : ListFragment() {
             viewModel.selectedItem = credential
         }
 
-        (actionMode ?: activity.startActionMode(object : ActionMode.Callback {
-            override fun onActionItemClicked(mode: ActionMode, item: MenuItem): Boolean {
-                when (item.itemId) {
-                    R.id.pin -> {
-                        adapter.setPinned(credential, !adapter.isPinned(credential))
-                        actionMode?.finish()
-                    }
-                    R.id.change_icon -> {
-                        AlertDialog.Builder(context)
-                                .setTitle("Select icon")
-                                .setItems(R.array.icon_choices, { _, choice ->
-                                    when (choice) {
-                                        0 -> startActivityForResult(Intent.createChooser(Intent().apply {
-                                            type = "image/*"
-                                            action = Intent.ACTION_GET_CONTENT
-                                        }, "Select icon"), REQUEST_SELECT_ICON)
-                                        1 -> {
-                                            adapter.removeIcon(credential)
-                                            actionMode?.finish()
+        activity?.let { act ->
+            (actionMode ?: act.startActionMode(object : ActionMode.Callback {
+                override fun onActionItemClicked(mode: ActionMode, item: MenuItem): Boolean {
+                    when (item.itemId) {
+                        R.id.pin -> {
+                            adapter.setPinned(credential, !adapter.isPinned(credential))
+                            actionMode?.finish()
+                        }
+                        R.id.change_icon -> {
+                            AlertDialog.Builder(act)
+                                    .setTitle("Select icon")
+                                    .setItems(R.array.icon_choices, { _, choice ->
+                                        when (choice) {
+                                            0 -> startActivityForResult(Intent.createChooser(Intent().apply {
+                                                type = "image/*"
+                                                action = Intent.ACTION_GET_CONTENT
+                                            }, "Select icon"), REQUEST_SELECT_ICON)
+                                            1 -> {
+                                                adapter.removeIcon(credential)
+                                                actionMode?.finish()
+                                            }
                                         }
-                                    }
-                                })
-                                .setNegativeButton(R.string.cancel, null)
-                                .show()
-                        return true
-                    }
-                    R.id.delete -> viewModel.apply {
-                        selectedItem?.let {
-                            AlertDialog.Builder(context)
-                                    .setTitle(R.string.delete_cred)
-                                    .setMessage(R.string.delete_cred_message)
-                                    .setPositiveButton(R.string.delete) { _, _ ->
-                                        selectedItem = null
-                                        jobWithClient(viewModel.delete(it), R.string.deleted, false)
-                                        actionMode?.finish()
-                                    }
+                                    })
                                     .setNegativeButton(R.string.cancel, null)
                                     .show()
+                            return true
+                        }
+                        R.id.delete -> viewModel.apply {
+                            selectedItem?.let {
+                                AlertDialog.Builder(act)
+                                        .setTitle(R.string.delete_cred)
+                                        .setMessage(R.string.delete_cred_message)
+                                        .setPositiveButton(R.string.delete) { _, _ ->
+                                            selectedItem = null
+                                            jobWithClient(viewModel.delete(it), R.string.deleted, false)
+                                            actionMode?.finish()
+                                        }
+                                        .setNegativeButton(R.string.cancel, null)
+                                        .show()
+                            }
                         }
                     }
+                    return true
                 }
-                return true
-            }
 
-            override fun onCreateActionMode(mode: ActionMode, menu: Menu?): Boolean {
-                mode.menuInflater.inflate(R.menu.code_select_actions, menu)
-                return true
-            }
+                override fun onCreateActionMode(mode: ActionMode, menu: Menu?): Boolean {
+                    mode.menuInflater.inflate(R.menu.code_select_actions, menu)
+                    return true
+                }
 
-            override fun onPrepareActionMode(mode: ActionMode?, menu: Menu?) = false
+                override fun onPrepareActionMode(mode: ActionMode?, menu: Menu?) = false
 
-            override fun onDestroyActionMode(mode: ActionMode?) {
-                actionMode = null
-                listView.setItemChecked(listView.checkedItemPosition, false)
-                viewModel.selectedItem = null
+                override fun onDestroyActionMode(mode: ActionMode?) {
+                    actionMode = null
+                    listView.setItemChecked(listView.checkedItemPosition, false)
+                    viewModel.selectedItem = null
+                }
+            }).apply {
+                actionMode = this
+            }).apply {
+                menu.findItem(R.id.pin).setIcon(if (adapter.isPinned(credential)) R.drawable.ic_star_24dp else R.drawable.ic_star_border_24dp)
+                title = (credential.issuer?.let { it + ": " } ?: "") + credential.name
             }
-        }).apply {
-            actionMode = this
-        }).apply {
-            menu.findItem(R.id.pin).setIcon(if (adapter.isPinned(credential)) R.drawable.ic_star_24dp else R.drawable.ic_star_border_24dp)
-            title = (credential.issuer?.let { it + ": " } ?: "") + credential.name
         }
 
         listView.setItemChecked(position, true)

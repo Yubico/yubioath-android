@@ -49,7 +49,7 @@ import org.apache.commons.codec.binary.Base32
 import org.jetbrains.anko.inputMethodManager
 
 class AddCredentialFragment : Fragment() {
-    private val viewModel: AddCredentialViewModel by lazy { ViewModelProviders.of(activity).get(AddCredentialViewModel::class.java) }
+    private val viewModel: AddCredentialViewModel by lazy { ViewModelProviders.of(activity!!).get(AddCredentialViewModel::class.java) }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return inflater.inflate(R.layout.fragment_add_credential, container, false)
@@ -92,7 +92,7 @@ class AddCredentialFragment : Fragment() {
         }
 
         if (credential_issuer.text.isNullOrEmpty()) {
-            activity.inputMethodManager.toggleSoftInput(InputMethodManager.SHOW_FORCED, InputMethodManager.HIDE_IMPLICIT_ONLY)
+            activity?.apply { inputMethodManager.toggleSoftInput(InputMethodManager.SHOW_FORCED, InputMethodManager.HIDE_IMPLICIT_ONLY) }
         }
     }
 
@@ -112,9 +112,7 @@ class AddCredentialFragment : Fragment() {
         }
 
     fun validateData(): CredentialData? {
-        activity.currentFocus?.let {
-            activity.inputMethodManager.hideSoftInputFromWindow(it.applicationWindowToken, 0)
-        }
+        activity?.apply { inputMethodManager.hideSoftInputFromWindow(currentFocus.applicationWindowToken, 0) }
 
         credential_account_wrapper.error = null
         credential_touch_wrapper.error = null

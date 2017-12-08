@@ -12,7 +12,7 @@ import kotlinx.android.synthetic.main.fragment_password.*
 class PasswordFragment : Fragment() {
     data class PasswordData(val current_password: String, val new_password: String, val remember: Boolean)
 
-    private val viewModel: PasswordViewModel by lazy { ViewModelProviders.of(activity).get(PasswordViewModel::class.java) }
+    private val viewModel: PasswordViewModel by lazy { ViewModelProviders.of(activity!!).get(PasswordViewModel::class.java) }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return inflater.inflate(R.layout.fragment_password, container, false)
