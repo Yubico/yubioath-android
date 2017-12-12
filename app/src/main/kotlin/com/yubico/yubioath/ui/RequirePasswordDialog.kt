@@ -68,19 +68,26 @@ class RequirePasswordDialog : DialogFragment() {
             val deviceId = it.getString(DEVICE_ID)
             val salt = it.getByteArray(DEVICE_SALT)
             val missing = it.getBoolean(MISSING)
+            val view = LayoutInflater.from(context).inflate(R.layout.dialog_require_password, null)
             AlertDialog.Builder(activity).apply {
-                val view = LayoutInflater.from(context).inflate(R.layout.dialog_require_password, null)
                 setView(view)
                 setTitle(if (missing) R.string.password_required else R.string.password_wrong)
-                setPositiveButton(R.string.ok, {_, _ ->
-                    val password = view.editPassword.text.toString().trim()
-                    val remember = view.rememberPassword.isChecked
-                    keyManager.clearKeys(deviceId)
-                    keyManager.addKey(deviceId, KeyManager.calculateSecret(password, salt, false), remember)
-                    keyManager.addKey(deviceId, KeyManager.calculateSecret(password, salt, true), remember)
-                })
+                setPositiveButton(R.string.ok, null) // To be able to cancel dismissing the dialog we use the onClick listener set in the onShowListener...
                 setNegativeButton(R.string.cancel) { dialog, _ -> dialog.cancel() }
-            }.create()
+            }.create().apply {
+                setOnShowListener { getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+                    val password = view.password.text.toString().trim()
+                    val remember = view.rememberPassword.isChecked
+                    if (password.isNotEmpty()) {
+                        keyManager.clearKeys(deviceId)
+                        keyManager.addKey(deviceId, KeyManager.calculateSecret(password, salt, false), remember)
+                        keyManager.addKey(deviceId, KeyManager.calculateSecret(password, salt, true), remember)
+                        dismiss()
+                    } else {
+                        view.password_wrapper.error = getString(R.string.password_required)
+                    }
+                } }
+            }
         }
     }
 }
