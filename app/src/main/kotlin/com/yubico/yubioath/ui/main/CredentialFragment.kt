@@ -18,10 +18,12 @@ import android.support.design.widget.Snackbar
 import android.support.v4.app.ListFragment
 import android.support.v4.content.ContextCompat
 import android.support.v7.app.AlertDialog
+import android.util.Log
 import android.view.*
 import android.view.animation.*
 import android.widget.AdapterView
 import android.widget.ImageView
+import android.widget.TextView
 import com.google.zxing.integration.android.IntentIntegrator
 import com.pixplicity.sharp.Sharp
 import com.yubico.yubioath.R
@@ -102,7 +104,12 @@ class CredentialFragment : ListFragment() {
         }
         context?.let {
             listAdapter = CredentialAdapter(it, actions, viewModel.creds).apply {
-                viewModel.credListener = setCredentials
+                viewModel.credListener = { creds, filter ->
+                    launch(UI) {
+                        view?.findViewById<TextView>(android.R.id.empty)?.setText(if (filter.isEmpty() || creds.isEmpty()) R.string.swipe_and_hold else R.string.no_match)
+                    }
+                    setCredentials(creds, filter)
+                }
             }
         }
 

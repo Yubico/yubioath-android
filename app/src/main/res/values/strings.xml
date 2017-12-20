@@ -56,6 +56,7 @@
     <string name="delete_cred">Delete credential</string>
     <string name="delete_cred_message">This will delete the credential from your YubiKey. This action cannot be undone.</string>
     <string name="deleted">Credential deleted!</string>
+    <string name="no_match">No matches</string>
 
     <!-- Add credential -->
     <string name="add_credential_issuer">Issuer (optional)</string>
