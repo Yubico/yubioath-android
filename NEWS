@@ -1,3 +1,6 @@
+* Version 2.0.1 released 2017-12-21
+ ** Bugfix: Fix crash on startup on KitKat and older.
+
 * Version 2.0.0 released 2017-12-15
  ** New redesigned UI.
  ** Customize your credential list by pinning important ones to the top and adding custom icons.

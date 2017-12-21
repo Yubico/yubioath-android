@@ -11,7 +11,7 @@ android {
         minSdkVersion 15
         targetSdkVersion 27
         versionCode 20001
-        versionName "2.0.1-dev"
+        versionName "2.0.1"
     }
     buildTypes {
         release {
