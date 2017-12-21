@@ -2,6 +2,20 @@ apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
 
+def getVersionName = { ->
+    def stdout = new ByteArrayOutputStream()
+    exec {
+        commandLine 'git', 'describe', '--dirty=-dirty'
+        standardOutput = stdout
+    }
+    return stdout.toString().trim()
+}
+
+def getVersionCode = { ->
+    def m = (getVersionName() =~ /(\d+)\.(\d+)\.(\d)+(-(\d+)-)?(-dirty)?/)[0]
+    return (m[1] as int) * 10000000 + (m[2] as int) * 10000 + (m[3] as int) * 1000 + ((m[5] ?: 0) as int)
+}
+
 android {
     compileSdkVersion 27
     buildToolsVersion '27.0.2'
@@ -10,8 +24,8 @@ android {
         applicationId "com.yubico.yubioath"
         minSdkVersion 15
         targetSdkVersion 27
-        versionCode 20001
-        versionName "2.0.1"
+        versionCode getVersionCode()
+        versionName getVersionName()
     }
     buildTypes {
         release {
