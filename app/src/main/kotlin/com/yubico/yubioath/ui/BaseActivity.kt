@@ -38,7 +38,7 @@ abstract class BaseActivity<T : BaseViewModel>(private var modelClass: Class<T>)
             } catch (e: Exception) {
                 Log.e("yubioath", "Error using NFC device", e)
             }
-        }).enableReaderMode(false).enableUnavailableNfcUserPrompt(false).build()
+        }).enableReaderMode(true).enableUnavailableNfcUserPrompt(false).build()
     }
 
     override fun onNewIntent(intent: Intent) {
