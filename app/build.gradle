@@ -4,7 +4,7 @@ apply plugin: 'kotlin-android-extensions'
 
 android {
     compileSdkVersion 27
-    buildToolsVersion '27.0.2'
+    buildToolsVersion '27.0.3'
 
     defaultConfig {
         applicationId "com.yubico.yubioath"
@@ -45,11 +45,11 @@ dependencies {
     implementation 'org.jetbrains.anko:anko-sdk15:0.10.3'
     implementation "org.jetbrains.anko:anko-coroutines:0.10.3"
 
-    implementation 'com.android.support:appcompat-v7:27.0.2'
-    implementation 'com.android.support:design:27.0.2'
-    implementation 'com.android.support:preference-v14:27.0.2'
+    implementation 'com.android.support:appcompat-v7:27.1.1'
+    implementation 'com.android.support:design:27.1.1'
+    implementation 'com.android.support:preference-v14:27.1.1'
 
-    implementation "android.arch.lifecycle:extensions:1.0.0"
+    implementation "android.arch.lifecycle:extensions:1.1.1"
 }
 repositories {
     mavenCentral()
