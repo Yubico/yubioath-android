@@ -2,15 +2,16 @@ package com.yubico.yubioath.protocol
 
 import java.security.MessageDigest
 
-/**
- * Created by Dain on 2017-04-24.
- */
 sealed class Algorithm(val byteVal: Byte, name: String, val blockSize: Int) {
     val messageDigest = MessageDigest.getInstance(name)!!
 
-    fun shortenKey(key: ByteArray) = if (key.size > blockSize) messageDigest.digest(key) else key
+    fun prepareKey(key: ByteArray): ByteArray = when (key.size) {
+        in 0..13 -> key.copyOf(14)  // Too short, needs padding
+        in 14..blockSize -> key  // No modification needed
+        else -> messageDigest.digest(key)  // Too long, hash it
+    }
 
-    override fun toString() = javaClass.simpleName
+    override fun toString(): String = javaClass.simpleName
 
     object SHA1 : Algorithm(1, "SHA1", 64)
     object SHA256 : Algorithm(2, "SHA256", 64)

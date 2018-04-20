@@ -4,7 +4,6 @@ import android.util.Base64
 import com.yubico.yubioath.exc.AppletMissingException
 import com.yubico.yubioath.exc.AppletSelectException
 import com.yubico.yubioath.exc.StorageFullException
-import com.yubico.yubioath.exc.UnsupportedAppletException
 import com.yubico.yubioath.transport.ApduError
 import com.yubico.yubioath.transport.Backend
 import java.io.Closeable
@@ -110,7 +109,7 @@ constructor(private var backend: Backend) : Closeable {
         try {
             send(PUT_INS) {
                 tlv(NAME_TAG, name.toByteArray())
-                tlv(KEY_TAG, byteArrayOf(type.byteVal or algorithm.byteVal, digits) + algorithm.shortenKey(key))
+                tlv(KEY_TAG, byteArrayOf(type.byteVal or algorithm.byteVal, digits) + algorithm.prepareKey(key))
                 if (touch) put(PROPERTY_TAG).put(REQUIRE_TOUCH_PROP)
                 if (type == OathType.HOTP && imf > 0) put(IMF_TAG).put(4).putInt(imf)
             }
