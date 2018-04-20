@@ -113,6 +113,8 @@
 
     <string name="hide_thumbnail_title">Hide app thumbnail</string>
     <string name="hide_thumbnail_description">Don\'t show codes in the app switcher</string>
+    <string name="use_nfc_reader_mode_title">Use NFC Reader mode</string>
+    <string name="use_nfc_reader_mode_description">Enabling this may resolve NFC issues on some handsets, but may introduce them on others.</string>
     <string name="warn_nfc_title">NFC warnings</string>
     <string name="warn_nfc_description">Warn when NFC is disabled or missing</string>
     <string name="clear_icons_action">Clear custom icons…</string>

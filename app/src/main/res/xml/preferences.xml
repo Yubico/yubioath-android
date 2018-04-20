@@ -2,15 +2,21 @@
 
     <SwitchPreferenceCompat
         android:defaultValue="true"
+        android:key="hideThumbnail"
+        android:summary="@string/hide_thumbnail_description"
+        android:title="@string/hide_thumbnail_title" />
+
+    <SwitchPreferenceCompat
+        android:defaultValue="true"
         android:key="warnNfc"
         android:summary="@string/warn_nfc_description"
         android:title="@string/warn_nfc_title" />
 
     <SwitchPreferenceCompat
-        android:defaultValue="true"
-        android:key="hideThumbnail"
-        android:summary="@string/hide_thumbnail_description"
-        android:title="@string/hide_thumbnail_title" />
+        android:defaultValue="false"
+        android:key="useNfcReaderMode"
+        android:summary="@string/use_nfc_reader_mode_description"
+        android:title="@string/use_nfc_reader_mode_title" />
 
     <Preference
         android:key="clearIcons"

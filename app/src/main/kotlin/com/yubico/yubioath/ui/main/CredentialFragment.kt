@@ -94,7 +94,7 @@ class CredentialFragment : ListFragment() {
 
             override fun copy(code: Code) {
                 activity?.let {
-                    val clipboard = it.clipboardManager as ClipboardManager
+                    val clipboard = it.clipboardManager
                     val clip = ClipData.newPlainText("OTP", code.value)
                     clipboard.primaryClip = clip
                     it.toast(R.string.copied)
