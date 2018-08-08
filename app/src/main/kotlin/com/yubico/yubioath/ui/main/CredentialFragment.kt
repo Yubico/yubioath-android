@@ -5,7 +5,6 @@ import android.animation.AnimatorListenerAdapter
 import android.app.Activity
 import android.arch.lifecycle.ViewModelProviders
 import android.content.ClipData
-import android.content.ClipboardManager
 import android.content.Intent
 import android.database.DataSetObserver
 import android.net.Uri
@@ -41,8 +40,8 @@ import org.jetbrains.anko.toast
 
 class CredentialFragment : ListFragment() {
     companion object {
-        const private val REQUEST_ADD_CREDENTIAL = 1
-        const private val REQUEST_SELECT_ICON = 2
+        private const val REQUEST_ADD_CREDENTIAL = 1
+        private const val REQUEST_SELECT_ICON = 2
     }
 
     private val viewModel: OathViewModel by lazy { ViewModelProviders.of(activity!!).get(OathViewModel::class.java) }
@@ -137,7 +136,7 @@ class CredentialFragment : ListFragment() {
 
         btn_scan_qr.setOnClickListener {
             hideAddToolbar()
-            IntentIntegrator.forSupportFragment(this).setDesiredBarcodeFormats(IntentIntegrator.QR_CODE_TYPES).initiateScan()
+            IntentIntegrator.forSupportFragment(this).setDesiredBarcodeFormats(IntentIntegrator.QR_CODE).initiateScan()
         }
         btn_manual_entry.setOnClickListener {
             hideAddToolbar()
@@ -210,7 +209,7 @@ class CredentialFragment : ListFragment() {
                                     val icon = MediaStore.Images.Media.getBitmap(contentResolver, data.data)
                                     adapter.setIcon(credential, icon)
                                 } catch (e: IllegalStateException) {
-                                    val svg = Sharp.loadInputStream(contentResolver.openInputStream(data.data))
+                                    val svg = Sharp.loadInputStream(contentResolver.openInputStream(data.data!!))
                                     adapter.setIcon(credential, svg.drawable)
                                 }
                             } catch (e: Exception) {
@@ -362,7 +361,7 @@ class CredentialFragment : ListFragment() {
                         R.id.change_icon -> {
                             AlertDialog.Builder(act)
                                     .setTitle("Select icon")
-                                    .setItems(R.array.icon_choices, { _, choice ->
+                                    .setItems(R.array.icon_choices) { _, choice ->
                                         when (choice) {
                                             0 -> startActivityForResult(Intent.createChooser(Intent().apply {
                                                 type = "image/*"
@@ -373,7 +372,7 @@ class CredentialFragment : ListFragment() {
                                                 actionMode?.finish()
                                             }
                                         }
-                                    })
+                                    }
                                     .setNegativeButton(R.string.cancel, null)
                                     .show()
                             return true
@@ -412,7 +411,7 @@ class CredentialFragment : ListFragment() {
                 actionMode = this
             }).apply {
                 menu.findItem(R.id.pin).setIcon(if (adapter.isPinned(credential)) R.drawable.ic_star_24dp else R.drawable.ic_star_border_24dp)
-                title = (credential.issuer?.let { it + ": " } ?: "") + credential.name
+                title = (credential.issuer?.let { "$it: " } ?: "") + credential.name
             }
         }
 

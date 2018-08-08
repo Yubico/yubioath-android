@@ -10,8 +10,8 @@ data class Credential(val deviceId: String, val key: String, val type: OathType,
     val period: Int
 
     constructor(parcel: Parcel) : this(
-            parcel.readString(),
-            parcel.readString(),
+            parcel.readString()!!,
+            parcel.readString()!!,
             OathType.fromValue(parcel.readByte()),
             parcel.readByte() != 0.toByte()
     )

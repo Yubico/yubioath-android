@@ -20,13 +20,11 @@ data class CredentialData(val secret: ByteArray, var issuer: String?, var name: 
                 }
             }
 
-            var name = uri.path.let {
-                if (it.isNullOrEmpty()) throw IllegalArgumentException("Path must contain name")
-                var path = it
-                if (path[0] == '/') path = path.substring(1)
-                if (path.length > 64) path = path.substring(0, 64)
-                path
-            }
+            var path = uri.path
+            if (path == null || path.isEmpty()) throw IllegalArgumentException("Path must contain name")
+            if (path[0] == '/') path = path.substring(1)
+            if (path.length > 64) path = path.substring(0, 64)
+            var name = path
 
             val issuer = if (':' in name) {
                 val parts = name.split(':', limit = 2)
@@ -34,7 +32,7 @@ data class CredentialData(val secret: ByteArray, var issuer: String?, var name: 
                 parts[0]
             } else uri.getQueryParameter("issuer")
 
-            val oathType = when (uri.host.toLowerCase()) {
+            val oathType = when (uri.host.orEmpty().toLowerCase()) {
                 "totp" -> OathType.TOTP
                 "hotp" -> OathType.HOTP
                 else -> throw IllegalArgumentException("Invalid or missing OATH algorithm")
@@ -55,7 +53,7 @@ data class CredentialData(val secret: ByteArray, var issuer: String?, var name: 
             }
 
             val period = with(uri.getQueryParameter("period")) {
-                if (isNullOrEmpty()) {
+                if (this == null || isEmpty()) {
                     30
                 } else try {
                     toInt()
@@ -65,7 +63,7 @@ data class CredentialData(val secret: ByteArray, var issuer: String?, var name: 
             }
 
             val counter = with(uri.getQueryParameter("counter")) {
-                if (isNullOrEmpty()) {
+                if (this == null || isEmpty()) {
                     0
                 } else try {
                     toInt()

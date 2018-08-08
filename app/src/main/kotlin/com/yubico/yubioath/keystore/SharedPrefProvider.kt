@@ -9,11 +9,11 @@ class SharedPrefProvider(private val prefs: SharedPreferences) : KeyProvider {
     override fun hasKeys(deviceId: String): Boolean = prefs.contains(deviceId)
 
     override fun getKeys(deviceId: String): Sequence<StoredSigner> {
-        return prefs.getStringSet(deviceId, emptySet()).asSequence().map { StringSigner(deviceId, it) }
+        return prefs.getStringSet(deviceId, null).orEmpty().asSequence().map { StringSigner(deviceId, it) }
     }
 
     override fun addKey(deviceId: String, secret: ByteArray) {
-        val existing = prefs.getStringSet(deviceId, mutableSetOf())
+        val existing = prefs.getStringSet(deviceId, null).orEmpty().toMutableSet()
         existing.add(encode(secret))
         prefs.edit().putStringSet(deviceId, existing).apply()
     }

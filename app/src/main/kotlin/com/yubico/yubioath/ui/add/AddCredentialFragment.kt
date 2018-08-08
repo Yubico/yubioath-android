@@ -112,7 +112,7 @@ class AddCredentialFragment : Fragment() {
         }
 
     fun validateData(): CredentialData? {
-        activity?.apply { inputMethodManager.hideSoftInputFromWindow(currentFocus.applicationWindowToken, 0) }
+        activity?.apply { inputMethodManager.hideSoftInputFromWindow(currentFocus?.applicationWindowToken, 0) }
 
         credential_account_wrapper.error = null
         credential_touch_wrapper.error = null

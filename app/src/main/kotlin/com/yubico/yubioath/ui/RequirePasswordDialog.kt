@@ -41,9 +41,9 @@ import kotlinx.android.synthetic.main.dialog_require_password.view.*
 
 class RequirePasswordDialog : DialogFragment() {
     companion object {
-        const private val DEVICE_ID = "deviceId"
-        const private val DEVICE_SALT = "deviceSalt"
-        const private val MISSING = "missing"
+        private const val DEVICE_ID = "deviceId"
+        private const val DEVICE_SALT = "deviceSalt"
+        private const val MISSING = "missing"
 
         internal fun newInstance(keyManager: KeyManager, deviceId: String, salt: ByteArray, missing: Boolean): RequirePasswordDialog {
             return RequirePasswordDialog().apply {
@@ -65,8 +65,8 @@ class RequirePasswordDialog : DialogFragment() {
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         return arguments!!.let {
-            val deviceId = it.getString(DEVICE_ID)
-            val salt = it.getByteArray(DEVICE_SALT)
+            val deviceId = it.getString(DEVICE_ID)!!
+            val salt = it.getByteArray(DEVICE_SALT)!!
             val missing = it.getBoolean(MISSING)
             val view = LayoutInflater.from(context).inflate(R.layout.dialog_require_password, null)
             AlertDialog.Builder(activity).apply {
