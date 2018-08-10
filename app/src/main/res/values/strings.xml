@@ -136,4 +136,8 @@ OATH Version: %2$s</p>
 <p>Copyright Yubico<br/>
 <a href="https://www.yubico.com/">https://www.yubico.com/</a></p>]]></string>
 
+
+    <string name="header_qr">Point the camera at the QR code</string>
+    <string name="camera_not_ready">Camera dependency not yet available, please try again later.</string>
+
 </resources>

@@ -15,7 +15,7 @@ import org.jetbrains.anko.toast
 
 class MainActivity : BaseActivity<OathViewModel>(OathViewModel::class.java) {
     companion object {
-        const private val REQUEST_PASSWORD = 2
+        private const val REQUEST_PASSWORD = 2
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {

@@ -22,7 +22,7 @@ import android.view.animation.*
 import android.widget.AdapterView
 import android.widget.ImageView
 import android.widget.TextView
-import com.google.zxing.integration.android.IntentIntegrator
+import com.google.android.gms.vision.barcode.Barcode
 import com.pixplicity.sharp.Sharp
 import com.yubico.yubioath.R
 import com.yubico.yubioath.client.Code
@@ -30,6 +30,8 @@ import com.yubico.yubioath.client.Credential
 import com.yubico.yubioath.protocol.CredentialData
 import com.yubico.yubioath.protocol.OathType
 import com.yubico.yubioath.ui.add.AddCredentialActivity
+import com.yubico.yubioath.ui.qr.QR_DATA
+import com.yubico.yubioath.ui.qr.QrActivity
 import kotlinx.android.synthetic.main.fragment_credentials.*
 import kotlinx.coroutines.experimental.Job
 import kotlinx.coroutines.experimental.android.UI
@@ -42,6 +44,7 @@ class CredentialFragment : ListFragment() {
     companion object {
         private const val REQUEST_ADD_CREDENTIAL = 1
         private const val REQUEST_SELECT_ICON = 2
+        private const val REQUEST_SCAN_QR = 3
     }
 
     private val viewModel: OathViewModel by lazy { ViewModelProviders.of(activity!!).get(OathViewModel::class.java) }
@@ -136,7 +139,7 @@ class CredentialFragment : ListFragment() {
 
         btn_scan_qr.setOnClickListener {
             hideAddToolbar()
-            IntentIntegrator.forSupportFragment(this).setDesiredBarcodeFormats(IntentIntegrator.QR_CODE).initiateScan()
+            startActivityForResult(Intent(activity, QrActivity::class.java), REQUEST_SCAN_QR)
         }
         btn_manual_entry.setOnClickListener {
             hideAddToolbar()
@@ -182,44 +185,41 @@ class CredentialFragment : ListFragment() {
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        val qrActivityResult = IntentIntegrator.parseActivityResult(requestCode, resultCode, data)
+        super.onActivityResult(requestCode, resultCode, data)
         activity?.apply {
-            if (qrActivityResult != null) {
-                qrActivityResult.contents?.let {
-                    val uri = Uri.parse(it)
-                    try {
-                        CredentialData.fromUri(uri)
-                        startActivityForResult(Intent(Intent.ACTION_VIEW, uri, context, AddCredentialActivity::class.java), REQUEST_ADD_CREDENTIAL)
-                    } catch (e: IllegalArgumentException) {
-                        toast(R.string.invalid_barcode)
-                    }
-                }
-            } else when (requestCode) {
-                REQUEST_ADD_CREDENTIAL -> if (resultCode == Activity.RESULT_OK && data != null) {
+            if (resultCode == Activity.RESULT_OK && data != null) when(requestCode) {
+                REQUEST_ADD_CREDENTIAL -> {
                     toast(R.string.add_credential_success)
                     val credential: Credential = data.getParcelableExtra(AddCredentialActivity.EXTRA_CREDENTIAL)
                     val code: Code? = if (data.hasExtra(AddCredentialActivity.EXTRA_CODE)) data.getParcelableExtra(AddCredentialActivity.EXTRA_CODE) else null
                     viewModel.insertCredential(credential, code)
                 }
                 REQUEST_SELECT_ICON -> {
-                    if (resultCode == Activity.RESULT_OK && data != null) {
-                        viewModel.selectedItem?.let { credential ->
+                    viewModel.selectedItem?.let { credential ->
+                        try {
                             try {
-                                try {
-                                    val icon = MediaStore.Images.Media.getBitmap(contentResolver, data.data)
-                                    adapter.setIcon(credential, icon)
-                                } catch (e: IllegalStateException) {
-                                    val svg = Sharp.loadInputStream(contentResolver.openInputStream(data.data!!))
-                                    adapter.setIcon(credential, svg.drawable)
-                                }
-                            } catch (e: Exception) {
-                                toast(R.string.invalid_image)
+                                val icon = MediaStore.Images.Media.getBitmap(contentResolver, data.data)
+                                adapter.setIcon(credential, icon)
+                            } catch (e: IllegalStateException) {
+                                val svg = Sharp.loadInputStream(contentResolver.openInputStream(data.data!!))
+                                adapter.setIcon(credential, svg.drawable)
                             }
+                        } catch (e: Exception) {
+                            toast(R.string.invalid_image)
                         }
                     }
                     actionMode?.finish()
                 }
-                else -> super.onActivityResult(requestCode, resultCode, data)
+                REQUEST_SCAN_QR -> {
+                    val value = data.getParcelableExtra<Barcode>(QR_DATA).displayValue
+                    try {
+                        val uri = Uri.parse(value)
+                        CredentialData.fromUri(uri)
+                        startActivityForResult(Intent(Intent.ACTION_VIEW, uri, context, AddCredentialActivity::class.java), REQUEST_ADD_CREDENTIAL)
+                    } catch (e: IllegalArgumentException) {
+                        toast(R.string.invalid_barcode)
+                    }
+                }
             }
         }
     }
