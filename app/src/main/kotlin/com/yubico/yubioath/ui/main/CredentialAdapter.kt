@@ -10,7 +10,6 @@ import android.view.animation.Animation
 import android.view.animation.LinearInterpolator
 import android.view.animation.Transformation
 import android.widget.BaseAdapter
-import com.pixplicity.sharp.Sharp
 import com.yubico.yubioath.R
 import com.yubico.yubioath.client.Code
 import com.yubico.yubioath.client.Credential
@@ -35,7 +34,8 @@ class CredentialAdapter(private val context: Context, private val actionHandler:
     var creds: Map<Credential, Code?> = initialCreds
         private set(value) {
             field = value.toSortedMap(
-                    compareBy<Credential> { if (isPinned(it)) 0 else 1 }
+                    compareBy<Credential> { !isPinned(it) }
+                            .thenBy { it.key != OathViewModel.NDEF_KEY }
                             .thenBy { it.issuer?.toLowerCase() ?: it.name.toLowerCase() }
                             .thenBy { it.name.toLowerCase() }
             )
