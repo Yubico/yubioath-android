@@ -30,7 +30,7 @@ class SettingsViewModel : BaseViewModel() {
         }
     }
 
-    suspend override fun useClient(client: OathClient) {
+    override suspend fun useClient(client: OathClient) {
         onDeviceRefresh?.let {
             launch(UI) {
                 it.invoke(client.deviceInfo)

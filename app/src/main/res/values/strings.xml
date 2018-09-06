@@ -115,10 +115,13 @@
     <string name="hide_thumbnail_description">Don\'t show codes in the app switcher</string>
     <string name="use_nfc_reader_mode_title">Use NFC Reader mode</string>
     <string name="use_nfc_reader_mode_description">Enabling this may resolve NFC issues on some handsets, but may introduce them on others.</string>
+    <string name="read_ndef_data_title">Read NFC NDEF payload</string>
+    <string name="read_ndef_data_description">Read the OTP slot data over NFC and display it as a credential.</string>
     <string name="warn_nfc_title">NFC warnings</string>
     <string name="warn_nfc_description">Warn when NFC is disabled or missing</string>
     <string name="clear_icons_action">Clear custom icons…</string>
     <string name="clear_passwords_action">Clear stored passwords…</string>
+    <string name="keyboard_layout_title">Keyboard layout map (for static passwords over NDEF).</string>
     <string name="about_action">About Yubico Authenticator…</string>
     <string name="about_title">About</string>
     <string name="no_device">No YubiKey present</string>

@@ -2,14 +2,15 @@ package com.yubico.yubioath.ui
 
 import android.app.PendingIntent
 import android.arch.lifecycle.ViewModel
-import android.content.BroadcastReceiver
-import android.content.Context
-import android.content.Intent
-import android.content.IntentFilter
+import android.content.*
 import android.hardware.usb.UsbDevice
 import android.hardware.usb.UsbManager
+import android.net.Uri
+import android.nfc.Tag
+import android.nfc.tech.Ndef
 import android.os.Build
 import android.support.v7.app.AppCompatActivity
+import android.support.v7.preference.PreferenceManager
 import android.util.Log
 import com.yubico.yubioath.R
 import com.yubico.yubioath.client.KeyManager
@@ -28,27 +29,32 @@ import kotlinx.coroutines.experimental.asCoroutineDispatcher
 import kotlinx.coroutines.experimental.async
 import kotlinx.coroutines.experimental.channels.Channel
 import kotlinx.coroutines.experimental.launch
-import nordpol.IsoCard
+import nordpol.android.AndroidCard
 import org.jetbrains.anko.toast
 import org.jetbrains.anko.usbManager
+import java.nio.charset.Charset
 import java.util.concurrent.Executors
 
 val EXEC = Executors.newSingleThreadExecutor().asCoroutineDispatcher()
 
 abstract class BaseViewModel : ViewModel() {
     companion object {
-        const private val ACTION_USB_PERMISSION = "com.yubico.yubioath.USB_PERMISSION"
-        const private val SP_STORED_AUTH_KEYS = "com.yubico.yubioath.SP_STORED_AUTH_KEYS"
+        private const val ACTION_USB_PERMISSION = "com.yubico.yubioath.USB_PERMISSION"
+        private const val SP_STORED_AUTH_KEYS = "com.yubico.yubioath.SP_STORED_AUTH_KEYS"
+
+        private const val URL_PREFIX = "https://my.yubico.com/"
+        private const val URL_NDEF_RECORD = 0xd1.toByte()
+        private val URL_PREFIX_BYTES = byteArrayOf(85, 4) + URL_PREFIX.substring(8).toByteArray(Charset.defaultCharset())
 
         private val DUMMY_INFO = YkOathApi.DeviceInfo("", false, YkOathApi.Version(0, 0, 0), false)
         private val MEM_STORE = ClearingMemProvider(EXEC)
         private var sharedLastDeviceInfo = DUMMY_INFO
     }
 
-    data class ClientResult<T>(val result:T?, val error: Throwable?)
+    data class ClientResult<T>(val result: T?, val error: Throwable?)
     data class ClientRequest(val deviceId: String?, val func: suspend (OathClient) -> Unit)
 
-    protected data class Services(val context: Context, val usbManager: UsbManager, val keyManager: KeyManager)
+    protected data class Services(val context: Context, val usbManager: UsbManager, val keyManager: KeyManager, val preferences: SharedPreferences)
 
     protected var services: Services? = null
 
@@ -72,7 +78,7 @@ abstract class BaseViewModel : ViewModel() {
                 MEM_STORE
         )
         services?.apply { usbReceiver?.let { context.unregisterReceiver(it) } }
-        services = Services(context, context.usbManager, keyManager).apply {
+        services = Services(context, context.usbManager, keyManager,PreferenceManager.getDefaultSharedPreferences(context)).apply {
             val filter = IntentFilter(ACTION_USB_PERMISSION)
             usbReceiver = object : BroadcastReceiver() {
                 override fun onReceive(context: Context, intent: Intent) {
@@ -110,11 +116,32 @@ abstract class BaseViewModel : ViewModel() {
         Log.d("yubioath", "ViewModel onCleared() called for $this")
     }
 
-    fun nfcConnected(card: IsoCard) = launch(EXEC) {
+    fun nfcConnected(tag: Tag) = launch(EXEC) {
         Log.d("yubioath", "NFC DEVICE!")
-        services?.let {
+        services?.apply {
             try {
-                useBackend(NfcBackend(card), it.keyManager)
+                AndroidCard.get(tag).apply {
+                    useBackend(NfcBackend(this), keyManager)
+                }.close()
+
+                if(preferences.getBoolean("readNdefData", false)) {
+                    Ndef.get(tag)?.apply {
+                        connect()
+                        val bytes = ndefMessage?.toByteArray()
+                        Log.d("yubioath", "NDEF BYTES: ${bytes?.toList()}")
+                        if (bytes != null && bytes[0] == URL_NDEF_RECORD && URL_PREFIX_BYTES.contentEquals(bytes.copyOfRange(3, 3 + URL_PREFIX_BYTES.size))) {
+                            // YubiKey NEO uses https://my.yubico.com/neo/<payload>
+                            if (bytes.copyOfRange(18, 18 + 5).contentEquals("/neo/".toByteArray())) {
+                                bytes[22] = '#'.toByte()  // Set byte preceding payload to #.
+                            }
+                            val payloadOffset = bytes.indexOf('#'.toByte())
+                            if(payloadOffset > 0) {
+                                useNdefPayload(bytes.copyOfRange(payloadOffset + 1, bytes.size))
+                            }
+                        }
+                        close()
+                    }
+                }
             } catch (e: Exception) {
                 sharedLastDeviceInfo = DUMMY_INFO
                 Log.e("yubioath", "Error using NFC device", e)
@@ -210,4 +237,6 @@ abstract class BaseViewModel : ViewModel() {
             }
         }
     }
+
+    protected open suspend fun useNdefPayload(data: ByteArray) = Unit
 }

@@ -82,7 +82,7 @@ class OathClient(backend: Backend, private val keyManager: KeyManager) : Closeab
         return Code(value, validFrom, validUntil)
     }
 
-    fun refreshCodes(timestamp: Long, existing: MutableMap<Credential, Code?>): MutableMap<Credential, Code?> {
+    fun refreshCodes(timestamp: Long, existing: Map<Credential, Code?>): MutableMap<Credential, Code?> {
         // Default to 30 second period
         val timeStep = (timestamp / 1000 / 30)
         val challenge = ByteBuffer.allocate(8).putLong(timeStep).array()

@@ -18,6 +18,19 @@
         android:summary="@string/use_nfc_reader_mode_description"
         android:title="@string/use_nfc_reader_mode_title" />
 
+    <SwitchPreferenceCompat
+        android:defaultValue="false"
+        android:key="readNdefData"
+        android:summary="@string/read_ndef_data_description"
+        android:title="@string/read_ndef_data_title" />
+
+    <ListPreference
+        android:defaultValue="1"
+        android:entries="@array/defaultKeyboard"
+        android:entryValues="@array/defaultKeyboard"
+        android:key="keyboardLayout"
+        android:title="@string/keyboard_layout_title" />
+
     <Preference
         android:key="clearIcons"
         android:title="@string/clear_icons_action" />
@@ -25,6 +38,7 @@
     <Preference
         android:key="clearPasswords"
         android:title="@string/clear_passwords_action" />
+
 
     <Preference
         android:key="about"

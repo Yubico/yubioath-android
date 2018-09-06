@@ -45,7 +45,6 @@
 
                 <data
                     android:host="my.yubico.com"
-                    android:pathPrefix="/neo/"
                     android:scheme="https"/>
             </intent-filter>
             <intent-filter android:autoVerify="true">
@@ -55,7 +54,6 @@
 
                 <data
                     android:host="my.yubico.com"
-                    android:pathPrefix="/neo/"
                     android:scheme="https"/>
             </intent-filter>
 

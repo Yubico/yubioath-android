@@ -6,6 +6,8 @@ import com.yubico.yubioath.client.Code
 import com.yubico.yubioath.client.Credential
 import com.yubico.yubioath.client.OathClient
 import com.yubico.yubioath.protocol.OathType
+import com.yubico.yubioath.scancode.KeyboardLayout
+import com.yubico.yubioath.scancode.USKeyboardLayout
 import com.yubico.yubioath.ui.BaseViewModel
 import com.yubico.yubioath.ui.EXEC
 import kotlinx.coroutines.experimental.Job
@@ -15,6 +17,11 @@ import kotlinx.coroutines.experimental.launch
 import org.jetbrains.anko.toast
 
 class OathViewModel : BaseViewModel() {
+    companion object {
+        private const val MODHEX = "cbdefghijklnrtuv"
+        private val CODE_PATTERN = """(\d{6,8})|(!?[1-8$MODHEX${MODHEX.toUpperCase()}]{4}[$MODHEX]{28,60})""".toRegex()
+    }
+
     var creds: MutableMap<Credential, Code?> = mutableMapOf()
         private set
     var searchFilter: String = ""
@@ -116,5 +123,22 @@ class OathViewModel : BaseViewModel() {
                 }
             }
         }
+    }
+
+    override suspend fun useNdefPayload(data: ByteArray) {
+        Log.d("yubioath", "NDEF PAYLOAD: ${data.toList()}")
+        val dataString = String(data)
+        if(CODE_PATTERN.matches(dataString)) {
+            Log.d("yubioath", "!!!1ASCII: $dataString")
+            creds[Credential(lastDeviceInfo.id, "NFC:NDEF", OathType.HOTP, false)] = Code(String(data), System.currentTimeMillis(), Long.MAX_VALUE)
+        } else {
+            Log.d("yubioath", "!!!!SCANCODES: ${data.toList()}")
+            services?.apply {
+                val password = KeyboardLayout.forName(preferences.getString("keyboardLayout", "US")!!).fromScanCodes(data)
+                creds[Credential(lastDeviceInfo.id, "NFC:NDEF", OathType.HOTP, false)] = Code(password, System.currentTimeMillis(), Long.MAX_VALUE)
+                Log.d("yubioath", "!!!!INTERPRETED: $password")
+            }
+        }
+        credListener(creds, searchFilter)
     }
 }

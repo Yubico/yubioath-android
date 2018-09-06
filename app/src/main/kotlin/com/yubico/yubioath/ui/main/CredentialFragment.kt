@@ -19,6 +19,7 @@ import android.support.design.widget.Snackbar
 import android.support.v4.app.ListFragment
 import android.support.v4.content.ContextCompat
 import android.support.v7.app.AlertDialog
+import android.util.Log
 import android.view.*
 import android.view.animation.*
 import android.widget.AdapterView

@@ -3,6 +3,7 @@ package com.yubico.yubioath.ui.settings
 import android.arch.lifecycle.ViewModelProviders
 import android.os.Bundle
 import android.support.v7.app.AlertDialog
+import android.support.v7.preference.ListPreference
 import android.support.v7.preference.Preference
 import android.support.v7.preference.PreferenceFragmentCompat
 import android.text.Html
@@ -10,6 +11,7 @@ import android.text.method.LinkMovementMethod
 import android.view.WindowManager
 import android.widget.TextView
 import com.yubico.yubioath.R
+import com.yubico.yubioath.scancode.KeyboardLayout
 
 class SettingsFragment : PreferenceFragmentCompat() {
     private val viewModel: SettingsViewModel by lazy { ViewModelProviders.of(activity!!).get(SettingsViewModel::class.java) }
@@ -64,6 +66,10 @@ class SettingsFragment : PreferenceFragmentCompat() {
                 true
             }
 
+            (preferenceManager.findPreference("keyboardLayout") as ListPreference).apply {
+                entryValues = KeyboardLayout.availableLayouts
+                entries = entryValues
+            }
         }
     }
 }

@@ -5,13 +5,13 @@ import android.arch.lifecycle.ViewModelProviders
 import android.content.Intent
 import android.content.SharedPreferences
 import android.nfc.NfcAdapter
+import android.nfc.tech.Ndef
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.preference.PreferenceManager
 import android.util.Log
 import android.view.WindowManager
 import com.yubico.yubioath.R
-import nordpol.android.AndroidCard
 import nordpol.android.OnDiscoveredTagListener
 import nordpol.android.TagDispatcher
 import nordpol.android.TagDispatcherBuilder
@@ -34,7 +34,7 @@ abstract class BaseActivity<T : BaseViewModel>(private var modelClass: Class<T>)
         tagDispatcher = TagDispatcherBuilder(this, OnDiscoveredTagListener {
             try {
                 viewModel.start(this)
-                viewModel.nfcConnected(AndroidCard.get(it))
+                viewModel.nfcConnected(it)
             } catch (e: Exception) {
                 Log.e("yubioath", "Error using NFC device", e)
             }

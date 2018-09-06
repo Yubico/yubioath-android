@@ -206,35 +206,35 @@ constructor(private var backend: Backend) : Closeable {
     private infix fun Byte.or(b: Byte): Byte = (toInt() or b.toInt()).toByte()
 
     companion object {
-        const private val APDU_OK = 0x9000
-        const private val APDU_FILE_FULL = 0x6a84
-        const private val APDU_DATA_REMAINING_SW1 = 0x61.toByte()
+        private const val APDU_OK = 0x9000
+        private const val APDU_FILE_FULL = 0x6a84
+        private const val APDU_DATA_REMAINING_SW1 = 0x61.toByte()
 
-        const private val NAME_TAG: Byte = 0x71
-        const private val NAME_LIST_TAG: Byte = 0x72
-        const private val KEY_TAG: Byte = 0x73
-        const private val CHALLENGE_TAG: Byte = 0x74
-        const private val RESPONSE_TAG: Byte = 0x75
-        const private val T_RESPONSE_TAG: Byte = 0x76
-        const private val NO_RESPONSE_TAG: Byte = 0x77
-        const private val PROPERTY_TAG: Byte = 0x78
-        const private val VERSION_TAG: Byte = 0x79
-        const private val IMF_TAG: Byte = 0x7a
-        const private val TOUCH_TAG: Byte = 0x7c
+        private const val NAME_TAG: Byte = 0x71
+        private const val NAME_LIST_TAG: Byte = 0x72
+        private const val KEY_TAG: Byte = 0x73
+        private const val CHALLENGE_TAG: Byte = 0x74
+        private const val RESPONSE_TAG: Byte = 0x75
+        private const val T_RESPONSE_TAG: Byte = 0x76
+        private const val NO_RESPONSE_TAG: Byte = 0x77
+        private const val PROPERTY_TAG: Byte = 0x78
+        private const val VERSION_TAG: Byte = 0x79
+        private const val IMF_TAG: Byte = 0x7a
+        private const val TOUCH_TAG: Byte = 0x7c
 
-        const private val ALWAYS_INCREASING_PROP: Byte = 0x01
-        const private val REQUIRE_TOUCH_PROP: Byte = 0x02
+        private const val ALWAYS_INCREASING_PROP: Byte = 0x01
+        private const val REQUIRE_TOUCH_PROP: Byte = 0x02
 
-        const private val PUT_INS: Byte = 0x01
-        const private val DELETE_INS: Byte = 0x02
-        const private val SET_CODE_INS: Byte = 0x03
-        const private val RESET_INS: Byte = 0x04
+        private const val PUT_INS: Byte = 0x01
+        private const val DELETE_INS: Byte = 0x02
+        private const val SET_CODE_INS: Byte = 0x03
+        private const val RESET_INS: Byte = 0x04
 
-        const private val LIST_INS = 0xa1.toByte()
-        const private val CALCULATE_INS = 0xa2.toByte()
-        const private val VALIDATE_INS = 0xa3.toByte()
-        const private val CALCULATE_ALL_INS = 0xa4.toByte()
-        const private val SEND_REMAINING_INS = 0xa5.toByte()
+        private const val LIST_INS = 0xa1.toByte()
+        private const val CALCULATE_INS = 0xa2.toByte()
+        private const val VALIDATE_INS = 0xa3.toByte()
+        private const val CALCULATE_ALL_INS = 0xa4.toByte()
+        private const val SEND_REMAINING_INS = 0xa5.toByte()
 
         private val AID = byteArrayOf(0xa0.toByte(), 0x00, 0x00, 0x05, 0x27, 0x21, 0x01, 0x01)
 

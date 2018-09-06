@@ -113,4 +113,8 @@
         <item>Select an image…</item>
         <item>Use default icon</item>
     </string-array>
+
+    <string-array name="defaultKeyboard">
+        <item>US</item>
+    </string-array>
 </resources>
