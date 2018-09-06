@@ -74,7 +74,8 @@ class CredentialAdapter(private val context: Context, private val actionHandler:
         8 -> value.slice(0..3) + " " + value.slice(4..7) //1234 5678
         7 -> value.slice(0..3) + " " + value.slice(4..6) //1234 567
         6 -> value.slice(0..2) + " " + value.slice(3..5) //123 456
-        else -> value
+        in 9..20 -> value
+        else -> "${value.substring(0, 12)}…"
     }
 
     private suspend fun notifyNextTimeout(credentials: Map<Credential, Code?>) {
@@ -83,6 +84,7 @@ class CredentialAdapter(private val context: Context, private val actionHandler:
             if (code != null) when (cred.type) {
                 OathType.TOTP -> code.validUntil
                 OathType.HOTP -> code.validFrom + 5000  // Redraw HOTP codes after 5 seconds as they can be re-calculated.
+                null -> Long.MAX_VALUE
             } else -1
         }.filter { it > now }.min()
 

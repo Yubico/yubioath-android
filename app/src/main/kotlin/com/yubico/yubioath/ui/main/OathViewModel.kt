@@ -18,6 +18,7 @@ import org.jetbrains.anko.toast
 
 class OathViewModel : BaseViewModel() {
     companion object {
+        private const val NDEF_KEY = "NFC:NDEF"
         private const val MODHEX = "cbdefghijklnrtuv"
         private val CODE_PATTERN = """(\d{6,8})|(!?[1-8$MODHEX${MODHEX.toUpperCase()}]{4}[$MODHEX]{28,60})""".toRegex()
     }
@@ -126,17 +127,13 @@ class OathViewModel : BaseViewModel() {
     }
 
     override suspend fun useNdefPayload(data: ByteArray) {
-        Log.d("yubioath", "NDEF PAYLOAD: ${data.toList()}")
         val dataString = String(data)
         if(CODE_PATTERN.matches(dataString)) {
-            Log.d("yubioath", "!!!1ASCII: $dataString")
-            creds[Credential(lastDeviceInfo.id, "NFC:NDEF", OathType.HOTP, false)] = Code(String(data), System.currentTimeMillis(), Long.MAX_VALUE)
+            creds[Credential(lastDeviceInfo.id, NDEF_KEY, null, false)] = Code(String(data), System.currentTimeMillis(), Long.MAX_VALUE)
         } else {
-            Log.d("yubioath", "!!!!SCANCODES: ${data.toList()}")
             services?.apply {
                 val password = KeyboardLayout.forName(preferences.getString("keyboardLayout", "US")!!).fromScanCodes(data)
-                creds[Credential(lastDeviceInfo.id, "NFC:NDEF", OathType.HOTP, false)] = Code(password, System.currentTimeMillis(), Long.MAX_VALUE)
-                Log.d("yubioath", "!!!!INTERPRETED: $password")
+                creds[Credential(lastDeviceInfo.id, NDEF_KEY, null, false)] = Code(password, System.currentTimeMillis(), Long.MAX_VALUE)
             }
         }
         credListener(creds, searchFilter)

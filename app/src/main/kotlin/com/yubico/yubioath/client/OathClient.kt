@@ -76,7 +76,7 @@ class OathClient(backend: Backend, private val keyManager: KeyManager) : Closeab
 
         val (validFrom, validUntil) = when (credential.type) {
             OathType.TOTP -> Pair(timeStep * 1000 * credential.period, (timeStep + 1) * 1000 * credential.period)
-            OathType.HOTP -> Pair(System.currentTimeMillis(), Long.MAX_VALUE)
+            OathType.HOTP, null -> Pair(System.currentTimeMillis(), Long.MAX_VALUE)
         }
 
         return Code(value, validFrom, validUntil)
@@ -125,7 +125,7 @@ class OathClient(backend: Backend, private val keyManager: KeyManager) : Closeab
     }
 
     companion object {
-        private val STEAM_CHARS = "23456789BCDFGHJKMNPQRTVWXY"
+        private const val STEAM_CHARS = "23456789BCDFGHJKMNPQRTVWXY"
 
         private fun formatTruncated(data: ByteArray): String {
             return with(ByteBuffer.wrap(data)) {
