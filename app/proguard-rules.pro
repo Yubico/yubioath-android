@@ -29,7 +29,7 @@
 -dontwarn kotlin.**
 
 # We use reflection to change the icon of the SwipeRefreshLayout
--keep class android.support.v4.widget.SwipeRefreshLayout { *; }
+-keep class androidx.swiperefreshlayout.widget.SwipeRefreshLayout { *; }
 
 # Needed to set the OnQueryTextListener
--keep class android.support.v7.widget.SearchView { *; }
+-keep class androidx.appcompat.widget.SearchView { *; }
