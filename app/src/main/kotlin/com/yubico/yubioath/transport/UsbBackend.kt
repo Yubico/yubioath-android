@@ -7,10 +7,6 @@ import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.util.*
 
-/**
- * Created by Dain on 2017-04-19.
- */
-
 class UsbBackend(private val connection: UsbDeviceConnection, private val iface: UsbInterface, private val endpointBulkOut: UsbEndpoint, private val endpointBulkIn: UsbEndpoint) : Backend, Closeable {
     override val persistent = true
 
@@ -94,7 +90,7 @@ class UsbBackend(private val connection: UsbDeviceConnection, private val iface:
         private const val STATUS_TIME_EXTENSION = 0x80.toByte()
 
         private fun findInterface(device: UsbDevice): UsbInterface? {
-            return (0..device.interfaceCount - 1).asSequence()
+            return (0 until device.interfaceCount).asSequence()
                     .map { device.getInterface(it) }
                     .firstOrNull { it.interfaceClass == UsbConstants.USB_CLASS_CSCID }
         }
@@ -103,16 +99,16 @@ class UsbBackend(private val connection: UsbDeviceConnection, private val iface:
 
         fun connect(manager: UsbManager, device: UsbDevice): UsbBackend {
             return findInterface(device)?.let { iface ->
-                (0..iface.endpointCount - 1)
+                (0 until iface.endpointCount)
                         .map { iface.getEndpoint(it) }
                         .filter { it.type == UsbConstants.USB_ENDPOINT_XFER_BULK }.let {
-                    UsbBackend(
-                            manager.openDevice(device),
-                            iface,
-                            it.first { it.direction == UsbConstants.USB_DIR_OUT },
-                            it.first { it.direction == UsbConstants.USB_DIR_IN }
-                    )
-                }
+                            UsbBackend(
+                                    manager.openDevice(device),
+                                    iface,
+                                    it.first { it.direction == UsbConstants.USB_DIR_OUT },
+                                    it.first { it.direction == UsbConstants.USB_DIR_IN }
+                            )
+                        }
             } ?: throw IllegalArgumentException("UsbDevice does not support CCID")
         }
     }

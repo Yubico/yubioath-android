@@ -2,10 +2,6 @@ package com.yubico.yubioath.transport
 
 import nordpol.IsoCard
 
-/**
- * Created by Dain on 2017-04-19.
- */
-
 class NfcBackend(private val card: IsoCard) : Backend {
     override val persistent = false
 
