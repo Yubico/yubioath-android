@@ -18,6 +18,7 @@ import com.google.android.gms.vision.barcode.BarcodeDetector
 import com.yubico.yubioath.R
 
 const val QR_DATA = "QR_DATA"
+const val RESULT_NO_PLAY_SERVICES = Activity.RESULT_FIRST_USER + 0
 private const val PERMISSION_CAMERA = 1
 
 class QrActivity : AppCompatActivity() {
@@ -30,7 +31,7 @@ class QrActivity : AppCompatActivity() {
         override fun receiveDetections(detections: Detector.Detections<Barcode>) {
             detections.detectedItems.let {
                 if (it.size() > 0) {
-                    setResult(Activity.RESULT_OK, Intent().apply { putExtra(QR_DATA, it.valueAt(0)) })
+                    setResult(RESULT_OK, Intent().apply { putExtra(QR_DATA, it.valueAt(0)) })
                     finish()
                 }
             }
@@ -43,10 +44,16 @@ class QrActivity : AppCompatActivity() {
 
         findViewById<Button>(R.id.cancel).setOnClickListener { finish() }
 
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
-            initCamera()
+        val code = GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(this)
+        if (code == ConnectionResult.SUCCESS) {
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
+                initCamera()
+            } else {
+                ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.CAMERA), PERMISSION_CAMERA)
+            }
         } else {
-            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.CAMERA), PERMISSION_CAMERA)
+            setResult(RESULT_NO_PLAY_SERVICES)
+            finish()
         }
     }
 
@@ -56,9 +63,8 @@ class QrActivity : AppCompatActivity() {
         if (code == ConnectionResult.SUCCESS) {
             cameraSource?.let { cameraPreview.cameraSource = it }
         } else {
-            GoogleApiAvailability.getInstance().getErrorDialog(this, code, 5).apply {
-                setOnDismissListener { finish() }
-            }.show()
+            setResult(RESULT_NO_PLAY_SERVICES)
+            finish()
         }
     }
 

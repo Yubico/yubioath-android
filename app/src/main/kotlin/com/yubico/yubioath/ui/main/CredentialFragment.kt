@@ -4,7 +4,9 @@ import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.app.Activity
 import android.arch.lifecycle.ViewModelProviders
+import android.content.ActivityNotFoundException
 import android.content.ClipData
+import android.content.Context
 import android.content.Intent
 import android.database.DataSetObserver
 import android.net.Uri
@@ -32,6 +34,7 @@ import com.yubico.yubioath.protocol.OathType
 import com.yubico.yubioath.ui.add.AddCredentialActivity
 import com.yubico.yubioath.ui.qr.QR_DATA
 import com.yubico.yubioath.ui.qr.QrActivity
+import com.yubico.yubioath.ui.qr.RESULT_NO_PLAY_SERVICES
 import kotlinx.android.synthetic.main.fragment_credentials.*
 import kotlinx.coroutines.experimental.Job
 import kotlinx.coroutines.experimental.android.UI
@@ -45,6 +48,7 @@ class CredentialFragment : ListFragment() {
         private const val REQUEST_ADD_CREDENTIAL = 1
         private const val REQUEST_SELECT_ICON = 2
         private const val REQUEST_SCAN_QR = 3
+        private const val REQUEST_SCAN_QR_EXTERNAL = 4
     }
 
     private val viewModel: OathViewModel by lazy { ViewModelProviders.of(activity!!).get(OathViewModel::class.java) }
@@ -186,6 +190,17 @@ class CredentialFragment : ListFragment() {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
+
+        fun handleUrlCredential(context:Context, data: String) {
+            try {
+                val uri = Uri.parse(data)
+                CredentialData.fromUri(uri)
+                startActivityForResult(Intent(Intent.ACTION_VIEW, uri, context, AddCredentialActivity::class.java), REQUEST_ADD_CREDENTIAL)
+            } catch (e: IllegalArgumentException) {
+                context.toast(R.string.invalid_barcode)
+            }
+        }
+
         activity?.apply {
             if (resultCode == Activity.RESULT_OK && data != null) when(requestCode) {
                 REQUEST_ADD_CREDENTIAL -> {
@@ -211,15 +226,22 @@ class CredentialFragment : ListFragment() {
                     actionMode?.finish()
                 }
                 REQUEST_SCAN_QR -> {
-                    val value = data.getParcelableExtra<Barcode>(QR_DATA).displayValue
-                    try {
-                        val uri = Uri.parse(value)
-                        CredentialData.fromUri(uri)
-                        startActivityForResult(Intent(Intent.ACTION_VIEW, uri, context, AddCredentialActivity::class.java), REQUEST_ADD_CREDENTIAL)
-                    } catch (e: IllegalArgumentException) {
-                        toast(R.string.invalid_barcode)
-                    }
+                    handleUrlCredential(this, data.getParcelableExtra<Barcode>(QR_DATA).displayValue)
                 }
+                REQUEST_SCAN_QR_EXTERNAL -> {
+                    handleUrlCredential(this, data.getStringExtra("SCAN_RESULT"))
+                }
+            }
+        }
+
+        if(requestCode == REQUEST_SCAN_QR && resultCode == RESULT_NO_PLAY_SERVICES) {
+            try {
+                startActivityForResult(Intent("com.google.zxing.client.android.SCAN").apply {
+                    putExtra("SCAN_MODE", "QR_CODE_MODE")
+                    putExtra("SAVE_HISTORY", false)
+                }, REQUEST_SCAN_QR_EXTERNAL)
+            } catch (e: ActivityNotFoundException) {
+                activity?.toast(R.string.external_qr_scanner_missing)
             }
         }
     }

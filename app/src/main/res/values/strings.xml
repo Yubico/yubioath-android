@@ -139,5 +139,6 @@ OATH Version: %2$s</p>
 
     <string name="header_qr">Point the camera at the QR code</string>
     <string name="camera_not_ready">Camera dependency not yet available, please try again later.</string>
+    <string name="external_qr_scanner_missing">No QR code reader available.</string>
 
 </resources>
