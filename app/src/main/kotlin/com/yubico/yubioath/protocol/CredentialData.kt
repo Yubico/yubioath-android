@@ -20,17 +20,18 @@ data class CredentialData(val secret: ByteArray, var issuer: String?, var name: 
                 }
             }
 
-            var path = uri.path
-            if (path == null || path.isEmpty()) throw IllegalArgumentException("Path must contain name")
-            if (path[0] == '/') path = path.substring(1)
-            if (path.length > 64) path = path.substring(0, 64)
-            var name = path
+            var data = uri.path
+            if (data == null || data.isEmpty()) throw IllegalArgumentException("Path must contain name")
+            if (data[0] == '/') data = data.substring(1)
+            if (data.length > 64) data = data.substring(0, 64)
 
-            val issuer = if (':' in name) {
-                val parts = name.split(':', limit = 2)
-                name = parts[1]
+            val issuer = if (':' in data) {
+                val parts = data.split(':', limit = 2)
+                data = parts[1]
                 parts[0]
             } else uri.getQueryParameter("issuer")
+
+            val name = data
 
             val oathType = when (uri.host.orEmpty().toLowerCase()) {
                 "totp" -> OathType.TOTP
