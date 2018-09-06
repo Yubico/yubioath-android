@@ -1,17 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-          xmlns:tools="http://schemas.android.com/tools"
-          package="com.yubico.yubioath">
+    package="com.yubico.yubioath">
 
     <uses-permission android:name="android.permission.CAMERA" />
-    <uses-permission android:name="android.permission.NFC"/>
+    <uses-permission android:name="android.permission.NFC" />
 
     <uses-feature
         android:name="android.hardware.usb.host"
-        android:required="false"/>
+        android:required="false" />
     <uses-feature
         android:name="android.hardware.nfc"
-        android:required="false"/>
+        android:required="false" />
 
     <application
         android:allowBackup="true"
@@ -32,34 +31,34 @@
             android:configChanges="orientation|keyboard|keyboardHidden"
             android:launchMode="singleTask">
             <intent-filter>
-                <action android:name="android.intent.action.MAIN"/>
+                <action android:name="android.intent.action.MAIN" />
 
-                <category android:name="android.intent.category.LAUNCHER"/>
+                <category android:name="android.intent.category.LAUNCHER" />
 
-                <action android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED"/>
+                <action android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED" />
             </intent-filter>
             <intent-filter>
-                <action android:name="android.nfc.action.NDEF_DISCOVERED"/>
+                <action android:name="android.nfc.action.NDEF_DISCOVERED" />
 
-                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.DEFAULT" />
 
                 <data
                     android:host="my.yubico.com"
-                    android:scheme="https"/>
+                    android:scheme="https" />
             </intent-filter>
             <intent-filter android:autoVerify="true">
-                <action android:name="android.intent.action.VIEW"/>
+                <action android:name="android.intent.action.VIEW" />
 
-                <category android:name="android.intent.category.BROWSABLE"/>
+                <category android:name="android.intent.category.BROWSABLE" />
 
                 <data
                     android:host="my.yubico.com"
-                    android:scheme="https"/>
+                    android:scheme="https" />
             </intent-filter>
 
             <meta-data
                 android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED"
-                android:resource="@xml/device_filter"/>
+                android:resource="@xml/device_filter" />
         </activity>
 
         <activity
@@ -68,16 +67,16 @@
             android:configChanges="orientation|keyboard|keyboardHidden"
             android:launchMode="singleTask">
             <intent-filter>
-                <action android:name="android.intent.action.VIEW"/>
+                <action android:name="android.intent.action.VIEW" />
 
-                <category android:name="android.intent.category.BROWSABLE"/>
+                <category android:name="android.intent.category.BROWSABLE" />
 
-                <data android:scheme="otpauth"/>
+                <data android:scheme="otpauth" />
             </intent-filter>
 
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.yubico.yubioath.ui.main.MainActivity"/>
+                android:value="com.yubico.yubioath.ui.main.MainActivity" />
         </activity>
 
         <activity
@@ -88,7 +87,7 @@
 
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.yubico.yubioath.ui.main.MainActivity"/>
+                android:value="com.yubico.yubioath.ui.main.MainActivity" />
         </activity>
 
         <activity
@@ -98,7 +97,7 @@
 
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.yubico.yubioath.ui.main.MainActivity"/>
+                android:value="com.yubico.yubioath.ui.main.MainActivity" />
         </activity>
 
         <activity
