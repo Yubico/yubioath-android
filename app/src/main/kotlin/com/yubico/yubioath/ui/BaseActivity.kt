@@ -1,14 +1,13 @@
 package com.yubico.yubioath.ui
 
 import android.annotation.SuppressLint
-import android.arch.lifecycle.ViewModelProviders
+import androidx.lifecycle.ViewModelProviders
 import android.content.Intent
 import android.content.SharedPreferences
 import android.nfc.NfcAdapter
-import android.nfc.tech.Ndef
 import android.os.Bundle
-import android.support.v7.app.AppCompatActivity
-import android.support.v7.preference.PreferenceManager
+import androidx.appcompat.app.AppCompatActivity
+import androidx.preference.PreferenceManager
 import android.util.Log
 import android.view.WindowManager
 import com.yubico.yubioath.R

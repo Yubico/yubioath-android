@@ -1,16 +1,15 @@
 package com.yubico.yubioath.ui
 
 import android.app.PendingIntent
-import android.arch.lifecycle.ViewModel
+import androidx.lifecycle.ViewModel
 import android.content.*
 import android.hardware.usb.UsbDevice
 import android.hardware.usb.UsbManager
-import android.net.Uri
 import android.nfc.Tag
 import android.nfc.tech.Ndef
 import android.os.Build
-import android.support.v7.app.AppCompatActivity
-import android.support.v7.preference.PreferenceManager
+import androidx.appcompat.app.AppCompatActivity
+import androidx.preference.PreferenceManager
 import android.util.Log
 import com.yubico.yubioath.R
 import com.yubico.yubioath.client.KeyManager

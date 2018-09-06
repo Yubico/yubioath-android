@@ -2,8 +2,8 @@ package com.yubico.yubioath.ui.password
 
 import android.app.Activity
 import android.os.Bundle
-import android.support.design.widget.Snackbar
-import android.support.v4.content.ContextCompat
+import com.google.android.material.snackbar.Snackbar
+import androidx.core.content.ContextCompat
 import android.view.Menu
 import android.view.MenuItem
 import com.yubico.yubioath.R

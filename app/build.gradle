@@ -35,7 +35,7 @@ dependencies {
     testImplementation 'org.mockito:mockito-core:2.11.0'
 
     implementation 'commons-codec:commons-codec:1.11'
-    implementation group: 'com.fidesmo', name: 'nordpol-android', version: '0.1.22', ext: 'aar', transitive: true
+    implementation 'com.fidesmo:nordpol-android:0.1.23'
     implementation 'com.pixplicity.sharp:library:1.1.0'
 
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
@@ -44,13 +44,13 @@ dependencies {
     implementation 'org.jetbrains.anko:anko-sdk15:0.10.5'
     implementation "org.jetbrains.anko:anko-coroutines:0.10.5"
 
-    implementation 'com.android.support:appcompat-v7:28.0.0-rc01'
-    implementation 'com.android.support:design:28.0.0-rc01'
-    implementation 'com.android.support:preference-v14:28.0.0-rc01'
+    implementation 'androidx.appcompat:appcompat:1.0.0-rc02'
+    implementation 'com.google.android.material:material:1.0.0-rc01'
+    implementation 'androidx.legacy:legacy-preference-v14:1.0.0-rc02'
 
     implementation 'com.google.android.gms:play-services-vision:15.0.2'
 
-    implementation "android.arch.lifecycle:extensions:1.1.1"
+    implementation "androidx.lifecycle:lifecycle-extensions:2.0.0-rc01"
 }
 repositories {
     mavenCentral()

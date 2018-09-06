@@ -3,7 +3,7 @@ package com.yubico.yubioath.keystore
 import android.os.Build
 import android.security.keystore.KeyProperties
 import android.security.keystore.KeyProtection
-import android.support.annotation.RequiresApi
+import androidx.annotation.RequiresApi
 import java.security.KeyStore
 import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
