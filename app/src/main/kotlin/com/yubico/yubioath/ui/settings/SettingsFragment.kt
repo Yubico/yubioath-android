@@ -23,6 +23,13 @@ class SettingsFragment : PreferenceFragmentCompat() {
         }
     }
 
+    private inline fun onPreferenceClick(key: String, crossinline func: () -> Unit) {
+        preferenceManager.findPreference(key).onPreferenceClickListener = Preference.OnPreferenceClickListener {
+            func()
+            true
+        }
+    }
+
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         addPreferencesFromResource(R.xml.preferences)
 
@@ -31,7 +38,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
                 window.setFlags(WindowManager.LayoutParams.FLAG_SECURE, if (it == true) WindowManager.LayoutParams.FLAG_SECURE else 0)
             }
 
-            onPreferenceChange("clearIcons") {
+            onPreferenceClick("clearIcons") {
                 AlertDialog.Builder(this)
                         .setTitle(R.string.clear_icons)
                         .setMessage(R.string.clear_icons_message)
@@ -40,7 +47,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
                         .show()
             }
 
-            onPreferenceChange("clearPasswords") {
+            onPreferenceClick("clearPasswords") {
                 AlertDialog.Builder(this)
                         .setTitle(R.string.clear_passwords)
                         .setMessage(R.string.clear_passwords_message)
@@ -49,7 +56,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
                         .show()
             }
 
-            onPreferenceChange("about") { _ ->
+            onPreferenceClick("about") {
                 val appVersion: String = packageManager.getPackageInfo(packageName, 0).versionName
                 val oathVersion = with(viewModel.lastDeviceInfo) { if (id.isNotEmpty()) "$version" else getString(com.yubico.yubioath.R.string.no_device) }
 
