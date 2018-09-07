@@ -1,34 +1,35 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <SwitchPreferenceCompat
+    <SwitchPreference
         android:defaultValue="true"
         android:key="hideThumbnail"
         android:summary="@string/hide_thumbnail_description"
         android:title="@string/hide_thumbnail_title" />
 
-    <SwitchPreferenceCompat
+    <SwitchPreference
         android:defaultValue="true"
         android:key="warnNfc"
         android:summary="@string/warn_nfc_description"
         android:title="@string/warn_nfc_title" />
 
-    <SwitchPreferenceCompat
+    <SwitchPreference
         android:defaultValue="false"
         android:key="useNfcReaderMode"
         android:summary="@string/use_nfc_reader_mode_description"
         android:title="@string/use_nfc_reader_mode_title" />
 
-    <SwitchPreferenceCompat
+    <SwitchPreference
         android:defaultValue="false"
         android:key="readNdefData"
         android:summary="@string/read_ndef_data_description"
         android:title="@string/read_ndef_data_title" />
 
     <ListPreference
-        android:defaultValue="1"
+        android:defaultValue="US"
         android:entries="@array/defaultKeyboard"
         android:entryValues="@array/defaultKeyboard"
         android:key="keyboardLayout"
+        android:summary="%s"
         android:title="@string/keyboard_layout_title" />
 
     <Preference
