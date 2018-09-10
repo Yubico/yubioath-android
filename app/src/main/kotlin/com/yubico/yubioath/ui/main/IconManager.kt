@@ -25,7 +25,7 @@ class IconManager(context:Context) {
     private val textPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         textSize = RADIUS
         textAlign = Paint.Align.CENTER
-        color = ContextCompat.getColor(context, android.R.color.primary_text_dark)
+        color = ContextCompat.getColor(context, R.color.yubicoPrimaryWhite)
     }
 
     private val Credential.iconKey: String get() = issuer ?: ":$name"
