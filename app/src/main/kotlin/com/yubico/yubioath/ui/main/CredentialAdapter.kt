@@ -20,11 +20,14 @@ import kotlinx.coroutines.experimental.android.UI
 import kotlinx.coroutines.experimental.delay
 import kotlinx.coroutines.experimental.launch
 import org.jetbrains.anko.imageBitmap
+import org.jetbrains.anko.imageResource
+import kotlin.math.min
 
 class CredentialAdapter(private val context: Context, private val actionHandler: ActionHandler, initialCreds: Map<Credential, Code?> = mapOf()) : BaseAdapter() {
     companion object {
         private const val CREDENTIAL_STORAGE = "CREDENTIAL_STORAGE"
         private const val IS_PINNED = "IS_PINNED"
+        private val NUMERIC = Regex("^[0-9]+$")
     }
 
     private val credentialStorage = context.getSharedPreferences(CREDENTIAL_STORAGE, Context.MODE_PRIVATE)
@@ -53,6 +56,7 @@ class CredentialAdapter(private val context: Context, private val actionHandler:
     private fun Code?.canRefresh(): Boolean = this == null || validFrom + 5000 < System.currentTimeMillis()
 
     private fun Credential.hasTimer(): Boolean = type == OathType.TOTP && period != 30
+    private fun Credential.canMask(code: Code?): Boolean = key == OathViewModel.NDEF_KEY && code?.value?.matches(OathViewModel.CODE_PATTERN) == false
 
     fun isPinned(credential: Credential): Boolean = credentialStorage.getBoolean("$IS_PINNED/${credential.deviceId}/${credential.key}", false)
 
@@ -69,14 +73,16 @@ class CredentialAdapter(private val context: Context, private val actionHandler:
 
     fun removeIcon(credential: Credential) = iconManager.removeIcon(credential)
 
-    private fun Code?.formatValue(): String = when (this?.value?.length) {
-        null -> context.getString(R.string.press_for_code)
-        8 -> value.slice(0..3) + " " + value.slice(4..7) //1234 5678
-        7 -> value.slice(0..3) + " " + value.slice(4..6) //1234 567
-        6 -> value.slice(0..2) + " " + value.slice(3..5) //123 456
-        in 0..20 -> value
-        else -> "${value.substring(0, 12)}…"
-    }
+    private fun Code?.formatValue(): String = this?.value?.let {
+        if (it.matches(NUMERIC)) {
+            when (it.length) {
+                8 -> it.slice(0..3) + " " + it.slice(4..7) //1234 5678
+                7 -> it.slice(0..3) + " " + it.slice(4..6) //1234 567
+                6 -> it.slice(0..2) + " " + it.slice(3..5) //123 456
+                else -> it
+            }
+        } else it
+    } ?: context.getString(R.string.press_for_code)
 
     private suspend fun notifyNextTimeout(credentials: Map<Credential, Code?>) {
         val now = System.currentTimeMillis()
@@ -130,14 +136,35 @@ class CredentialAdapter(private val context: Context, private val actionHandler:
                 }
                 labelView.text = credential.name
 
-                codeView.text = code.formatValue()
-                codeView.isEnabled = code.valid()
-
                 icon.setOnClickListener { actionHandler.select(position) }
                 readButton.setOnClickListener { actionHandler.calculate(credential) }
                 copyButton.setOnClickListener { code?.let { actionHandler.copy(it) } }
                 readButton.visibility = if (credential.type == OathType.HOTP && code.canRefresh() || credential.touch && !code.valid()) View.VISIBLE else View.GONE
                 copyButton.visibility = if (code != null) View.VISIBLE else View.GONE
+
+                fun updateMask(visible: Boolean) {
+                    if (visible) {
+                        showButton.imageResource = R.drawable.ic_visibility_off_24dp
+                        codeView.text = code.formatValue()
+                    } else {
+                        showButton.imageResource = R.drawable.ic_visibility_24dp
+                        codeView.text = "".padEnd(min(code?.value?.length ?: 0, 20), '•')
+                    }
+                }
+
+                if (credential.canMask(code)) {
+                    showButton.visibility = View.VISIBLE
+                    showButton.setOnClickListener {
+                        it.tag = it.tag != true
+                        updateMask(it.tag == true)
+                    }
+                    updateMask(showButton.tag == true)
+                } else {
+                    showButton.visibility = View.GONE
+                    updateMask(true)
+                }
+
+                codeView.isEnabled = code.valid()
 
                 timeoutBar.apply {
                     if (credential.hasTimer()) {
@@ -187,6 +214,7 @@ class CredentialAdapter(private val context: Context, private val actionHandler:
         val codeView = view.code!!
         val readButton = view.readButton!!
         val copyButton = view.copyButton!!
+        val showButton = view.showButton!!
         val timeoutBar = view.timeoutBar!!
         val timeoutAnimation = object : Animation() {
             init {

@@ -20,7 +20,7 @@ class OathViewModel : BaseViewModel() {
     companion object {
         const val NDEF_KEY = "NFC:NDEF"
         private const val MODHEX = "cbdefghijklnrtuv"
-        private val CODE_PATTERN = """(\d{6,8})|(!?[1-8$MODHEX${MODHEX.toUpperCase()}]{4}[$MODHEX]{28,60})""".toRegex()
+        val CODE_PATTERN = """(\d{6,8})|(!?[1-8$MODHEX${MODHEX.toUpperCase()}]{4}[$MODHEX]{28,60})""".toRegex()
     }
 
     var creds: MutableMap<Credential, Code?> = mutableMapOf()
