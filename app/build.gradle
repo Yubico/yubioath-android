@@ -37,7 +37,7 @@ dependencies {
     implementation 'org.jetbrains.anko:anko-coroutines:0.10.5'
 
     implementation 'com.google.android.gms:play-services-vision:15.0.2'
-    implementation 'com.google.android.material:material:1.0.0-rc01'
+    implementation 'com.google.android.material:material:1.0.0-rc02'
     implementation 'androidx.appcompat:appcompat:1.0.0-rc02'
     implementation 'androidx.preference:preference:1.0.0-rc02'
     implementation 'androidx.lifecycle:lifecycle-extensions:2.0.0-rc01'
