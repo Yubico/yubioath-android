@@ -4,6 +4,8 @@ import java.lang.IllegalArgumentException
 
 abstract class KeyboardLayout(val name:String) {
     companion object {
+        const val DEFAULT_NAME = "US"
+
         const val SHIFT = 0x80
 
         private val layouts by lazy {
@@ -15,7 +17,7 @@ abstract class KeyboardLayout(val name:String) {
         }
 
         val availableLayouts get() = layouts.keys.toTypedArray()
-        fun forName(name:String) = layouts[name] ?: throw IllegalArgumentException("Unsupported keyboard layout!")
+        fun forName(name:String) = layouts[name] ?: throw IllegalArgumentException("Unsupported keyboard layout: $name!")
     }
 
     abstract fun fromScanCode(code: Int): String

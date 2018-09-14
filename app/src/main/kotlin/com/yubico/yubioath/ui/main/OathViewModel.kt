@@ -7,7 +7,6 @@ import com.yubico.yubioath.client.Credential
 import com.yubico.yubioath.client.OathClient
 import com.yubico.yubioath.protocol.OathType
 import com.yubico.yubioath.scancode.KeyboardLayout
-import com.yubico.yubioath.scancode.USKeyboardLayout
 import com.yubico.yubioath.ui.BaseViewModel
 import com.yubico.yubioath.ui.EXEC
 import kotlinx.coroutines.experimental.Job
@@ -129,10 +128,15 @@ class OathViewModel : BaseViewModel() {
     override suspend fun useNdefPayload(data: ByteArray) {
         val dataString = String(data)
         if(CODE_PATTERN.matches(dataString)) {
-            creds[Credential(lastDeviceInfo.id, NDEF_KEY, null, false)] = Code(String(data), System.currentTimeMillis(), Long.MAX_VALUE)
+            creds[Credential(lastDeviceInfo.id, NDEF_KEY, null, false)] = Code(dataString, System.currentTimeMillis(), Long.MAX_VALUE)
         } else {
             services?.apply {
-                val password = KeyboardLayout.forName(preferences.getString("keyboardLayout", "US")!!).fromScanCodes(data)
+                val password = try {
+                    KeyboardLayout.forName(preferences.getString("keyboardLayout", KeyboardLayout.DEFAULT_NAME)!!)
+                } catch (e: java.lang.IllegalArgumentException) {
+                    preferences.edit().putString("keyboardLayout", KeyboardLayout.DEFAULT_NAME).apply()
+                    KeyboardLayout.forName(KeyboardLayout.DEFAULT_NAME)
+                }.fromScanCodes(data)
                 creds[Credential(lastDeviceInfo.id, NDEF_KEY, null, false)] = Code(password, System.currentTimeMillis(), Long.MAX_VALUE)
             }
         }
