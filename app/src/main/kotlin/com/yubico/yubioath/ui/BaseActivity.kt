@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import androidx.lifecycle.ViewModelProviders
 import android.content.Intent
 import android.content.SharedPreferences
+import android.nfc.NdefMessage
 import android.nfc.NfcAdapter
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
@@ -57,6 +58,9 @@ abstract class BaseActivity<T : BaseViewModel>(private var modelClass: Class<T>)
         viewModel.start(this)
 
         if (intent.action == NfcAdapter.ACTION_NDEF_DISCOVERED && !viewModel.ndefConsumed) {
+            if(prefs.getBoolean("readNdefData", false)) {
+                viewModel.ndefIntentData = (intent.getParcelableArrayExtra(NfcAdapter.EXTRA_NDEF_MESSAGES)[0] as NdefMessage).toByteArray()
+            }
             viewModel.ndefConsumed = true
             tagDispatcher.interceptIntent(intent)
         }

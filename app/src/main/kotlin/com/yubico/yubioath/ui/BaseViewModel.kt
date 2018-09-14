@@ -1,16 +1,16 @@
 package com.yubico.yubioath.ui
 
 import android.app.PendingIntent
-import androidx.lifecycle.ViewModel
 import android.content.*
 import android.hardware.usb.UsbDevice
 import android.hardware.usb.UsbManager
 import android.nfc.Tag
 import android.nfc.tech.Ndef
 import android.os.Build
-import androidx.appcompat.app.AppCompatActivity
-import androidx.preference.PreferenceManager
 import android.util.Log
+import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.ViewModel
+import androidx.preference.PreferenceManager
 import com.yubico.yubioath.R
 import com.yubico.yubioath.client.KeyManager
 import com.yubico.yubioath.client.OathClient
@@ -66,6 +66,8 @@ abstract class BaseViewModel : ViewModel() {
 
     val lastDeviceInfo: YkOathApi.DeviceInfo get() = sharedLastDeviceInfo
 
+    var ndefIntentData: ByteArray? = null
+
     protected open suspend fun onStart(services: Services) = Unit
     fun start(context: Context) = launch(EXEC) {
         val keyManager = KeyManager(
@@ -116,7 +118,7 @@ abstract class BaseViewModel : ViewModel() {
     }
 
     fun nfcConnected(tag: Tag) = launch(EXEC) {
-        Log.d("yubioath", "NFC DEVICE!")
+        Log.d("yubioath", "NFC device connected")
         services?.apply {
             try {
                 AndroidCard.get(tag).apply {
@@ -126,24 +128,27 @@ abstract class BaseViewModel : ViewModel() {
                 if(preferences.getBoolean("readNdefData", false)) {
                     Ndef.get(tag)?.apply {
                         connect()
-                        val bytes = ndefMessage?.toByteArray()
-                        Log.d("yubioath", "NDEF BYTES: ${bytes?.toList()}")
-                        if (bytes != null && bytes[0] == URL_NDEF_RECORD && URL_PREFIX_BYTES.contentEquals(bytes.copyOfRange(3, 3 + URL_PREFIX_BYTES.size))) {
-                            // YubiKey NEO uses https://my.yubico.com/neo/<payload>
-                            if (bytes.copyOfRange(18, 18 + 5).contentEquals("/neo/".toByteArray())) {
-                                bytes[22] = '#'.toByte()  // Set byte preceding payload to #.
-                            }
-                            val payloadOffset = bytes.indexOf('#'.toByte())
-                            if(payloadOffset > 0) {
-                                useNdefPayload(bytes.copyOfRange(payloadOffset + 1, bytes.size))
-                            }
-                        }
+                        ndefIntentData = ndefMessage?.toByteArray()
                         close()
                     }
                 }
             } catch (e: Exception) {
                 sharedLastDeviceInfo = DUMMY_INFO
                 Log.e("yubioath", "Error using NFC device", e)
+            } finally {
+                ndefIntentData?.apply {
+                    ndefIntentData = null
+                    if (this[0] == URL_NDEF_RECORD && URL_PREFIX_BYTES.contentEquals(copyOfRange(3, 3 + URL_PREFIX_BYTES.size))) {
+                        // YubiKey NEO uses https://my.yubico.com/neo/<payload>
+                        if (copyOfRange(18, 18 + 5).contentEquals("/neo/".toByteArray())) {
+                            this[22] = '#'.toByte()  // Set byte preceding payload to #.
+                        }
+                        val payloadOffset = indexOf('#'.toByte())
+                        if(payloadOffset > 0) {
+                            useNdefPayload(copyOfRange(payloadOffset + 1, size))
+                        }
+                    }
+                }
             }
         }
     }

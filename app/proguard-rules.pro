@@ -33,3 +33,5 @@
 
 # Needed to set the OnQueryTextListener
 -keep class androidx.appcompat.widget.SearchView { *; }
+
+-keep class androidx.core.app.CoreComponentFactory { *; }
