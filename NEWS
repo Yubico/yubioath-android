@@ -1,3 +1,10 @@
+* Version 2.1.0-beta1 released 2018-09-14
+ ** Add support for reading NDEF data (Yubico OTP, etc).
+ ** Add support for NFC in "reader mode" (better compatibility for some phones).
+ ** Update to target API 28 (Pie), and use AndroidX.
+ ** Replace embedded QR code reader with Google Play Services, with fallback to
+    external scanner.
+
 * Version 2.0.1 released 2017-12-21
  ** Bugfix: Fix crash on startup on KitKat and older.
 
