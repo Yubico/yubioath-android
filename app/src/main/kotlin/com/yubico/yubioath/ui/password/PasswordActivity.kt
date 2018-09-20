@@ -8,7 +8,6 @@ import android.view.Menu
 import android.view.MenuItem
 import com.yubico.yubioath.R
 import com.yubico.yubioath.ui.BaseActivity
-import kotlinx.coroutines.experimental.android.UI
 import kotlinx.coroutines.experimental.delay
 import kotlinx.coroutines.experimental.launch
 import org.jetbrains.anko.toast
@@ -37,7 +36,7 @@ class PasswordActivity : BaseActivity<PasswordViewModel>(PasswordViewModel::clas
                 if (data != null) {
                     val job = viewModel.setPassword(data.current_password, data.new_password, data.remember).apply {
                         invokeOnCompletion {
-                            launch(UI) {
+                            launch {
                                 if (!isCancelled) {
                                     try {
                                         if (await()) {
@@ -53,7 +52,7 @@ class PasswordActivity : BaseActivity<PasswordViewModel>(PasswordViewModel::clas
                             }
                         }
                     }
-                    launch(UI) {
+                    launch {
                         if (viewModel.lastDeviceInfo.persistent) {
                             delay(100)
                         }
@@ -64,7 +63,7 @@ class PasswordActivity : BaseActivity<PasswordViewModel>(PasswordViewModel::clas
                                     job.cancel()
                                 }
                                 job.invokeOnCompletion {
-                                    launch(UI) {
+                                    launch {
                                         dismiss()
                                     }
                                 }

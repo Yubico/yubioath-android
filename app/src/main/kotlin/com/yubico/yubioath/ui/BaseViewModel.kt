@@ -22,21 +22,19 @@ import com.yubico.yubioath.protocol.YkOathApi
 import com.yubico.yubioath.transport.Backend
 import com.yubico.yubioath.transport.NfcBackend
 import com.yubico.yubioath.transport.UsbBackend
-import kotlinx.coroutines.experimental.Deferred
-import kotlinx.coroutines.experimental.android.UI
-import kotlinx.coroutines.experimental.asCoroutineDispatcher
-import kotlinx.coroutines.experimental.async
+import kotlinx.coroutines.experimental.*
+import kotlinx.coroutines.experimental.android.Main
 import kotlinx.coroutines.experimental.channels.Channel
-import kotlinx.coroutines.experimental.launch
 import nordpol.android.AndroidCard
 import org.jetbrains.anko.toast
 import org.jetbrains.anko.usbManager
 import java.nio.charset.Charset
 import java.util.concurrent.Executors
+import kotlin.coroutines.experimental.CoroutineContext
 
 val EXEC = Executors.newSingleThreadExecutor().asCoroutineDispatcher()
 
-abstract class BaseViewModel : ViewModel() {
+abstract class BaseViewModel : ViewModel(), CoroutineScope {
     companion object {
         private const val ACTION_USB_PERMISSION = "com.yubico.yubioath.USB_PERMISSION"
         private const val SP_STORED_AUTH_KEYS = "com.yubico.yubioath.SP_STORED_AUTH_KEYS"
@@ -49,6 +47,9 @@ abstract class BaseViewModel : ViewModel() {
         private val MEM_STORE = ClearingMemProvider(EXEC)
         private var sharedLastDeviceInfo = DUMMY_INFO
     }
+
+    override val coroutineContext: CoroutineContext
+        get() = Dispatchers.Main
 
     data class ClientResult<T>(val result: T?, val error: Throwable?)
     data class ClientRequest(val deviceId: String?, val func: suspend (OathClient) -> Unit)
@@ -219,7 +220,7 @@ abstract class BaseViewModel : ViewModel() {
                 useClient(client)
             }
         } catch (e: PasswordRequiredException) {
-            launch(UI) {
+            launch(Dispatchers.Main) {
                 services?.apply {
                     if (context is AppCompatActivity) {
                         context.supportFragmentManager.apply {
@@ -234,7 +235,7 @@ abstract class BaseViewModel : ViewModel() {
         } catch (e: Exception) {
             sharedLastDeviceInfo = DUMMY_INFO
             Log.e("yubioath", "Error using OathClient", e)
-            launch(UI) {
+            launch(Dispatchers.Main) {
                 services?.apply {
                     context.toast(R.string.tag_error)
                 }

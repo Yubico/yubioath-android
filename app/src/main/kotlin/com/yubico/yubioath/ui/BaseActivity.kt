@@ -12,18 +12,29 @@ import androidx.preference.PreferenceManager
 import android.util.Log
 import android.view.WindowManager
 import com.yubico.yubioath.R
+import kotlinx.coroutines.experimental.CoroutineScope
+import kotlinx.coroutines.experimental.Dispatchers
+import kotlinx.coroutines.experimental.Job
+import kotlinx.coroutines.experimental.android.Main
 import nordpol.android.OnDiscoveredTagListener
 import nordpol.android.TagDispatcher
 import nordpol.android.TagDispatcherBuilder
 import org.jetbrains.anko.toast
+import kotlin.coroutines.experimental.CoroutineContext
 
-abstract class BaseActivity<T : BaseViewModel>(private var modelClass: Class<T>) : AppCompatActivity() {
+abstract class BaseActivity<T : BaseViewModel>(private var modelClass: Class<T>) : AppCompatActivity(), CoroutineScope {
     protected lateinit var viewModel: T
     private lateinit var tagDispatcher: TagDispatcher
     private val prefs: SharedPreferences by lazy { PreferenceManager.getDefaultSharedPreferences(this) }
 
+    private lateinit var job: Job
+    override val coroutineContext: CoroutineContext
+        get() = Dispatchers.Main + job
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        job = Job()
 
         if (prefs.getBoolean("hideThumbnail", true)) {
             window.setFlags(WindowManager.LayoutParams.FLAG_SECURE, WindowManager.LayoutParams.FLAG_SECURE)
@@ -39,6 +50,11 @@ abstract class BaseActivity<T : BaseViewModel>(private var modelClass: Class<T>)
                 Log.e("yubioath", "Error using NFC device", e)
             }
         }).enableReaderMode(prefs.getBoolean("useNfcReaderMode", false)).enableUnavailableNfcUserPrompt(false).build()
+    }
+
+    override fun onDestroy() {
+        job.cancel()
+        super.onDestroy()
     }
 
     override fun onNewIntent(intent: Intent) {

@@ -15,10 +15,8 @@ import com.yubico.yubioath.client.Code
 import com.yubico.yubioath.client.Credential
 import com.yubico.yubioath.protocol.OathType
 import kotlinx.android.synthetic.main.view_credential.view.*
-import kotlinx.coroutines.experimental.Job
-import kotlinx.coroutines.experimental.android.UI
-import kotlinx.coroutines.experimental.delay
-import kotlinx.coroutines.experimental.launch
+import kotlinx.coroutines.experimental.*
+import kotlinx.coroutines.experimental.android.Main
 import org.jetbrains.anko.imageBitmap
 import org.jetbrains.anko.imageResource
 import kotlin.math.min
@@ -46,7 +44,7 @@ class CredentialAdapter(private val context: Context, private val actionHandler:
 
     private var notifyTimeout: Job? = null
 
-    val setCredentials = fun(credentials: Map<Credential, Code?>, searchFilter: String) = launch(UI) {
+    val setCredentials = fun(credentials: Map<Credential, Code?>, searchFilter: String) = GlobalScope.launch(Dispatchers.Main) {
         creds = credentials.filterKeys { it.key.contains(searchFilter, true) }
         notifyDataSetChanged()
         notifyNextTimeout(credentials)
@@ -96,7 +94,7 @@ class CredentialAdapter(private val context: Context, private val actionHandler:
 
         nextTimeout?.let {
             notifyTimeout?.cancel()
-            notifyTimeout = launch(UI) {
+            notifyTimeout = GlobalScope.launch(Dispatchers.Main) {
                 delay(it - now)
                 notifyDataSetChanged()
                 notifyNextTimeout(creds)

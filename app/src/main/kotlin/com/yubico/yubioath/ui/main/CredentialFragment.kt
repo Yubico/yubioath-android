@@ -36,20 +36,23 @@ import com.yubico.yubioath.ui.qr.QR_DATA
 import com.yubico.yubioath.ui.qr.QrActivity
 import com.yubico.yubioath.ui.qr.RESULT_NO_PLAY_SERVICES
 import kotlinx.android.synthetic.main.fragment_credentials.*
-import kotlinx.coroutines.experimental.Job
-import kotlinx.coroutines.experimental.android.UI
-import kotlinx.coroutines.experimental.delay
-import kotlinx.coroutines.experimental.launch
+import kotlinx.coroutines.experimental.*
+import kotlinx.coroutines.experimental.android.Main
 import org.jetbrains.anko.clipboardManager
 import org.jetbrains.anko.toast
+import kotlin.coroutines.experimental.CoroutineContext
 
-class CredentialFragment : ListFragment() {
+class CredentialFragment : ListFragment(), CoroutineScope {
     companion object {
         private const val REQUEST_ADD_CREDENTIAL = 1
         private const val REQUEST_SELECT_ICON = 2
         private const val REQUEST_SCAN_QR = 3
         private const val REQUEST_SCAN_QR_EXTERNAL = 4
     }
+
+    private lateinit var job: Job
+    override val coroutineContext: CoroutineContext
+        get() = Dispatchers.Main + job
 
     private val viewModel: OathViewModel by lazy { ViewModelProviders.of(activity!!).get(OathViewModel::class.java) }
     private val timerAnimation = object : Animation() {
@@ -77,6 +80,16 @@ class CredentialFragment : ListFragment() {
 
     private val adapter: CredentialAdapter by lazy { listAdapter as CredentialAdapter }
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        job = Job()
+    }
+
+    override fun onDestroy() {
+        job.cancel()
+        super.onDestroy()
+    }
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         return inflater.inflate(R.layout.fragment_credentials, container, false)
     }
@@ -89,7 +102,7 @@ class CredentialFragment : ListFragment() {
 
             override fun calculate(credential: Credential) {
                 viewModel.calculate(credential).let { job ->
-                    launch(UI) {
+                    launch {
                         if (viewModel.lastDeviceInfo.persistent) {
                             delay(100) // Delay enough to only prompt when touch is required.
                         }
@@ -110,7 +123,7 @@ class CredentialFragment : ListFragment() {
         context?.let {
             listAdapter = CredentialAdapter(it, actions, viewModel.creds).apply {
                 viewModel.credListener = { creds, filter ->
-                    launch(UI) {
+                    launch {
                         view?.findViewById<TextView>(android.R.id.empty)?.setText(if (filter.isEmpty() || creds.isEmpty()) R.string.swipe_and_hold else R.string.no_match)
                     }
                     setCredentials(creds, filter)
@@ -351,7 +364,7 @@ class CredentialFragment : ListFragment() {
 
     private fun jobWithClient(job: Job, @StringRes successMessage: Int, needsTouch: Boolean) {
         job.invokeOnCompletion {
-            launch(UI) {
+            launch {
                 if (!job.isCancelled && successMessage != 0) {
                     activity?.toast(successMessage)
                 }

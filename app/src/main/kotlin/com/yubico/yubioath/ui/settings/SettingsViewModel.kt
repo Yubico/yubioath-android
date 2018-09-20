@@ -5,7 +5,6 @@ import com.yubico.yubioath.client.OathClient
 import com.yubico.yubioath.protocol.YkOathApi
 import com.yubico.yubioath.ui.BaseViewModel
 import com.yubico.yubioath.ui.main.IconManager
-import kotlinx.coroutines.experimental.android.UI
 import kotlinx.coroutines.experimental.launch
 import org.jetbrains.anko.toast
 
@@ -15,7 +14,7 @@ class SettingsViewModel : BaseViewModel() {
     fun clearStoredPasswords() {
         services?.let {
             it.keyManager.clearAll()
-            launch(UI) {
+            launch {
                 it.context.toast(R.string.passwords_cleared)
             }
         }
@@ -24,7 +23,7 @@ class SettingsViewModel : BaseViewModel() {
     fun clearIcons() {
         services?.let {
             IconManager(it.context).clearIcons()
-            launch(UI) {
+            launch {
                 it.context.toast(R.string.icons_cleared)
             }
         }
@@ -32,7 +31,7 @@ class SettingsViewModel : BaseViewModel() {
 
     override suspend fun useClient(client: OathClient) {
         onDeviceRefresh?.let {
-            launch(UI) {
+            launch {
                 it.invoke(client.deviceInfo)
             }
         }

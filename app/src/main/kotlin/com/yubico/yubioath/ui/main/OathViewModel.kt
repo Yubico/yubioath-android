@@ -10,7 +10,6 @@ import com.yubico.yubioath.scancode.KeyboardLayout
 import com.yubico.yubioath.ui.BaseViewModel
 import com.yubico.yubioath.ui.EXEC
 import kotlinx.coroutines.experimental.Job
-import kotlinx.coroutines.experimental.android.UI
 import kotlinx.coroutines.experimental.delay
 import kotlinx.coroutines.experimental.launch
 import org.jetbrains.anko.toast
@@ -117,7 +116,7 @@ class OathViewModel : BaseViewModel() {
         }
         credListener(creds, searchFilter)
         if (creds.isEmpty()) {
-            launch(UI) {
+            launch {
                 services?.apply {
                     context.toast(R.string.no_credentials)
                 }
