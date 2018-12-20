@@ -6,7 +6,7 @@ import com.yubico.yubioath.client.Credential
 import com.yubico.yubioath.protocol.CredentialData
 import com.yubico.yubioath.protocol.OathType
 import com.yubico.yubioath.ui.BaseViewModel
-import kotlinx.coroutines.experimental.Deferred
+import kotlinx.coroutines.Deferred
 
 class AddCredentialViewModel : BaseViewModel() {
     private var handledUri: Uri? = null

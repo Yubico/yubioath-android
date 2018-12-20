@@ -5,7 +5,7 @@ import com.yubico.yubioath.client.OathClient
 import com.yubico.yubioath.protocol.YkOathApi
 import com.yubico.yubioath.ui.BaseViewModel
 import com.yubico.yubioath.ui.main.IconManager
-import kotlinx.coroutines.experimental.launch
+import kotlinx.coroutines.launch
 import org.jetbrains.anko.toast
 
 class SettingsViewModel : BaseViewModel() {

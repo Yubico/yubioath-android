@@ -36,11 +36,10 @@ import com.yubico.yubioath.ui.qr.QR_DATA
 import com.yubico.yubioath.ui.qr.QrActivity
 import com.yubico.yubioath.ui.qr.RESULT_NO_PLAY_SERVICES
 import kotlinx.android.synthetic.main.fragment_credentials.*
-import kotlinx.coroutines.experimental.*
-import kotlinx.coroutines.experimental.android.Main
+import kotlinx.coroutines.*
 import org.jetbrains.anko.clipboardManager
 import org.jetbrains.anko.toast
-import kotlin.coroutines.experimental.CoroutineContext
+import kotlin.coroutines.CoroutineContext
 
 class CredentialFragment : ListFragment(), CoroutineScope {
     companion object {
@@ -165,7 +164,7 @@ class CredentialFragment : ListFragment(), CoroutineScope {
 
         fixSwipeClearDrawable()
         swipe_clear_layout.apply {
-            isEnabled = !listAdapter.isEmpty
+            isEnabled = !listAdapter!!.isEmpty
             setOnRefreshListener {
                 isRefreshing = false
                 actionMode?.finish()

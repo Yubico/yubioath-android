@@ -12,15 +12,14 @@ import androidx.preference.PreferenceManager
 import android.util.Log
 import android.view.WindowManager
 import com.yubico.yubioath.R
-import kotlinx.coroutines.experimental.CoroutineScope
-import kotlinx.coroutines.experimental.Dispatchers
-import kotlinx.coroutines.experimental.Job
-import kotlinx.coroutines.experimental.android.Main
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import nordpol.android.OnDiscoveredTagListener
 import nordpol.android.TagDispatcher
 import nordpol.android.TagDispatcherBuilder
 import org.jetbrains.anko.toast
-import kotlin.coroutines.experimental.CoroutineContext
+import kotlin.coroutines.CoroutineContext
 
 abstract class BaseActivity<T : BaseViewModel>(private var modelClass: Class<T>) : AppCompatActivity(), CoroutineScope {
     protected lateinit var viewModel: T

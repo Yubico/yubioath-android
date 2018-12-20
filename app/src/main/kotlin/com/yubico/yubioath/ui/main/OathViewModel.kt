@@ -9,9 +9,9 @@ import com.yubico.yubioath.protocol.OathType
 import com.yubico.yubioath.scancode.KeyboardLayout
 import com.yubico.yubioath.ui.BaseViewModel
 import com.yubico.yubioath.ui.EXEC
-import kotlinx.coroutines.experimental.Job
-import kotlinx.coroutines.experimental.delay
-import kotlinx.coroutines.experimental.launch
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import org.jetbrains.anko.toast
 
 class OathViewModel : BaseViewModel() {

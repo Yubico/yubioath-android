@@ -22,15 +22,14 @@ import com.yubico.yubioath.protocol.YkOathApi
 import com.yubico.yubioath.transport.Backend
 import com.yubico.yubioath.transport.NfcBackend
 import com.yubico.yubioath.transport.UsbBackend
-import kotlinx.coroutines.experimental.*
-import kotlinx.coroutines.experimental.android.Main
-import kotlinx.coroutines.experimental.channels.Channel
+import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.Channel
 import nordpol.android.AndroidCard
 import org.jetbrains.anko.toast
 import org.jetbrains.anko.usbManager
 import java.nio.charset.Charset
 import java.util.concurrent.Executors
-import kotlin.coroutines.experimental.CoroutineContext
+import kotlin.coroutines.CoroutineContext
 
 val EXEC = Executors.newSingleThreadExecutor().asCoroutineDispatcher()
 

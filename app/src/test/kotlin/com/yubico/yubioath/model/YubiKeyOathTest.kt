@@ -8,7 +8,7 @@ import com.yubico.yubioath.protocol.Algorithm
 import com.yubico.yubioath.protocol.CredentialData
 import com.yubico.yubioath.protocol.OathType
 import com.yubico.yubioath.transport.NfcBackend
-import kotlinx.coroutines.experimental.runBlocking
+import kotlinx.coroutines.runBlocking
 import nordpol.IsoCard
 import org.junit.Assert
 import org.junit.Test
