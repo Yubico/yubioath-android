@@ -66,8 +66,12 @@ class IconManager(context:Context) {
                 drawCircle(RADIUS, RADIUS, RADIUS, Paint(Paint.ANTI_ALIAS_FLAG).apply {
                     color = colors[Math.abs(credential.iconKey.hashCode()) % colors.size]
                 })
-                val letter = (credential.issuer ?: credential.name).substring(0, 1).toUpperCase()
-                drawText(letter, RADIUS, RADIUS - (textPaint.descent() + textPaint.ascent()) / 2, textPaint)
+
+                if ((credential.issuer ?: credential.name).isNotEmpty()) {
+                    val letter = (credential.issuer
+                            ?: credential.name).substring(0, 1).toUpperCase()
+                    drawText(letter, RADIUS, RADIUS - (textPaint.descent() + textPaint.ascent()) / 2, textPaint)
+                }
             }
         }
     }
