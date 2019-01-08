@@ -43,7 +43,7 @@ class MainActivity : BaseActivity<OathViewModel>(OathViewModel::class.java) {
     }
 
     override fun onPrepareOptionsMenu(menu: Menu): Boolean {
-        menu.findItem(R.id.menu_main_password).isEnabled = viewModel.lastDeviceInfo.version.compare(0, 0, 0) > 0
+        menu.findItem(R.id.menu_main_password).isEnabled = viewModel.lastDeviceInfo.version.major > 0
 
         return super.onPrepareOptionsMenu(menu)
     }

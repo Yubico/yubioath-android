@@ -39,11 +39,11 @@ import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
 import android.widget.AdapterView
 import android.widget.TextView
+import com.yubico.yubikit.application.Version
+import com.yubico.yubikit.application.oath.HashAlgorithm
+import com.yubico.yubikit.application.oath.OathType
 import com.yubico.yubioath.R
-import com.yubico.yubioath.protocol.Algorithm
-import com.yubico.yubioath.protocol.CredentialData
-import com.yubico.yubioath.protocol.OathType
-import com.yubico.yubioath.protocol.YkOathApi
+import com.yubico.yubioath.client.CredentialData
 import kotlinx.android.synthetic.main.fragment_add_credential.*
 import org.apache.commons.codec.binary.Base32
 import org.jetbrains.anko.inputMethodManager
@@ -85,9 +85,9 @@ class AddCredentialFragment : Fragment() {
             credential_period.setText(period.toString())
             credential_digits.setSelection(digits - 6)
             credential_algo.setSelection(when (algorithm) {
-                Algorithm.SHA1 -> 0
-                Algorithm.SHA256 -> 1
-                Algorithm.SHA512 -> 2
+                HashAlgorithm.SHA1 -> 0
+                HashAlgorithm.SHA256 -> 1
+                HashAlgorithm.SHA512 -> 2
             })
         }
 
@@ -144,12 +144,12 @@ class AddCredentialFragment : Fragment() {
             else -> throw IllegalArgumentException("Invalid OATH type!")
         }
         val algo = when (credential_algo.selectedItemId) {
-            0L -> Algorithm.SHA1
-            1L -> Algorithm.SHA256
-            2L -> Algorithm.SHA512
+            0L -> HashAlgorithm.SHA1
+            1L -> HashAlgorithm.SHA256
+            2L -> HashAlgorithm.SHA512
             else -> throw IllegalArgumentException("Invalid hash algorithm!")
         }
-        val digits = (6 + credential_digits.selectedItemId).toByte()
+        val digits = (6 + credential_digits.selectedItemId).toInt()
         val period = credential_period.text.toString().toInt()
         val touch = credential_touch.isChecked
 
@@ -158,12 +158,12 @@ class AddCredentialFragment : Fragment() {
         } else null
     }
 
-    fun validateVersion(data: CredentialData, version: YkOathApi.Version) {
+    fun validateVersion(data: CredentialData, version: Version) {
         // These TextInputLayouts don't contain EditTexts, and need two leading spaces for alignment.
         if (data.touch && version.compare(4, 0, 0) < 0) {
             credential_touch_wrapper.error = "  " + getString(R.string.add_credential_touch_version)
         }
-        if (data.algorithm == Algorithm.SHA512 && version.compare(4, 3, 1) < 0) {
+        if (data.algorithm == HashAlgorithm.SHA512 && version.compare(4, 3, 1) < 0) {
             credential_algo_wrapper.error = "  " + getString(R.string.add_credential_algo_512)
         }
     }

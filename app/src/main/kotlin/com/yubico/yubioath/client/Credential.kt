@@ -2,7 +2,7 @@ package com.yubico.yubioath.client
 
 import android.os.Parcel
 import android.os.Parcelable
-import com.yubico.yubioath.protocol.OathType
+import com.yubico.yubikit.application.oath.OathType
 
 data class Credential(val deviceId: String, val key: String, val type: OathType?, val touch: Boolean) : Parcelable {
     val issuer: String?
@@ -49,7 +49,7 @@ data class Credential(val deviceId: String, val key: String, val type: OathType?
     override fun writeToParcel(parcel: Parcel, flags: Int) {
         parcel.writeString(deviceId)
         parcel.writeString(key)
-        parcel.writeByte(type?.byteVal ?: 0)
+        parcel.writeByte(type?.value ?: 0)
         parcel.writeByte(if (touch) 1 else 0)
     }
 

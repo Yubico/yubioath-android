@@ -10,13 +10,12 @@ import android.view.animation.Animation
 import android.view.animation.LinearInterpolator
 import android.view.animation.Transformation
 import android.widget.BaseAdapter
+import com.yubico.yubikit.application.oath.OathType
 import com.yubico.yubioath.R
 import com.yubico.yubioath.client.Code
 import com.yubico.yubioath.client.Credential
-import com.yubico.yubioath.protocol.OathType
 import kotlinx.android.synthetic.main.view_credential.view.*
-import kotlinx.coroutines.experimental.*
-import kotlinx.coroutines.experimental.android.Main
+import kotlinx.coroutines.*
 import org.jetbrains.anko.imageBitmap
 import org.jetbrains.anko.imageResource
 import kotlin.math.min

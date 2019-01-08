@@ -8,8 +8,8 @@ import android.view.Menu
 import android.view.MenuItem
 import com.yubico.yubioath.R
 import com.yubico.yubioath.ui.BaseActivity
-import kotlinx.coroutines.experimental.delay
-import kotlinx.coroutines.experimental.launch
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import org.jetbrains.anko.toast
 
 class PasswordActivity : BaseActivity<PasswordViewModel>(PasswordViewModel::class.java) {

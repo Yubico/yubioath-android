@@ -26,21 +26,20 @@ import android.widget.ImageView
 import android.widget.TextView
 import com.google.android.gms.vision.barcode.Barcode
 import com.pixplicity.sharp.Sharp
+import com.yubico.yubikit.application.oath.OathType
 import com.yubico.yubioath.R
 import com.yubico.yubioath.client.Code
 import com.yubico.yubioath.client.Credential
-import com.yubico.yubioath.protocol.CredentialData
-import com.yubico.yubioath.protocol.OathType
+import com.yubico.yubioath.client.CredentialData
 import com.yubico.yubioath.ui.add.AddCredentialActivity
 import com.yubico.yubioath.ui.qr.QR_DATA
 import com.yubico.yubioath.ui.qr.QrActivity
 import com.yubico.yubioath.ui.qr.RESULT_NO_PLAY_SERVICES
 import kotlinx.android.synthetic.main.fragment_credentials.*
-import kotlinx.coroutines.experimental.*
-import kotlinx.coroutines.experimental.android.Main
+import kotlinx.coroutines.*
 import org.jetbrains.anko.clipboardManager
 import org.jetbrains.anko.toast
-import kotlin.coroutines.experimental.CoroutineContext
+import kotlin.coroutines.CoroutineContext
 
 class CredentialFragment : ListFragment(), CoroutineScope {
     companion object {

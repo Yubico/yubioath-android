@@ -1,17 +1,16 @@
 package com.yubico.yubioath.ui.main
 
 import android.util.Log
+import com.yubico.yubikit.application.oath.OathType
 import com.yubico.yubioath.R
 import com.yubico.yubioath.client.Code
 import com.yubico.yubioath.client.Credential
 import com.yubico.yubioath.client.OathClient
-import com.yubico.yubioath.protocol.OathType
 import com.yubico.yubioath.scancode.KeyboardLayout
 import com.yubico.yubioath.ui.BaseViewModel
-import com.yubico.yubioath.ui.EXEC
-import kotlinx.coroutines.experimental.Job
-import kotlinx.coroutines.experimental.delay
-import kotlinx.coroutines.experimental.launch
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import org.jetbrains.anko.toast
 
 class OathViewModel : BaseViewModel() {
@@ -34,7 +33,7 @@ class OathViewModel : BaseViewModel() {
     var selectedItem: Credential? = null
 
     override suspend fun onStart(services: Services) {
-        updateRefreshJob()
+        scheduleRefresh()
     }
 
     override suspend fun onStop(services: Services?) {
@@ -46,6 +45,7 @@ class OathViewModel : BaseViewModel() {
         creds[credential] = it.calculate(credential, currentTime(true))
         credListener(creds, searchFilter)
         Log.d("yubioath", "Calculated code: $credential: ${creds[credential]}")
+        scheduleRefresh()
     }
 
     fun delete(credential: Credential) = requestClient(credential.deviceId) {
@@ -53,12 +53,14 @@ class OathViewModel : BaseViewModel() {
         creds.remove(credential)
         credListener(creds, searchFilter)
         Log.d("yubioath", "Deleted credential: $credential")
+        scheduleRefresh()
     }
 
     fun insertCredential(credential: Credential, code: Code?) {
         if (lastDeviceInfo.id.isNotEmpty() && credential.deviceId != lastDeviceInfo.id) throw IllegalArgumentException("Credential belongs to different device!")
         creds[credential] = code
         credListener(creds, searchFilter)
+        scheduleRefresh()
     }
 
     fun clearCredentials() {
@@ -72,37 +74,31 @@ class OathViewModel : BaseViewModel() {
                 delay(100) //If we can't get the device in 100ms, give up and notify credListener.
                 if (refreshCreds.isActive) {
                     credListener(creds, searchFilter)
-                    updateRefreshJob()
+                    scheduleRefresh()
                 }
             }
         } else {
             clearDevice()
             credListener(creds, searchFilter)
-            updateRefreshJob()
+            scheduleRefresh()
         }
     }
 
     private fun currentTime(boost: Boolean = false) = System.currentTimeMillis() + if (!boost && lastDeviceInfo.persistent) 0 else 10000
 
-    private fun updateRefreshJob() {
+    private fun scheduleRefresh() {
         refreshJob?.cancel()
-        refreshJob = launch(EXEC) {
-            while (true) {
-                services?.let {
-                    try {
-                        checkUsb(it)
-                    } catch (e: Exception) {
-                        Log.d("yubioath", "Error checking USB", e)
-                    }
+        if (creds.isEmpty()) {
+            services?.deviceManager?.triggerOnDevice()
+        } else {
+            val now = System.currentTimeMillis() //Needs to use real time, not adjusted for non-persistent.
+            val deadline = creds.filterKeys { it.type == OathType.TOTP && !it.touch }.values.map { it?.validUntil ?: -1 }.filter { it > now }.min()
+            if (deadline != null) {
+                Log.d("yubioath", "Refresh credentials in ${deadline - now}ms")
+                refreshJob = launch(EXEC) {
+                    delay(deadline - now)
+                    services?.deviceManager?.triggerOnDevice()
                 }
-
-                delay(if (creds.isEmpty()) {
-                    1000L
-                } else {
-                    val now = System.currentTimeMillis() //Needs to use real time, not adjusted for non-persistent.
-                    val deadline = creds.filterKeys { it.type == OathType.TOTP && !it.touch }.values.map { it?.validUntil ?: -1 }.filter { it > now }.min()
-                    if (deadline != null) deadline - now else 1000L
-                })
             }
         }
     }
@@ -122,6 +118,7 @@ class OathViewModel : BaseViewModel() {
                 }
             }
         }
+        scheduleRefresh()
     }
 
     override suspend fun useNdefPayload(data: ByteArray) {
@@ -140,5 +137,6 @@ class OathViewModel : BaseViewModel() {
             }
         }
         credListener(creds, searchFilter)
+        scheduleRefresh()
     }
 }

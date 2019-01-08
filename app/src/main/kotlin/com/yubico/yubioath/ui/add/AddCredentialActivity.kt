@@ -11,9 +11,9 @@ import android.view.MenuItem
 import com.yubico.yubioath.R
 import com.yubico.yubioath.exc.DuplicateKeyException
 import com.yubico.yubioath.ui.BaseActivity
-import kotlinx.coroutines.experimental.CancellationException
-import kotlinx.coroutines.experimental.delay
-import kotlinx.coroutines.experimental.launch
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 class AddCredentialActivity : BaseActivity<AddCredentialViewModel>(AddCredentialViewModel::class.java) {
     companion object {
@@ -51,7 +51,7 @@ class AddCredentialActivity : BaseActivity<AddCredentialViewModel>(AddCredential
 
                     val job = viewModel.addCredential(data)
                     job.invokeOnCompletion {
-                        if(job.isCompletedExceptionally) {
+                        it?.let {
                             launch {
                                 isEnabled = true
                             }

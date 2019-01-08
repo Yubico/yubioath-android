@@ -1,30 +1,26 @@
 package com.yubico.yubioath.ui
 
-import android.annotation.SuppressLint
-import androidx.lifecycle.ViewModelProviders
 import android.content.Intent
 import android.content.SharedPreferences
 import android.nfc.NdefMessage
 import android.nfc.NfcAdapter
 import android.os.Bundle
-import androidx.appcompat.app.AppCompatActivity
-import androidx.preference.PreferenceManager
-import android.util.Log
 import android.view.WindowManager
+import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.ViewModelProviders
+import androidx.preference.PreferenceManager
+import com.yubico.yubikit.DeviceManager
 import com.yubico.yubioath.R
-import kotlinx.coroutines.experimental.CoroutineScope
-import kotlinx.coroutines.experimental.Dispatchers
-import kotlinx.coroutines.experimental.Job
-import kotlinx.coroutines.experimental.android.Main
-import nordpol.android.OnDiscoveredTagListener
-import nordpol.android.TagDispatcher
-import nordpol.android.TagDispatcherBuilder
+import com.yubico.yubikit.transport.Iso7816Backend
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import org.jetbrains.anko.toast
-import kotlin.coroutines.experimental.CoroutineContext
+import kotlin.coroutines.CoroutineContext
 
 abstract class BaseActivity<T : BaseViewModel>(private var modelClass: Class<T>) : AppCompatActivity(), CoroutineScope {
     protected lateinit var viewModel: T
-    private lateinit var tagDispatcher: TagDispatcher
+    private lateinit var deviceManager: DeviceManager
     private val prefs: SharedPreferences by lazy { PreferenceManager.getDefaultSharedPreferences(this) }
 
     private lateinit var job: Job
@@ -41,15 +37,9 @@ abstract class BaseActivity<T : BaseViewModel>(private var modelClass: Class<T>)
         }
 
         viewModel = ViewModelProviders.of(this).get(modelClass)
-
-        tagDispatcher = TagDispatcherBuilder(this, OnDiscoveredTagListener {
-            try {
-                viewModel.start(this)
-                viewModel.nfcConnected(it)
-            } catch (e: Exception) {
-                Log.e("yubioath", "Error using NFC device", e)
-            }
-        }).enableReaderMode(prefs.getBoolean("useNfcReaderMode", false)).enableUnavailableNfcUserPrompt(false).build()
+        deviceManager = DeviceManager(this, BaseViewModel.HANDLER) {
+            it.enableReaderMode(prefs.getBoolean("useNfcReaderMode", false)).enableUnavailableNfcUserPrompt(false)
+        }
     }
 
     override fun onDestroy() {
@@ -58,44 +48,38 @@ abstract class BaseActivity<T : BaseViewModel>(private var modelClass: Class<T>)
     }
 
     override fun onNewIntent(intent: Intent) {
-        tagDispatcher.interceptIntent(intent)
+        viewModel.start(this, deviceManager)
+        deviceManager.interceptIntent(intent)
     }
 
-    @SuppressLint("NewApi")
+
     public override fun onPause() {
         super.onPause()
-        tagDispatcher.disableExclusiveNfc()
+        deviceManager.setOnYubiKeyHandler(null)
         viewModel.stop()
     }
 
-    @SuppressLint("NewApi")
     public override fun onResume() {
         super.onResume()
-        viewModel.start(this)
+        viewModel.start(this, deviceManager)
+        deviceManager.setOnYubiKeyHandler(Iso7816Backend::class.java, viewModel::onBackend)
 
         if (intent.action == NfcAdapter.ACTION_NDEF_DISCOVERED && !viewModel.ndefConsumed) {
-            if(prefs.getBoolean("readNdefData", false)) {
+            if (prefs.getBoolean("readNdefData", false)) {
                 viewModel.ndefIntentData = (intent.getParcelableArrayExtra(NfcAdapter.EXTRA_NDEF_MESSAGES)[0] as NdefMessage).toByteArray()
             }
             viewModel.ndefConsumed = true
-            tagDispatcher.interceptIntent(intent)
+            deviceManager.interceptIntent(intent)
         }
 
-        val warnNfc = prefs.getBoolean("warnNfc", true) && !viewModel.nfcWarned
-        when (tagDispatcher.enableExclusiveNfc()) {
-            TagDispatcher.NfcStatus.AVAILABLE_DISABLED -> {
-                if (warnNfc) {
-                    toast(R.string.nfc_off)
-                    viewModel.nfcWarned = true
-                }
+        if (prefs.getBoolean("warnNfc", true) && !viewModel.nfcWarned) {
+            when(val adapter = NfcAdapter.getDefaultAdapter(this)) {
+                null -> R.string.no_nfc
+                else -> if (!adapter.isEnabled) R.string.nfc_off else null
+            }?.let {
+                toast(it)
+                viewModel.nfcWarned = true
             }
-            TagDispatcher.NfcStatus.NOT_AVAILABLE -> {
-                if (warnNfc) {
-                    toast(R.string.no_nfc)
-                    viewModel.nfcWarned = true
-                }
-            }
-            else -> Unit
         }
     }
 }

@@ -1,6 +1,6 @@
 package com.yubico.yubioath.keystore
 
-import com.yubico.yubioath.protocol.ChallengeSigner
+import com.yubico.yubikit.application.oath.ChallengeSigner
 
 interface StoredSigner : ChallengeSigner {
     fun promote()

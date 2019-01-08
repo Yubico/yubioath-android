@@ -35,9 +35,10 @@
     <string name="cancel">Cancel</string>
     <string name="password">Password</string>
     <string name="swipe_and_hold">Tap or insert your YubiKey</string>
-    <string name="tag_error">Error in YubiKey communication!</string>
-    <string name="nfc_off">NFC is disabled!</string>
+    <string name="tag_error">Error in YubiKey communication</string>
+    <string name="nfc_off">NFC is disabled</string>
     <string name="no_nfc">This device seems to not support NFC</string>
+    <string name="no_applet">OATH functionality not available</string>
 
     <string name="storage_full">YubiKey OATH storage is full!</string>
 

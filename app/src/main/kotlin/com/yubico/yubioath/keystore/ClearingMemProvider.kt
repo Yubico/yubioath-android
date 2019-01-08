@@ -1,14 +1,10 @@
 package com.yubico.yubioath.keystore
 
-import kotlinx.coroutines.experimental.CoroutineDispatcher
-import kotlinx.coroutines.experimental.Job
-import kotlinx.coroutines.experimental.delay
-import kotlinx.coroutines.experimental.launch
-import java.util.concurrent.TimeUnit
+import kotlinx.coroutines.*
 import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
 
-class ClearingMemProvider(private val exec: CoroutineDispatcher) : KeyProvider {
+class ClearingMemProvider : KeyProvider {
     private val map = mutableMapOf<String, MutableSet<Mac>>()
     private var clearJob: Job? = null
 
@@ -16,8 +12,8 @@ class ClearingMemProvider(private val exec: CoroutineDispatcher) : KeyProvider {
 
     override fun getKeys(deviceId: String): Sequence<StoredSigner> {
         clearJob?.cancel()
-        clearJob = launch(exec) {
-            delay(5, TimeUnit.MINUTES)  //Clear stored passwords after inactivity.
+        clearJob = GlobalScope.launch {
+            delay(5 * 60000)  //Clear stored passwords after inactivity.
             clearAll()
         }
 
@@ -25,7 +21,7 @@ class ClearingMemProvider(private val exec: CoroutineDispatcher) : KeyProvider {
     }
 
     override fun addKey(deviceId: String, secret: ByteArray) {
-        map.getOrPut(deviceId, { mutableSetOf() }).add(Mac.getInstance("HmacSHA1").apply {
+        map.getOrPut(deviceId) { mutableSetOf() }.add(Mac.getInstance("HmacSHA1").apply {
             init(SecretKeySpec(secret, algorithm))
         })
     }
