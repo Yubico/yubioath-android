@@ -24,6 +24,7 @@ class AddCredentialActivity : BaseActivity<AddCredentialViewModel>(AddCredential
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_add_credential)
+        setTitle(R.string.new_credential)
 
         supportActionBar?.apply {
             setHomeAsUpIndicator(R.drawable.ic_close_24dp)

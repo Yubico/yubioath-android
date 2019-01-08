@@ -18,8 +18,8 @@
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
-        android:roundIcon="@mipmap/ic_launcher_round"
         android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <meta-data
@@ -66,11 +66,13 @@
 
         <activity
             android:name=".ui.add.AddCredentialActivity"
-            android:label="@string/new_credential"
             android:configChanges="orientation|keyboard|keyboardHidden"
+            android:label="@string/app_name"
             android:launchMode="singleTask">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
 
                 <category android:name="android.intent.category.BROWSABLE" />
 
@@ -84,8 +86,8 @@
 
         <activity
             android:name=".ui.password.PasswordActivity"
-            android:label="@string/change_password"
             android:configChanges="orientation|keyboard|keyboardHidden"
+            android:label="@string/change_password"
             android:launchMode="singleTask">
 
             <meta-data
@@ -95,8 +97,8 @@
 
         <activity
             android:name=".ui.settings.SettingsActivity"
-            android:label="@string/settings"
-            android:configChanges="orientation|keyboard|keyboardHidden">
+            android:configChanges="orientation|keyboard|keyboardHidden"
+            android:label="@string/settings">
 
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
