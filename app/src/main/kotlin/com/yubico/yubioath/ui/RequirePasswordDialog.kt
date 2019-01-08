@@ -76,7 +76,7 @@ class RequirePasswordDialog : DialogFragment() {
                 setNegativeButton(R.string.cancel) { dialog, _ -> dialog.cancel() }
             }.create().apply {
                 setOnShowListener { getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
-                    val password = view.password.text.toString().trim()
+                    val password = view.password.text.toString()
                     val remember = view.rememberPassword.isChecked
                     if (password.isNotEmpty()) {
                         keyManager.clearKeys(deviceId)
