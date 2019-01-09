@@ -1,3 +1,8 @@
+* Version 2.2.0 unreleased
+ ** Make camera requirement optional.
+ ** Handle externally launched otpauth:// URLs.
+ ** Minor bug fixes.
+
 * Version 2.1.0 released 2018-09-24
  ** Add support for reading NDEF data (Yubico OTP, etc).
  ** Add support for NFC in "reader mode" (better compatibility for some phones).
