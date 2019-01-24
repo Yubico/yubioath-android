@@ -3,6 +3,7 @@ package com.yubico.yubikit.transport.nfc;
 import android.app.Activity;
 import android.content.Intent;
 import android.nfc.Tag;
+import android.os.Build;
 import android.os.Handler;
 import android.util.Log;
 
@@ -14,6 +15,7 @@ import nordpol.android.TagDispatcher;
 import nordpol.android.TagDispatcherBuilder;
 
 public class NfcDeviceManager {
+    private final Activity activity;
     private final Handler handler;
     private final TagDispatcher tagDispatcher;
 
@@ -21,6 +23,7 @@ public class NfcDeviceManager {
     private Tag pendingTag = null;
 
     public NfcDeviceManager(Activity activity, final Handler handler, @Nullable DispatchConfiguration dispatchConfiguration) {
+        this.activity = activity;
         this.handler = handler;
 
         TagDispatcherBuilder builder = new TagDispatcherBuilder(activity, new OnDiscoveredTagListener() {
@@ -48,8 +51,10 @@ public class NfcDeviceManager {
 
     public void setOnDevice(@Nullable final YubiKeyBackend.BackendHandler<? super NfcBackend> nfcDeviceListener) {
         Log.d("yubikit", "Set NFC listener: " + nfcDeviceListener);
-        if (this.listener != null) {
-            tagDispatcher.disableExclusiveNfc();
+        if (this.listener != null && !activity.isFinishing()) {
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR1 || !activity.isDestroyed()) {
+                tagDispatcher.disableExclusiveNfc();
+            }
         }
         this.listener = nfcDeviceListener;
         if (nfcDeviceListener != null) {

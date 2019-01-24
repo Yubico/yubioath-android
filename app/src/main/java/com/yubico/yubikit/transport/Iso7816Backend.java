@@ -1,6 +1,5 @@
 package com.yubico.yubikit.transport;
 
-import java.io.Closeable;
 import java.io.IOException;
 
 public interface Iso7816Backend extends YubiKeyBackend {

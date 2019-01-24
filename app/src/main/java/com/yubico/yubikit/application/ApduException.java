@@ -1,10 +1,10 @@
 package com.yubico.yubikit.application;
 
-import android.util.Log;
-
 import java.util.Arrays;
 
 public class ApduException extends Exception {
+    private static final short SW_OK = (short) 0x9000;
+
     public final byte[] body;
     public final short sw;
 
@@ -25,7 +25,7 @@ public class ApduException extends Exception {
     public static byte[] getChecked(byte[] data, int from, int to) throws ApduException {
         byte[] body = Arrays.copyOfRange(data, from, to - 2);
         short sw = (short)(((0xff & data[to-2]) << 8) | (0xff & data[to-1]));
-        if (sw != (short)0x9000) {
+        if (sw != SW_OK) {
             throw new ApduException(body, sw);
         }
         return body;

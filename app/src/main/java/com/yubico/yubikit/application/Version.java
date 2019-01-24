@@ -1,6 +1,7 @@
 package com.yubico.yubikit.application;
 
 import java.nio.ByteBuffer;
+import java.util.Locale;
 
 public final class Version {
     public final byte major;
@@ -29,5 +30,10 @@ public final class Version {
 
     public static Version parse(byte[] bytes, int offset) {
         return new Version(bytes[offset], bytes[offset + 1], bytes[offset + 2]);
+    }
+
+    @Override
+    public String toString() {
+        return String.format(Locale.ENGLISH, "%d.%d.%d", 0xff & major, 0xff & minor, 0xff & micro);
     }
 }

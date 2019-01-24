@@ -13,7 +13,6 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -62,7 +61,7 @@ public class UsbBackend implements Iso7816Backend {
             }
         }
         if (ccidInterface == null) {
-            throw new IllegalStateException("No CCID interface found!");
+            throw new IOException("No CCID interface found!");
         }
 
         for (int i = 0; i < ccidInterface.getEndpointCount(); i++) {
@@ -76,7 +75,7 @@ public class UsbBackend implements Iso7816Backend {
             }
         }
         if (bulkIn == null || bulkOut == null) {
-            throw new IllegalStateException("Unable to find endpoints!");
+            throw new IOException("Unable to find endpoints!");
         }
 
         connection = usbManager.openDevice(usbDevice);
@@ -114,16 +113,16 @@ public class UsbBackend implements Iso7816Backend {
         } while (bufIn[5] != SLOT || bufIn[6] != sequence || bufIn[7] == STATUS_TIME_EXTENSION);
         sequence++;
 
-
         ByteBuffer responseBuffer = ByteBuffer.wrap(bufIn).order(ByteOrder.LITTLE_ENDIAN);
         if (responseBuffer.get() != (byte) 0x80) {
             throw new IOException("Invalid response");
         }
         int length = responseBuffer.getInt();
-        responseBuffer.get(); // Slot, already checked
-        responseBuffer.get(); // Sequence, already checked
-        if (responseBuffer.getShort() != 0) {
-            throw new IOException("Invalid response");
+        responseBuffer.getShort(); // Slot and Sequence, already checked
+        byte status = responseBuffer.get();
+        byte error = responseBuffer.get();
+        if (status != 0) {
+            throw new IOException(String.format("Invalid response! bStatus: 0x%02x, bError: 0x%02x", status, error));
         }
         responseBuffer.get(); //TODO: Should be ?, level parameter
         ByteBuffer response = ByteBuffer.allocate(length).put(bufIn, responseBuffer.position(), Math.min(length, responseBuffer.remaining()));

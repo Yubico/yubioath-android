@@ -170,7 +170,7 @@ public class OathApplication extends AbstractApplication {
     }
 
     public List<CalculateResponse> calculateAll(byte[] challenge) throws IOException, ApduException {
-        Iterator<Tlv> response = Tlv.parseTlvList(send(INS_CALCULATE_ALL, 0, 1, Tlv.of(TAG_CHALLENGE, challenge).getBytes()), 0).iterator();
+        Iterator<Tlv> response = new Tlv.Group(send(INS_CALCULATE_ALL, 0, 1, Tlv.of(TAG_CHALLENGE, challenge).getBytes())).toList().iterator();
         List<CalculateResponse> result = new ArrayList<>();
         while (response.hasNext()) {
             result.add(new CalculateResponse(new String(response.next().getValue(), Charset.forName("UTF-8")), response.next()));
@@ -181,7 +181,7 @@ public class OathApplication extends AbstractApplication {
 
     public List<ListResponse> listCredentials() throws IOException, ApduException {
         List<ListResponse> result = new ArrayList<>();
-        for (Tlv tlv : Tlv.parseTlvList(send(INS_LIST, 0, 0, new byte[0]), 0)) {
+        for (Tlv tlv : new Tlv.Group(send(INS_LIST, 0, 0, new byte[0]), 0).toList()) {
             result.add(new ListResponse(tlv));
         }
         return result;
