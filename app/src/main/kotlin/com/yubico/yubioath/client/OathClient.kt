@@ -153,7 +153,7 @@ class OathClient(backend: Iso7816Backend, private val keyManager: KeyManager) {
 
         private fun formatSteam(data: CalculateResponse): String {
             val response = data.response
-            val offs = 0xf and response[response.size - 1].toInt() + 1
+            val offs = 0xf and response[response.size - 1].toInt()
             var code = 0x7fffffff and ByteBuffer.wrap(response.copyOfRange(offs, offs + 4)).int
             return StringBuilder().apply {
                 for (i in 0..4) {
