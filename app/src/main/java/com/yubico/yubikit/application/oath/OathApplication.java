@@ -29,6 +29,7 @@ public class OathApplication extends AbstractApplication {
     public static final byte[] AID = new byte[]{(byte) 0xa0, 0x00, 0x00, 0x05, 0x27, 0x21, 0x01, 0x01};
 
     public static final short SW_WRONG_DATA = 0x6a80;
+    public static final short SW_FILE_NOT_FOUND = 0x6a82;
     public static final short SW_FILE_FULL = 0x6a84;
     public static final short SW_AUTH_REQUIRED = 0x6982;
     public static final short SW_DATA_INVALID = 0x6984;

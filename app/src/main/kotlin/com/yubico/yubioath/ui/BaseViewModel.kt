@@ -190,6 +190,7 @@ abstract class BaseViewModel : ViewModel(), CoroutineScope {
             Log.e("yubioath", "Error using OathClient", e)
             val message = if (e is ApduException) {
                 when (e.sw) {
+                    OathApplication.SW_FILE_NOT_FOUND -> R.string.no_applet
                     OathApplication.SW_WRONG_DATA -> R.string.no_applet
                     OathApplication.SW_FILE_FULL -> R.string.storage_full
                     else -> R.string.tag_error

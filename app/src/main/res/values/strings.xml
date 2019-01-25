@@ -38,8 +38,7 @@
     <string name="tag_error">Error in YubiKey communication</string>
     <string name="nfc_off">NFC is disabled</string>
     <string name="no_nfc">This device seems to not support NFC</string>
-    <string name="no_applet">OATH functionality not available</string>
-
+    <string name="no_applet">OATH functionality missing or disabled</string>
     <string name="storage_full">YubiKey OATH storage is full!</string>
 
     <!-- View credentials -->
