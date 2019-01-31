@@ -3,11 +3,11 @@ package com.yubico.yubioath.ui.add
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
-import com.google.android.material.snackbar.Snackbar
-import androidx.core.content.ContextCompat
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
+import androidx.core.content.ContextCompat
+import com.google.android.material.snackbar.Snackbar
 import com.yubico.yubioath.R
 import com.yubico.yubioath.exc.DuplicateKeyException
 import com.yubico.yubioath.ui.BaseActivity
@@ -47,30 +47,28 @@ class AddCredentialActivity : BaseActivity<AddCredentialViewModel>(AddCredential
             R.id.menu_add_credential_save -> (supportFragmentManager.findFragmentById(R.id.fragment) as AddCredentialFragment).apply {
                 val data = validateData()
                 if (data != null) {
-                    isEnabled = false
-
                     val job = viewModel.addCredential(data)
-                    job.invokeOnCompletion {
-                        it?.let {
-                            launch {
-                                isEnabled = true
-                            }
-                        }
-                    }
 
                     launch {
+                        isEnabled = false
+                        val snackbar = Snackbar.make(view!!, R.string.swipe_and_hold, Snackbar.LENGTH_INDEFINITE).apply {
+                            setActionTextColor(ContextCompat.getColor(context, R.color.yubicoPrimaryGreen))
+                            setAction(R.string.cancel) { job.cancel() }
+                        }
                         if (viewModel.lastDeviceInfo.persistent) {
                             delay(100)
+                            if (job.isActive) {
+                                snackbar.show()
+                            }
+                        } else {
+                            snackbar.show()
                         }
-                        if (job.isActive) {
-                            Snackbar.make(view!!, R.string.swipe_and_hold, Snackbar.LENGTH_INDEFINITE).apply {
-                                setActionTextColor(ContextCompat.getColor(context, R.color.yubicoPrimaryGreen))
-                                job.invokeOnCompletion { dismiss() }
-                                setAction(R.string.cancel) { job.cancel() }
-                            }.show()
-                        }
+
+                        val result = job.await()
+                        isEnabled = result.isFailure
+                        if (snackbar.isShownOrQueued) snackbar.dismiss()
                         try {
-                            val (credential, code) = job.await()
+                            val (credential, code) = result.getOrThrow()
                             setResult(Activity.RESULT_OK, Intent().apply {
                                 putExtra(EXTRA_CREDENTIAL, credential)
                                 code?.let {

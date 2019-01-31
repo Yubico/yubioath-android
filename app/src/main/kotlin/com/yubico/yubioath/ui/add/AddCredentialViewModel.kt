@@ -19,7 +19,7 @@ class AddCredentialViewModel : BaseViewModel() {
         }
     }
 
-    fun addCredential(credentialData: CredentialData): Deferred<Pair<Credential, Code?>> = requestClient { client ->
+    fun addCredential(credentialData: CredentialData): Deferred<Result<Pair<Credential, Code?>>> = requestClient { client ->
         client.addCredential(credentialData).let {
             Pair(it, if (!(it.touch || it.type == OathType.HOTP)) client.calculate(it, System.currentTimeMillis()) else null)
         }

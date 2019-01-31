@@ -39,7 +39,7 @@ class PasswordActivity : BaseActivity<PasswordViewModel>(PasswordViewModel::clas
                             launch {
                                 if (!isCancelled) {
                                     try {
-                                        if (await()) {
+                                        if (await().getOrThrow()) {
                                             setResult(Activity.RESULT_OK)
                                             finish()
                                         } else {

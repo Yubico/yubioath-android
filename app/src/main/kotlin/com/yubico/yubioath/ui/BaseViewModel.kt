@@ -38,14 +38,14 @@ abstract class BaseViewModel : ViewModel(), CoroutineScope {
         private const val SP_STORED_AUTH_KEYS = "com.yubico.yubioath.SP_STORED_AUTH_KEYS"
 
         val HANDLER = Handler(SynchronousQueue<Looper>().apply {
-            thread(true, true) {
+            thread(true, true, name = "Yubico Authenticator IO Handler") {
                 Looper.prepare()
                 put(Looper.myLooper())
                 Looper.loop()
             }
         }.take())
 
-        val EXEC = HANDLER.asCoroutineDispatcher("Yubico Authenticator IO Handler")
+        val EXEC = HANDLER.asCoroutineDispatcher()
 
         private val DUMMY_INFO = DeviceInfo("", false, Version(0, 0, 0), false)
         private val MEM_STORE = ClearingMemProvider()
@@ -57,7 +57,6 @@ abstract class BaseViewModel : ViewModel(), CoroutineScope {
     override val coroutineContext: CoroutineContext
         get() = Dispatchers.Main + job
 
-    data class ClientResult<T>(val result: T?, val error: Throwable?)
     data class ClientRequest(val deviceId: String?, val func: suspend (OathClient) -> Unit)
 
     protected data class Services(val context: Context, val deviceManager: DeviceManager, val keyManager: KeyManager, val preferences: SharedPreferences)
@@ -104,24 +103,16 @@ abstract class BaseViewModel : ViewModel(), CoroutineScope {
         job.cancel()
     }
 
-    fun <T> requestClient(id: String? = null, func: (api: OathClient) -> T): Deferred<T> = async(EXEC) {
+    fun <T> requestClient(id: String? = null, func: (api: OathClient) -> T): Deferred<Result<T>> = async(EXEC) {
         Log.d("yubioath", "Requesting API...")
         services?.deviceManager?.triggerOnDevice()
 
-        val responseChannel = Channel<ClientResult<T>>()
+        val responseChannel = Channel<Result<T>>()
         clientRequests.send(ClientRequest(id) {
-            val result: ClientResult<T> = try {
-                ClientResult(func(it), null)
-            } catch (e: Throwable) {
-                ClientResult(null, e)
-            }
-            responseChannel.send(result)
+            responseChannel.send(runCatching {func(it)})
         })
 
-        responseChannel.receive().let {
-            it.error?.apply { throw this }
-            it.result!!
-        }
+        responseChannel.receive()
     }
 
     protected fun clearDevice() {
@@ -195,7 +186,8 @@ abstract class BaseViewModel : ViewModel(), CoroutineScope {
                     OathApplication.SW_FILE_FULL -> R.string.storage_full
                     else -> R.string.tag_error
                 }
-            } else R.string.tag_error;
+            } else R.string.tag_error
+
             launch(Dispatchers.Main) {
                 services?.apply {
                     context.toast(message)
