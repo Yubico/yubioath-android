@@ -1,41 +1,33 @@
-== Android application for OATH with YubiKey NEO and YubiKey 4
-
+== Android application for OATH with YubiKeys
 This app is hosted on Google Play as
 https://play.google.com/store/apps/details?id=com.yubico.yubioath[Yubico Authenticator].
-
-It is also available from
-https://f-droid.org/repository/browse/?fdid=com.yubico.yubioath[F-Droid].
 
 See the file COPYING for copyright and license information.
 
 === Introduction
+This is an authenticator app compatible with the OATH standard for time and
+counter based numeric OTPs, as used by many online services. To store these
+credentials and generate the codes, it uses a compatible YubiKey, connected
+either via NFC or USB (requiresa USB On-the-go cable, or USB-C). The USB
+functionality requires your mobile device to support USB Host mode, and for CCID
+to be enabled on your YubiKey.
 
-This is a small android application for generating OATH codes with the help of
-a YubiKey with OATH functionality. It can be used over NFC with YubiKey that
-support it, or via USB connection. The USB functionality requires your mobile
-device to support USB Host mode, and for CCID to be enabled on your YubiKey.
+Add credentials by tapping the + action button near the bottom right, and
+selecting either to add a credential by scanning a QR code, or by entering a
+Base32 encoded secret manually.
 
-To use it when you have an OATH QR-code:
+Once credentials have been added, simply tap or connect your YubiKey to display
+codes.
 
-1. Make sure NFC is turned on (or connect the YubiKey via USB)
-2. Start the application
-3. Select 'Scan new QR-code' from the actions menu.
-4. Scan the barcode and select which slot to program
-5. Tap the NFC-enabled YubiKey as instructed (not needed when using USB)
+=== Development
+This app is developed in Android Studio, using gradle for building. To build the
+APK from the command line, run:
 
-To view codes, just start the app and connect/tap your YubiKey.
+  $ ./gradlew assemble
 
-
-=== Building
-
-This project uses gradle for building, so to build:
-
-[source, sh]
-$ ./gradlew assemble
-
-After building the .apk file can be found in the app/build/outputs/apk/ directory.
+Once done the .apk file can be found in the app/build/outputs/apk/ directory.
 
 === Issues
 
-Please report any issues/feature-suggestions in 
+Please report app issues in
 https://github.com/Yubico/yubioath-android[the issue tracker on GitHub].
