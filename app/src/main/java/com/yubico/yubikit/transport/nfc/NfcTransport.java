@@ -5,37 +5,30 @@ import android.nfc.NdefMessage;
 import android.nfc.Tag;
 import android.nfc.tech.Ndef;
 
-import com.yubico.yubikit.transport.Iso7816Backend;
+import com.yubico.yubikit.transport.YubiKeyTransport;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.util.Arrays;
 
 import androidx.annotation.Nullable;
-import nordpol.IsoCard;
-import nordpol.android.AndroidCard;
 
-public class NfcBackend implements Iso7816Backend {
+public class NfcTransport implements YubiKeyTransport {
     private static final byte URL_NDEF_RECORD = (byte) 0xd1;
     private static final byte[] URL_PREFIX_BYTES = new byte[]{0x55, 0x04, 0x6d, 0x79, 0x2e, 0x79, 0x75, 0x62, 0x69, 0x63, 0x6f, 0x2e, 0x63, 0x6f, 0x6d, 0x2f};
 
     private final Tag tag;
 
-    private IsoCard card;
     private boolean ndefRead = false;
     private byte[] ndefData;
 
-    public NfcBackend(Tag tag) {
+    public NfcTransport(Tag tag) {
         this.tag = tag;
     }
 
+    @Nullable
     public byte[] readRawNdefData() throws IOException {
         if (!ndefRead) {
-            if (card != null) {
-                card.close();
-            }
-
             ndefRead = true;
             Ndef ndef = Ndef.get(tag);
             if (ndef == null) {
@@ -47,56 +40,39 @@ public class NfcBackend implements Iso7816Backend {
                 ndefData = ndefMessage != null ? ndefMessage.toByteArray() : null;
             } catch (FormatException e) {
                 //Ignore
-            }
-            ndef.close();
-
-            if (card != null) {
-                card.connect();
+            } finally {
+                ndef.close();
             }
         }
 
         return ndefData;
     }
 
+    @Nullable
     public byte[] getNdefBytes() throws IOException {
         return parseNdefOtp(readRawNdefData());
     }
 
+    @Nullable
     public String getNdefOtp() throws IOException {
-        return new String(getNdefBytes(), Charset.forName("UTF-8"));
+        byte[] ndefBytes = getNdefBytes();
+        return ndefBytes == null ? null : new String(ndefBytes, Charset.forName("UTF-8"));
     }
 
     @Override
-    public void connect() throws IOException {
-        card = AndroidCard.get(tag);
-        card.connect();
+    public boolean hasIso7816() {
+        return true;
     }
 
     @Override
-    public byte[] send(byte cla, byte ins, byte p1, byte p2, byte[] data) throws IOException {
-        byte[] apdu = ByteBuffer.allocate(data.length + 5)
-                .put(cla)
-                .put(ins)
-                .put(p1)
-                .put(p2)
-                .put((byte) data.length)
-                .put(data, 0, data.length)
-                .array();
-        StringBuilder sb = new StringBuilder();
-        for (byte b : apdu) {
-            sb.append(String.format("0x%02x", b));
-        }
-        return card.transceive(apdu);
+    public NfcIso7816Connection connect() throws IOException {
+        return new NfcIso7816Connection(tag);
     }
 
-    @Override
-    public void close() throws IOException {
-        card.close();
-    }
 
     @Nullable
     public static byte[] parseNdefOtp(byte[] ndefData) {
-        if (ndefData[0] == URL_NDEF_RECORD && Arrays.equals(URL_PREFIX_BYTES, Arrays.copyOfRange(ndefData, 3, 3 + URL_PREFIX_BYTES.length))) {
+        if (ndefData != null && ndefData[0] == URL_NDEF_RECORD && Arrays.equals(URL_PREFIX_BYTES, Arrays.copyOfRange(ndefData, 3, 3 + URL_PREFIX_BYTES.length))) {
             // YubiKey NEO uses https://my.yubico.com/neo/<payload>
             if (Arrays.equals("/neo/".getBytes(), Arrays.copyOfRange(ndefData, 18, 18 + 5))) {
                 ndefData[22] = '#';
@@ -110,4 +86,5 @@ public class NfcBackend implements Iso7816Backend {
 
         return null;
     }
+
 }

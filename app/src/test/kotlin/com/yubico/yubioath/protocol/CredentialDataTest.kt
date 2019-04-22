@@ -31,7 +31,6 @@
 package com.yubico.yubioath.protocol
 
 import android.net.Uri
-import com.yubico.yubioath.BuildConfig
 import com.yubico.yubioath.client.CredentialData
 import org.junit.Assert
 import org.junit.Assert.fail
@@ -41,7 +40,7 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 
 @RunWith(RobolectricTestRunner::class)
-@Config(constants = BuildConfig::class, sdk = [21])
+@Config(sdk = [21])
 class CredentialDataTest {
 
     @Test

@@ -109,7 +109,7 @@ public class Tlv {
         public SparseArray<byte[]> toDict() {
             SparseArray<byte[]> tlvs = new SparseArray<>();
             for (Tlv tlv : toList()) {
-                tlvs.put(tlv.getTag(), tlv.getValue());
+                tlvs.put(0xff & tlv.getTag(), tlv.getValue());
             }
             return tlvs;
         }

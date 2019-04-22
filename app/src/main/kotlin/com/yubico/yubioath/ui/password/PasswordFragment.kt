@@ -21,18 +21,21 @@ class PasswordFragment : Fragment() {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
 
-        current_password_wrapper.visibility = if (viewModel.lastDeviceInfo.hasPassword) View.VISIBLE else View.GONE
+        val deviceInfo = viewModel.deviceInfo.value!!
+        current_password_wrapper.visibility = if (deviceInfo.hasPassword) View.VISIBLE else View.GONE
     }
 
     fun validateData(): PasswordData? {
         current_password_wrapper.error = null
 
-        if (viewModel.lastDeviceInfo.hasPassword && current_password.text.toString().isEmpty()) {
+        val deviceInfo = viewModel.deviceInfo.value!!
+
+        if (deviceInfo.hasPassword && current_password.text.toString().isEmpty()) {
             current_password_wrapper.error = getString(R.string.password_required)
             return null
         }
 
-        val current = if (viewModel.lastDeviceInfo.hasPassword) current_password.text.toString() else ""
+        val current = if (deviceInfo.hasPassword) current_password.text.toString() else ""
         val pw1 = new_password.text.toString()
         val pw2 = verify_password.text.toString()
         val remember = remember_password.isChecked

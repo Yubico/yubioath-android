@@ -7,56 +7,28 @@ import android.hardware.usb.UsbEndpoint;
 import android.hardware.usb.UsbInterface;
 import android.hardware.usb.UsbManager;
 
-import com.yubico.yubikit.transport.Iso7816Backend;
+import com.yubico.yubikit.transport.Iso7816Connection;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
 
-public class UsbBackend implements Iso7816Backend {
-    private static final Set<Integer> PRODUCT_IDS_CCID = new HashSet<>(Arrays.asList(0x0111, 0x0112, 0x0115, 0x0116, 0x0404, 0x0405, 0x0406, 0x0407));
-    private static final Set<Integer> PRODUCT_IDS_OTP = new HashSet<>(Arrays.asList(0x0010, 0x00110, 0x0111, 0x0114, 0x0116, 0x0401, 0x0403, 0x0405, 0x0407, 0x0410));
-    private static final Set<Integer> PRODUCT_IDS_FIDO = new HashSet<>(Arrays.asList(0x0113, 0x0114, 0x0115, 0x0116, 0x0120, 0x0402, 0x0403, 0x0406, 0x0407, 0x0410));
-
+public class UsbIso7816Connection implements Iso7816Connection {
     private static final int TIMEOUT = 10000;
     private static final byte SLOT = 0;
     private static final byte STATUS_TIME_EXTENSION = (byte) 0x80;
 
-    private final UsbManager usbManager;
-    private final UsbDevice usbDevice;
-
-    private UsbDeviceConnection connection;
-    private UsbInterface ccidInterface;
-    private UsbEndpoint bulkOut, bulkIn;
+    private final UsbDeviceConnection connection;
+    private final UsbEndpoint bulkOut, bulkIn;
+    private final byte[] atr;
     private byte sequence = 0;
-    private byte[] atr;
 
-    public UsbBackend(UsbManager usbManager, UsbDevice usbDevice) {
-        this.usbManager = usbManager;
-        this.usbDevice = usbDevice;
-    }
-
-    public boolean hasCcid() {
-        return PRODUCT_IDS_CCID.contains(usbDevice.getProductId());
-    }
-
-    public boolean hasOtp() {
-        return PRODUCT_IDS_OTP.contains(usbDevice.getProductId());
-    }
-
-    public boolean hasFido() {
-        return PRODUCT_IDS_FIDO.contains(usbDevice.getProductId());
-    }
-
-    @Override
-    public void connect() throws IOException {
+    public UsbIso7816Connection(UsbManager usbManager, UsbDevice usbDevice) throws IOException {
+        UsbInterface ccidInterface = null;
         for (int i = 0; i < usbDevice.getInterfaceCount(); i++) {
             UsbInterface usbInterface = usbDevice.getInterface(i);
             if (usbInterface.getInterfaceClass() == UsbConstants.USB_CLASS_CSCID) {
-                this.ccidInterface = usbInterface;
+                ccidInterface = usbInterface;
                 break;
             }
         }
@@ -64,6 +36,8 @@ public class UsbBackend implements Iso7816Backend {
             throw new IOException("No CCID interface found!");
         }
 
+        UsbEndpoint bulkIn = null;
+        UsbEndpoint bulkOut = null;
         for (int i = 0; i < ccidInterface.getEndpointCount(); i++) {
             UsbEndpoint endpoint = ccidInterface.getEndpoint(i);
             if (endpoint.getType() == UsbConstants.USB_ENDPOINT_XFER_BULK) {
@@ -77,8 +51,13 @@ public class UsbBackend implements Iso7816Backend {
         if (bulkIn == null || bulkOut == null) {
             throw new IOException("Unable to find endpoints!");
         }
+        this.bulkIn = bulkIn;
+        this.bulkOut = bulkOut;
 
         connection = usbManager.openDevice(usbDevice);
+        if (connection == null) {
+            throw new IOException("Unable to connect to USB device!");
+        }
         connection.claimInterface(ccidInterface, true);
 
         atr = transceive((byte) 0x62, new byte[0]);

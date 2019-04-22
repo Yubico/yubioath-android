@@ -18,7 +18,7 @@ public final class Version {
         return ByteBuffer.allocate(3).put(major).put(minor).put(micro).array();
     }
 
-    public int compare(int major, int minor, int micro) {
+    public int compareOld(int major, int minor, int micro) {
         if (major > this.major || (major == this.major && (minor > this.minor || minor == this.minor && micro > this.micro))) {
             return -1;
         } else if (major == this.major && minor == this.minor && micro == this.micro) {
@@ -26,6 +26,14 @@ public final class Version {
         } else {
             return 1;
         }
+    }
+
+    public boolean isLessThan(int major, int minor, int micro) {
+        return this.major < major || (this.major == major && (this.minor < minor || (this.minor == minor && this.micro < micro)));
+    }
+
+    public boolean isAtLeast(int major, int minor, int micro) {
+        return !isLessThan(major, minor, micro);
     }
 
     public static Version parse(byte[] bytes, int offset) {

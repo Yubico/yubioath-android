@@ -160,10 +160,10 @@ class AddCredentialFragment : Fragment() {
 
     fun validateVersion(data: CredentialData, version: Version) {
         // These TextInputLayouts don't contain EditTexts, and need two leading spaces for alignment.
-        if (data.touch && version.compare(4, 0, 0) < 0) {
+        if (data.touch && version.isLessThan(4, 0, 0)) {
             credential_touch_wrapper.error = "  " + getString(R.string.add_credential_touch_version)
         }
-        if (data.algorithm == HashAlgorithm.SHA512 && version.compare(4, 3, 1) < 0) {
+        if (data.algorithm == HashAlgorithm.SHA512 && version.isLessThan(4, 3, 1)) {
             credential_algo_wrapper.error = "  " + getString(R.string.add_credential_algo_512)
         }
     }

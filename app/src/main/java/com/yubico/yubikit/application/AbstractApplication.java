@@ -2,7 +2,7 @@ package com.yubico.yubikit.application;
 
 import android.util.Log;
 
-import com.yubico.yubikit.transport.Iso7816Backend;
+import com.yubico.yubikit.transport.Iso7816Connection;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -14,19 +14,19 @@ public class AbstractApplication {
 
     private final byte[] aid;
     private final byte insSendRemaining;
-    private final Iso7816Backend backend;
+    private final Iso7816Connection backend;
 
-    protected AbstractApplication(Iso7816Backend backend, byte[] aid, byte insSendRemaining) {
+    protected AbstractApplication(Iso7816Connection backend, byte[] aid, byte insSendRemaining) {
         this.backend = backend;
         this.aid = aid;
         this.insSendRemaining = insSendRemaining;
     }
 
-    protected AbstractApplication(Iso7816Backend backend, byte[] aid) {
+    protected AbstractApplication(Iso7816Connection backend, byte[] aid) {
         this(backend, aid, (byte) 0xc0);
     }
 
-    public Iso7816Backend getBackend() {
+    public Iso7816Connection getBackend() {
         return backend;
     }
 

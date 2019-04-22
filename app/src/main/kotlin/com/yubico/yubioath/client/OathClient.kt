@@ -1,12 +1,13 @@
 package com.yubico.yubioath.client
 
 import android.util.Base64
+import android.util.Log
 import com.yubico.yubikit.application.ApduException
 import com.yubico.yubikit.application.oath.CalculateResponse
 import com.yubico.yubikit.application.oath.OathApplication
 import com.yubico.yubikit.application.oath.OathType
-import com.yubico.yubikit.transport.Iso7816Backend
-import com.yubico.yubikit.transport.usb.UsbBackend
+import com.yubico.yubikit.transport.Iso7816Connection
+import com.yubico.yubikit.transport.usb.UsbTransport
 import com.yubico.yubioath.exc.DuplicateKeyException
 import com.yubico.yubioath.exc.PasswordRequiredException
 import java.nio.ByteBuffer
@@ -14,13 +15,13 @@ import java.security.MessageDigest
 import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
 
-class OathClient(backend: Iso7816Backend, private val keyManager: KeyManager) {
-    private val api: OathApplication = OathApplication(backend)
+class OathClient(connection: Iso7816Connection, val keyManager: KeyManager) {
+    private val api: OathApplication = OathApplication(connection)
     val deviceInfo: DeviceInfo
 
     init {
         api.select()
-        deviceInfo = DeviceInfo(getDeviceId(api.deviceId), backend is UsbBackend, api.version, api.isLocked)
+        deviceInfo = DeviceInfo(getDeviceId(api.deviceId), connection is UsbTransport, api.version, api.isLocked)
         if (api.isLocked) {
             var missing = true
             keyManager.getKeys(deviceInfo.id).find {
@@ -100,7 +101,7 @@ class OathClient(backend: Iso7816Backend, private val keyManager: KeyManager) {
         return Code(value, validFrom, validUntil)
     }
 
-    fun refreshCodes(timestamp: Long, existing: Map<Credential, Code?>): MutableMap<Credential, Code?> {
+    fun refreshCodes(timestamp: Long, existing: Map<Credential, Code?>): Map<Credential, Code?> {
         // Default to 30 second period
         val timeStep = (timestamp / 1000 / 30)
         val challenge = ByteBuffer.allocate(8).putLong(timeStep).array()
@@ -108,6 +109,7 @@ class OathClient(backend: Iso7816Backend, private val keyManager: KeyManager) {
         return api.calculateAll(challenge).filter { !it.name.startsWith("_hidden:") }.map {
             val credential = Credential(deviceInfo.id, it.name, if(it.responseType == CalculateResponse.TYPE_HOTP) OathType.HOTP else OathType.TOTP, it.responseType == CalculateResponse.TYPE_TOUCH)
             val existingCode = existing[credential]
+            Log.d("yubikit", "Existing code: $credential: $existingCode")
             val code: Code? = if (it.response.size > 1) {
                 if (credential.period != 30 || credential.issuer == "Steam") {
                     //Recalculate needed for for periods != 30 or Steam credentials
@@ -117,8 +119,8 @@ class OathClient(backend: Iso7816Backend, private val keyManager: KeyManager) {
                 }
             } else existingCode
 
-            Pair(credential, code)
-        }.toMap().toMutableMap()
+            (credential to code)
+        }.toMap()
     }
 
     fun delete(credential: Credential) {

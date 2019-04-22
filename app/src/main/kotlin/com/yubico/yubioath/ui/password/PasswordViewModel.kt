@@ -1,10 +1,9 @@
 package com.yubico.yubioath.ui.password
 
 import com.yubico.yubioath.ui.BaseViewModel
-import kotlinx.coroutines.Deferred
 
 class PasswordViewModel : BaseViewModel() {
-    fun setPassword(oldPassword: String, newPassword: String, remember: Boolean): Deferred<Result<Boolean>> = requestClient(lastDeviceInfo.id) {
+    fun setPassword(oldPassword: String, newPassword: String, remember: Boolean) = requestClient(deviceInfo.value!!.id) {
         it.setPassword(oldPassword, newPassword, remember)
     }
 }

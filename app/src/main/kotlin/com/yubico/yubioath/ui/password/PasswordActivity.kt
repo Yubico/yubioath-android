@@ -53,7 +53,7 @@ class PasswordActivity : BaseActivity<PasswordViewModel>(PasswordViewModel::clas
                         }
                     }
                     launch {
-                        if (viewModel.lastDeviceInfo.persistent) {
+                        if (viewModel.deviceInfo.value!!.persistent) {
                             delay(100)
                         }
                         if (job.isActive) {

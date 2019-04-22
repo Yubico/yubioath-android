@@ -6,7 +6,7 @@ import com.yubico.yubikit.application.AbstractApplication;
 import com.yubico.yubikit.application.ApduException;
 import com.yubico.yubikit.application.Tlv;
 import com.yubico.yubikit.application.Version;
-import com.yubico.yubikit.transport.Iso7816Backend;
+import com.yubico.yubikit.transport.Iso7816Connection;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -58,7 +58,7 @@ public class OathApplication extends AbstractApplication {
     private byte[] deviceId;
     private byte[] challenge;
 
-    public OathApplication(Iso7816Backend backend) {
+    public OathApplication(Iso7816Connection backend) {
         super(backend, AID, (byte) 0xa5);
     }
 

@@ -32,22 +32,20 @@ class CredentialAdapter(private val context: Context, private val actionHandler:
     private val iconManager = IconManager(context)
     private val inflater = LayoutInflater.from(context)
     var creds: Map<Credential, Code?> = initialCreds
-        private set(value) {
+        set(value) {
             field = value.toSortedMap(
                     compareBy<Credential> { !isPinned(it) }
                             .thenBy { it.key != OathViewModel.NDEF_KEY }
                             .thenBy { it.issuer?.toLowerCase() ?: it.name.toLowerCase() }
                             .thenBy { it.name.toLowerCase() }
             )
+            notifyDataSetChanged()
+            GlobalScope.launch(Dispatchers.Main) {
+                notifyNextTimeout(value)
+            }
         }
 
     private var notifyTimeout: Job? = null
-
-    val setCredentials = fun(credentials: Map<Credential, Code?>, searchFilter: String) = GlobalScope.launch(Dispatchers.Main) {
-        creds = credentials.filterKeys { it.key.contains(searchFilter, true) }
-        notifyDataSetChanged()
-        notifyNextTimeout(credentials)
-    }
 
     private fun Code?.valid(): Boolean = this != null && validUntil > System.currentTimeMillis()
     private fun Code?.canRefresh(): Boolean = this == null || validFrom + 5000 < System.currentTimeMillis()

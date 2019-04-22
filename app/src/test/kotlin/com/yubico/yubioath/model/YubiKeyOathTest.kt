@@ -2,8 +2,7 @@ package com.yubico.yubioath.model
 
 import com.yubico.yubikit.application.oath.HashAlgorithm
 import com.yubico.yubikit.application.oath.OathType
-import com.yubico.yubikit.transport.Iso7816Backend
-import com.yubico.yubioath.BuildConfig
+import com.yubico.yubikit.transport.Iso7816Connection
 import com.yubico.yubioath.client.CredentialData
 import com.yubico.yubioath.client.KeyManager
 import com.yubico.yubioath.client.OathClient
@@ -18,13 +17,13 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 
 @RunWith(RobolectricTestRunner::class)
-@Config(constants = BuildConfig::class, sdk = [21])
+@Config(sdk = [21])
 class YubiKeyOathTest {
 
     @Test
     fun testParsingKnownResponse() {
         val keyManager = KeyManager(Mockito.mock(KeyProvider::class.java), Mockito.mock(KeyProvider::class.java))
-        val backendMock = Mockito.mock(Iso7816Backend::class.java)
+        val backendMock = Mockito.mock(Iso7816Connection::class.java)
         Mockito.`when`(backendMock.send(anyByte(), anyByte(), anyByte(), anyByte(), Mockito.any(ByteArray::class.java))).thenReturn(
                 byteArrayOf(0x79, 3, 0, 0, 0, 0x71, 0, 0x90.toByte(), 0x00), //SELECT
                 byteArrayOf(0x71, 3, 'f'.toByte(), 'o'.toByte(), '0'.toByte(), 0x76, 5, 8, 0x41, 0x39, 0x7e, 0xea.toByte(), 0x90.toByte(), 0x00)) // CALCULATE_ALL
@@ -38,7 +37,7 @@ class YubiKeyOathTest {
     @Test
     fun ensureCorrectChallengeSent() {
         val keyManager = KeyManager(Mockito.mock(KeyProvider::class.java), Mockito.mock(KeyProvider::class.java))
-        val backendMock = Mockito.mock(Iso7816Backend::class.java)
+        val backendMock = Mockito.mock(Iso7816Connection::class.java)
         Mockito.`when`(backendMock.send(anyByte(), anyByte(), anyByte(), anyByte(), Mockito.any(ByteArray::class.java))).thenReturn(
                 byteArrayOf(0x79, 3, 0, 0, 0, 0x71, 0, 0x90.toByte(), 0x00), //SELECT
                 byteArrayOf(0x90.toByte(), 0x00)) // CALCULATE_ALL
@@ -54,7 +53,7 @@ class YubiKeyOathTest {
     @Test
     fun testStoreCodeInstruction() {
         val keyManager = KeyManager(Mockito.mock(KeyProvider::class.java), Mockito.mock(KeyProvider::class.java))
-        val backendMock = Mockito.mock(Iso7816Backend::class.java)
+        val backendMock = Mockito.mock(Iso7816Connection::class.java)
         Mockito.`when`(backendMock.send(anyByte(), anyByte(), anyByte(), anyByte(), Mockito.any(ByteArray::class.java))).thenReturn(
                 byteArrayOf(0x79, 3, 0, 0, 0, 0x71, 0, 0x90.toByte(), 0x00), //SELECT
                 byteArrayOf(0x90.toByte(), 0x00)) // PUT

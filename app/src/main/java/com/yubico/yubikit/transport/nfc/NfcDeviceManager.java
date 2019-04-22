@@ -1,41 +1,43 @@
 package com.yubico.yubikit.transport.nfc;
 
 import android.app.Activity;
-import android.content.Intent;
 import android.nfc.Tag;
 import android.os.Build;
-import android.os.Handler;
 import android.util.Log;
 
-import com.yubico.yubikit.transport.YubiKeyBackend;
+import com.yubico.yubikit.transport.OnYubiKeyListener;
 
 import androidx.annotation.Nullable;
-import nordpol.android.OnDiscoveredTagListener;
-import nordpol.android.TagDispatcher;
-import nordpol.android.TagDispatcherBuilder;
 
 public class NfcDeviceManager {
     private final Activity activity;
-    private final Handler handler;
-    private final TagDispatcher tagDispatcher;
+    private final android.os.Handler handler;
+    private final NfcDispatcher dispatcher;
 
-    private YubiKeyBackend.BackendHandler<? super NfcBackend> listener;
+    private OnYubiKeyListener listener;
     private Tag pendingTag = null;
 
-    public NfcDeviceManager(Activity activity, final Handler handler, @Nullable DispatchConfiguration dispatchConfiguration) {
+    public NfcDeviceManager(Activity activity, final android.os.Handler handler, @Nullable NfcDispatcher dispatcher) {
         this.activity = activity;
         this.handler = handler;
-
-        TagDispatcherBuilder builder = new TagDispatcherBuilder(activity, new OnDiscoveredTagListener() {
+        if (dispatcher == null) {
+            if (Build.VERSION.SDK_INT < 19) {
+                throw new IllegalStateException("The DefaultNfcDispatcher requires API level >= 19!");
+            }
+            this.dispatcher = new DefaultNfcDispatcher(activity);
+        } else {
+            this.dispatcher = dispatcher;
+        }
+        this.dispatcher.setOnTagHandler(new NfcDispatcher.OnTagHandler() {
             @Override
-            public void tagDiscovered(final Tag tag) {
-                final YubiKeyBackend.BackendHandler<? super NfcBackend> nfcDeviceListener = NfcDeviceManager.this.listener;
+            public void onTag(final Tag tag) {
+                final OnYubiKeyListener nfcDeviceListener = NfcDeviceManager.this.listener;
                 if (nfcDeviceListener != null) {
                     handler.post(new Runnable() {
                         @Override
                         public void run() {
                             Log.d("yubikit", "On tag: " + nfcDeviceListener);
-                            nfcDeviceListener.onYubiKeyBackend(new NfcBackend(tag));
+                            nfcDeviceListener.onYubiKey(new NfcTransport(tag));
                         }
                     });
                 } else {
@@ -43,41 +45,40 @@ public class NfcDeviceManager {
                 }
             }
         });
-        if (dispatchConfiguration != null) {
-            dispatchConfiguration.configure(builder);
-        }
-        tagDispatcher = builder.build();
     }
 
-    public void setOnDevice(@Nullable final YubiKeyBackend.BackendHandler<? super NfcBackend> nfcDeviceListener) {
-        Log.d("yubikit", "Set NFC listener: " + nfcDeviceListener);
+    public void setOnYubiKeyListener(@Nullable final OnYubiKeyListener listener) {
+        Log.d("yubikit", "Set NFC listener: " + listener);
         if (this.listener != null && !activity.isFinishing()) {
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR1 || !activity.isDestroyed()) {
-                tagDispatcher.disableExclusiveNfc();
+                dispatcher.disable();
             }
         }
-        this.listener = nfcDeviceListener;
-        if (nfcDeviceListener != null) {
-            tagDispatcher.enableExclusiveNfc();
+        this.listener = listener;
+        if (listener != null) {
+            dispatcher.enable();
             final Tag tag = pendingTag;
             if (tag != null) {
                 pendingTag = null;
                 handler.post(new Runnable() {
                     @Override
                     public void run() {
-                        Log.d("yubikit", "On tag: " + nfcDeviceListener);
-                        nfcDeviceListener.onYubiKeyBackend(new NfcBackend(tag));
+                        listener.onYubiKey(new NfcTransport(tag));
                     }
                 });
             }
         }
     }
 
-    public boolean interceptIntent(Intent intent) {
-        return tagDispatcher.interceptIntent(intent);
-    }
+    public interface NfcDispatcher {
+        void setOnTagHandler(@Nullable OnTagHandler handler);
 
-    public interface DispatchConfiguration {
-        void configure(TagDispatcherBuilder builder);
+        void enable();
+
+        void disable();
+
+        interface OnTagHandler {
+            void onTag(Tag tag);
+        }
     }
 }

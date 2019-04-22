@@ -8,11 +8,11 @@ import android.content.ActivityNotFoundException
 import android.content.ClipData
 import android.content.Context
 import android.content.Intent
-import android.database.DataSetObserver
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
+import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.annotation.StringRes
 import com.google.android.material.snackbar.Snackbar
@@ -24,6 +24,7 @@ import android.view.animation.*
 import android.widget.AdapterView
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.lifecycle.Observer
 import com.google.android.gms.vision.barcode.Barcode
 import com.pixplicity.sharp.Sharp
 import com.yubico.yubikit.application.oath.OathType
@@ -66,14 +67,6 @@ class CredentialFragment : ListFragment(), CoroutineScope {
             progressBar.progress = ((1.0 - interpolatedTime) * 1000).toInt()
         }
     }
-    private val listObserver = object : DataSetObserver() {
-        override fun onChanged() {
-            //Update progress bar
-            updateProgressBar()
-            listView.alpha = 1f
-            swipe_clear_layout.isEnabled = !adapter.isEmpty
-        }
-    }
 
     private var actionMode: ActionMode? = null
 
@@ -102,7 +95,7 @@ class CredentialFragment : ListFragment(), CoroutineScope {
             override fun calculate(credential: Credential) {
                 viewModel.calculate(credential).let { job ->
                     launch {
-                        if (viewModel.lastDeviceInfo.persistent) {
+                        if (viewModel.deviceInfo.value!!.persistent) {
                             delay(100) // Delay enough to only prompt when touch is required.
                         }
                         jobWithClient(job, 0, job.isActive)
@@ -119,16 +112,35 @@ class CredentialFragment : ListFragment(), CoroutineScope {
                 }
             }
         }
-        context?.let {
-            listAdapter = CredentialAdapter(it, actions, viewModel.creds).apply {
-                viewModel.credListener = { creds, filter ->
-                    launch {
-                        view?.findViewById<TextView>(android.R.id.empty)?.setText(if (filter.isEmpty() || creds.isEmpty()) R.string.swipe_and_hold else R.string.no_match)
+
+        listAdapter = CredentialAdapter(context!!, actions, viewModel.creds.value.orEmpty())
+
+        viewModel.filteredCreds.observe(activity!!, Observer { filteredCreds ->
+            Log.d("yubikit", "CREDS UPDATED")
+            view?.findViewById<TextView>(android.R.id.empty)?.setText(if (viewModel.searchFilter.value.isNullOrEmpty() || viewModel.creds.value.isNullOrEmpty()) R.string.swipe_and_hold else R.string.no_match)
+            listView.alpha = 1f
+            swipe_clear_layout.isEnabled = !filteredCreds.isNullOrEmpty()
+            adapter.creds = filteredCreds
+
+            progressBar?.apply {
+                val validFrom = filteredCreds.filterKeys { it.type == OathType.TOTP && it.period == 30 && !it.touch }.values.firstOrNull()?.validFrom
+                if (validFrom != null) {
+                    val validTo = validFrom + 30000
+                    if (!timerAnimation.hasStarted() || timerAnimation.deadline != validTo) {
+                        val now = System.currentTimeMillis()
+                        startAnimation(timerAnimation.apply {
+                            deadline = validTo
+                            duration = validTo - Math.min(now, validFrom)
+                            startOffset = Math.min(0, validFrom - now)
+                        })
                     }
-                    setCredentials(creds, filter)
+                } else {
+                    clearAnimation()
+                    progress = 0
+                    timerAnimation.deadline = 0
                 }
             }
-        }
+        })
 
         listView.onItemClickListener = AdapterView.OnItemClickListener { _, _, position, _ ->
             actionMode?.apply {
@@ -143,8 +155,6 @@ class CredentialFragment : ListFragment(), CoroutineScope {
             selectItem(position)
             true
         }
-
-        updateProgressBar()
 
         viewModel.selectedItem?.let {
             selectItem(adapter.getPosition(it), false)
@@ -164,12 +174,12 @@ class CredentialFragment : ListFragment(), CoroutineScope {
 
         fixSwipeClearDrawable()
         swipe_clear_layout.apply {
-            isEnabled = !listAdapter.isEmpty
+            //isEnabled = !listAdapter.isEmpty
             setOnRefreshListener {
                 isRefreshing = false
                 actionMode?.finish()
 
-                if (viewModel.lastDeviceInfo.persistent) {
+                if (viewModel.deviceInfo.value!!.persistent) {
                     viewModel.clearCredentials()
                 } else {
                     listView.animate().apply {
@@ -188,16 +198,6 @@ class CredentialFragment : ListFragment(), CoroutineScope {
                 }
             }
         }
-    }
-
-    override fun onResume() {
-        super.onResume()
-        adapter.registerDataSetObserver(listObserver)
-    }
-
-    override fun onPause() {
-        super.onPause()
-        adapter.unregisterDataSetObserver(listObserver)
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -323,27 +323,6 @@ class CredentialFragment : ListFragment(), CoroutineScope {
         }
     }
 
-    private fun updateProgressBar() {
-        progressBar?.apply {
-            val validFrom = adapter.creds.filterKeys { it.type == OathType.TOTP && it.period == 30 && !it.touch }.values.firstOrNull()?.validFrom
-            if (validFrom != null) {
-                val validTo = validFrom + 30000
-                if (!timerAnimation.hasStarted() || timerAnimation.deadline != validTo) {
-                    val now = System.currentTimeMillis()
-                    startAnimation(timerAnimation.apply {
-                        deadline = validTo
-                        duration = validTo - Math.min(now, validFrom)
-                        startOffset = Math.min(0, validFrom - now)
-                    })
-                }
-            } else {
-                clearAnimation()
-                progress = 0
-                timerAnimation.deadline = 0
-            }
-        }
-    }
-
     private fun snackbar(@StringRes message: Int, duration: Int): Snackbar {
         return Snackbar.make(view!!, message, duration).apply {
             setActionTextColor(ContextCompat.getColor(context, R.color.yubicoPrimaryGreen)) //This doesn't seem to be directly styleable, unfortunately.
@@ -370,7 +349,7 @@ class CredentialFragment : ListFragment(), CoroutineScope {
             }
         }
 
-        if (!viewModel.lastDeviceInfo.persistent || needsTouch) {
+        if (!viewModel.deviceInfo.value!!.persistent || needsTouch) {
             snackbar(R.string.swipe_and_hold, Snackbar.LENGTH_INDEFINITE).apply {
                 job.invokeOnCompletion { dismiss() }
                 setAction(R.string.cancel) { job.cancel() }

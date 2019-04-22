@@ -48,6 +48,7 @@ class AddCredentialActivity : BaseActivity<AddCredentialViewModel>(AddCredential
                 val data = validateData()
                 if (data != null) {
                     val job = viewModel.addCredential(data)
+                    val deviceInfo = viewModel.deviceInfo.value!!
 
                     launch {
                         isEnabled = false
@@ -55,7 +56,7 @@ class AddCredentialActivity : BaseActivity<AddCredentialViewModel>(AddCredential
                             setActionTextColor(ContextCompat.getColor(context, R.color.yubicoPrimaryGreen))
                             setAction(R.string.cancel) { job.cancel() }
                         }
-                        if (viewModel.lastDeviceInfo.persistent) {
+                        if (deviceInfo.persistent) {
                             delay(100)
                             if (job.isActive) {
                                 snackbar.show()
@@ -81,7 +82,7 @@ class AddCredentialActivity : BaseActivity<AddCredentialViewModel>(AddCredential
                             markDuplicateName()
                         } catch (e: Exception) {
                             Log.e("yubioath", "exception", e)
-                            validateVersion(data, viewModel.lastDeviceInfo.version)
+                            validateVersion(data, deviceInfo.version)
                         }
                     }
                 }
