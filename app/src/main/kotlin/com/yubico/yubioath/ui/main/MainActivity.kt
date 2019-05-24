@@ -6,6 +6,7 @@ import android.content.Intent
 import android.nfc.NdefMessage
 import android.nfc.NfcAdapter
 import android.os.Bundle
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import androidx.appcompat.widget.SearchView
@@ -18,6 +19,7 @@ import com.yubico.yubioath.ui.BaseActivity
 import com.yubico.yubioath.ui.password.PasswordActivity
 import com.yubico.yubioath.ui.settings.SettingsActivity
 import org.jetbrains.anko.toast
+import java.io.IOException
 
 class MainActivity : BaseActivity<OathViewModel>(OathViewModel::class.java) {
     companion object {
@@ -48,8 +50,10 @@ class MainActivity : BaseActivity<OathViewModel>(OathViewModel::class.java) {
         getSharedPreferences("NEO_STORE", Context.MODE_PRIVATE).edit().clear().apply()
 
         if (prefs.getBoolean("readNdefData", false) && intent.action == NfcAdapter.ACTION_NDEF_DISCOVERED) {
-            (intent.getParcelableArrayExtra(NfcAdapter.EXTRA_NDEF_MESSAGES)[0] as NdefMessage).toByteArray()?.let {
-                viewModel.ndefCode = parseNdefData(it)
+            (intent.getParcelableArrayExtra(NfcAdapter.EXTRA_NDEF_MESSAGES)[0] as NdefMessage).toByteArray()?.let { ndefData ->
+                NfcTransport.parseNdefOtp(ndefData)?.let {
+                    viewModel.ndefCode = parseNdefData(it)
+                }
             }
         }
     }
@@ -96,8 +100,12 @@ class MainActivity : BaseActivity<OathViewModel>(OathViewModel::class.java) {
 
     override suspend fun useTransport(transport: YubiKeyTransport) {
         if (prefs.getBoolean("readNdefData", false) && transport is NfcTransport) {
-            transport.readRawNdefData()?.let {
-                viewModel.ndefCode = parseNdefData(it)
+            try {
+                transport.ndefBytes?.let {
+                    viewModel.ndefCode = parseNdefData(it)
+                }
+            } catch (e: IOException) {
+                Log.e("yubioath", "Error reading NDEF tag.", e)
             }
         }
         super.useTransport(transport)

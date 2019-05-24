@@ -3,21 +3,22 @@ package com.yubico.yubikit.transport.nfc;
 import android.app.Activity;
 import android.nfc.Tag;
 import android.os.Build;
+import android.os.Handler;
 import android.util.Log;
-
-import com.yubico.yubikit.transport.OnYubiKeyListener;
 
 import androidx.annotation.Nullable;
 
+import com.yubico.yubikit.transport.OnYubiKeyListener;
+
 public class NfcDeviceManager {
     private final Activity activity;
-    private final android.os.Handler handler;
+    private final Handler handler;
     private final NfcDispatcher dispatcher;
 
     private OnYubiKeyListener listener;
     private Tag pendingTag = null;
 
-    public NfcDeviceManager(Activity activity, final android.os.Handler handler, @Nullable NfcDispatcher dispatcher) {
+    public NfcDeviceManager(Activity activity, final Handler handler, @Nullable NfcDispatcher dispatcher) {
         this.activity = activity;
         this.handler = handler;
         if (dispatcher == null) {

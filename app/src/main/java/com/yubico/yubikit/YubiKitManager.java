@@ -23,6 +23,7 @@ public final class YubiKitManager {
     private final UsbDeviceManager usbDeviceManager;
     private final NfcDeviceManager nfcDeviceManager;
     private OnYubiKeyListener listener = null;
+    private boolean paused = true;
 
     public YubiKitManager(Activity activity) {
         this(activity, null, null);
@@ -73,21 +74,25 @@ public final class YubiKitManager {
      */
     public void setOnYubiKeyListener(@Nullable OnYubiKeyListener listener) {
         this.listener = listener;
-        resume();
+        if (!paused) {
+            resume();
+        }
     }
 
     /**
      * Call this to stop listening for YubiKey events. This method should be called prior to the Activity pausing in a listener is set, for example in the onPause() method.
      */
     public void pause() {
+        paused = true;
         usbDeviceManager.setOnYubiKeyListener(null);
         nfcDeviceManager.setOnYubiKeyListener(null);
     }
 
     /**
-     * Call this to resume listening for YubiKey events after the Activity has been resumed, for example in the onResume() method.
+     * Call this to resume listening for YubiKey events after the Activity has been paused, for example in the onResume() method.
      */
     public void resume() {
+        paused = false;
         usbDeviceManager.setOnYubiKeyListener(listener);
         nfcDeviceManager.setOnYubiKeyListener(listener);
     }

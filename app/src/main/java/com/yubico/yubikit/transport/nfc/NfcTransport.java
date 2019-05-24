@@ -69,7 +69,6 @@ public class NfcTransport implements YubiKeyTransport {
         return new NfcIso7816Connection(tag);
     }
 
-
     @Nullable
     public static byte[] parseNdefOtp(byte[] ndefData) {
         if (ndefData != null && ndefData[0] == URL_NDEF_RECORD && Arrays.equals(URL_PREFIX_BYTES, Arrays.copyOfRange(ndefData, 3, 3 + URL_PREFIX_BYTES.length))) {
@@ -86,5 +85,4 @@ public class NfcTransport implements YubiKeyTransport {
 
         return null;
     }
-
 }

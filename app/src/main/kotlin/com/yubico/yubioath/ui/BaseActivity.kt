@@ -70,20 +70,18 @@ abstract class BaseActivity<T : BaseViewModel>(private var modelClass: Class<T>)
 
         viewModel = ViewModelProviders.of(this).get(modelClass)
         nfcDispatcher = NordpolNfcDispatcher(this) {
-            it.enableReaderMode(prefs.getBoolean("useNfcReaderMode", false)).enableUnavailableNfcUserPrompt(false)
+            it.enableReaderMode(!prefs.getBoolean("disableNfcReaderMode", false)).enableUnavailableNfcUserPrompt(false)
         }
         yubiKitManager = YubiKitManager(this, null, nfcDispatcher)
         exec = yubiKitManager.handler.asCoroutineDispatcher()
 
         yubiKitManager.setOnYubiKeyListener(this)
         if (intent.action == NfcAdapter.ACTION_NDEF_DISCOVERED) {
-            Log.d("yubikit", "INTERCEPT INTENT!")
             nfcDispatcher.interceptIntent(intent)
         }
 
         viewModel.needsDevice.observe(this, Observer {
             if (it) {
-                Log.d("yubikit", "NEED DEVICE")
                 yubiKitManager.triggerOnYubiKey()
             }
         })
@@ -133,20 +131,17 @@ abstract class BaseActivity<T : BaseViewModel>(private var modelClass: Class<T>)
     }
 
     override fun onNewIntent(intent: Intent) {
-        Log.d("yubikit", "ON NEW INTENT: ${intent.action}")
         nfcDispatcher.interceptIntent(intent)
     }
 
     public override fun onPause() {
-        yubiKitManager.pause();
+        yubiKitManager.pause()
         super.onPause()
     }
 
     public override fun onResume() {
         super.onResume()
         yubiKitManager.resume()
-
-        Log.d("yubikit", "ON RESUME: ${intent.action}")
 
         if (prefs.getBoolean("warnNfc", true) && !viewModel.nfcWarned) {
             when (val adapter = NfcAdapter.getDefaultAdapter(this)) {
