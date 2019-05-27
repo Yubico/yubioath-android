@@ -40,7 +40,7 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 
 @RunWith(RobolectricTestRunner::class)
-@Config(sdk = [21])
+@Config(manifest = Config.NONE, sdk = [28])
 class CredentialDataTest {
 
     @Test
@@ -64,7 +64,7 @@ class CredentialDataTest {
             try {
                 CredentialData.fromUri(Uri.parse(uri))
             } catch (e: IllegalArgumentException) {
-                System.err.println("Failed at uri: " + uri)
+                System.err.println("Failed at uri: $uri")
                 throw e
             }
         }

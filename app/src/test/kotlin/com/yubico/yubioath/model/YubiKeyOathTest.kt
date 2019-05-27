@@ -17,7 +17,7 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 
 @RunWith(RobolectricTestRunner::class)
-@Config(sdk = [21])
+@Config(manifest=Config.NONE, sdk = [28])
 class YubiKeyOathTest {
 
     @Test
