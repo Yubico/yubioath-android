@@ -9,8 +9,8 @@ android {
         applicationId 'com.yubico.yubioath'
         minSdkVersion 15
         targetSdkVersion 28
-        versionCode 20191
-        versionName '2.2.0-rc2'
+        versionCode 20192
+        versionName '2.2.0-rc3'
     }
     buildTypes {
         release {
