@@ -51,7 +51,7 @@ abstract class BaseViewModel : ViewModel(), CoroutineScope {
         responseChannel.receive()
     }
 
-    protected fun clearDevice() {
+    fun clearDevice() {
         globalDeviceInfo.postValue(DUMMY_INFO)
     }
 

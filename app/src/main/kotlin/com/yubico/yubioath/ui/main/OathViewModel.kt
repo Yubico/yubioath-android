@@ -92,7 +92,10 @@ class OathViewModel : BaseViewModel() {
     fun scheduleRefresh() {
         refreshJob?.cancel()
         if (creds.value.isNullOrEmpty()) {
-            mutableNeedsDevice.postValue(true)
+            val info = deviceInfo.value
+            if (info != null && !info.persistent) {
+                mutableNeedsDevice.postValue(true)
+            }
         } else {
             val now = System.currentTimeMillis() //Needs to use real time, not adjusted for non-persistent.
             val deadline = creds.value.orEmpty().filterKeys { it.type == OathType.TOTP && !it.touch }.values.map { it?.validUntil ?: -1 }.filter { it > now }.min()

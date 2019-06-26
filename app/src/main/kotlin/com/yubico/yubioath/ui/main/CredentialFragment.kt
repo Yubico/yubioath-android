@@ -41,6 +41,7 @@ import kotlinx.coroutines.*
 import org.jetbrains.anko.clipboardManager
 import org.jetbrains.anko.toast
 import kotlin.coroutines.CoroutineContext
+import kotlin.math.min
 
 class CredentialFragment : ListFragment(), CoroutineScope {
     companion object {
@@ -117,7 +118,12 @@ class CredentialFragment : ListFragment(), CoroutineScope {
 
         viewModel.filteredCreds.observe(activity!!, Observer { filteredCreds ->
             Log.d("yubikit", "CREDS UPDATED")
-            view?.findViewById<TextView>(android.R.id.empty)?.setText(if (viewModel.searchFilter.value.isNullOrEmpty() || viewModel.creds.value.isNullOrEmpty()) R.string.swipe_and_hold else R.string.no_match)
+            view?.findViewById<TextView>(android.R.id.empty)?.setText(when {
+                viewModel.deviceInfo.value!!.persistent -> R.string.no_credentials
+                !viewModel.searchFilter.value.isNullOrEmpty() && !viewModel.creds.value.isNullOrEmpty() -> R.string.no_match
+                else -> R.string.swipe_and_hold
+            })
+
             listView.alpha = 1f
             swipe_clear_layout.isEnabled = !filteredCreds.isNullOrEmpty()
             adapter.creds = filteredCreds
@@ -130,8 +136,8 @@ class CredentialFragment : ListFragment(), CoroutineScope {
                         val now = System.currentTimeMillis()
                         startAnimation(timerAnimation.apply {
                             deadline = validTo
-                            duration = validTo - Math.min(now, validFrom)
-                            startOffset = Math.min(0, validFrom - now)
+                            duration = validTo - min(now, validFrom)
+                            startOffset = min(0, validFrom - now)
                         })
                     }
                 } else {

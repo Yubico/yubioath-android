@@ -7,7 +7,7 @@ import com.yubico.yubikit.application.oath.CalculateResponse
 import com.yubico.yubikit.application.oath.OathApplication
 import com.yubico.yubikit.application.oath.OathType
 import com.yubico.yubikit.transport.Iso7816Connection
-import com.yubico.yubikit.transport.usb.UsbTransport
+import com.yubico.yubikit.transport.usb.UsbIso7816Connection
 import com.yubico.yubioath.exc.DuplicateKeyException
 import com.yubico.yubioath.exc.PasswordRequiredException
 import java.nio.ByteBuffer
@@ -21,7 +21,7 @@ class OathClient(connection: Iso7816Connection, val keyManager: KeyManager) {
 
     init {
         api.select()
-        deviceInfo = DeviceInfo(getDeviceId(api.deviceId), connection is UsbTransport, api.version, api.isLocked)
+        deviceInfo = DeviceInfo(getDeviceId(api.deviceId), connection is UsbIso7816Connection, api.version, api.isLocked)
         if (api.isLocked) {
             var missing = true
             keyManager.getKeys(deviceInfo.id).find {

@@ -98,6 +98,14 @@ class MainActivity : BaseActivity<OathViewModel>(OathViewModel::class.java) {
         super.onActivityResult(requestCode, resultCode, data)
     }
 
+    override fun onYubiKey(transport: YubiKeyTransport?) {
+        if(transport == null) {
+            viewModel.clearDevice()
+            viewModel.clearCredentials()
+        }
+        super.onYubiKey(transport)
+    }
+
     override suspend fun useTransport(transport: YubiKeyTransport) {
         if (prefs.getBoolean("readNdefData", false) && transport is NfcTransport) {
             try {
