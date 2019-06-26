@@ -9,8 +9,8 @@ android {
         applicationId 'com.yubico.yubioath'
         minSdkVersion 15
         targetSdkVersion 28
-        versionCode 20192
-        versionName '2.2.0-rc3'
+        versionCode 20193
+        versionName '2.2.0-rc4'
     }
     buildTypes {
         release {
@@ -36,7 +36,7 @@ dependencies {
     implementation 'org.jetbrains.anko:anko-common:0.10.6'
     implementation 'org.jetbrains.anko:anko-sdk15:0.10.6'
 
-    implementation 'com.google.android.gms:play-services-vision:17.0.2'
+    implementation 'com.google.android.gms:play-services-vision:18.0.0'
     implementation 'com.google.android.material:material:1.0.0'
     implementation 'androidx.appcompat:appcompat:1.0.2'
     implementation 'androidx.preference:preference:1.0.0'
