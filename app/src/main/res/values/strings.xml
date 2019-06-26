@@ -40,6 +40,7 @@
     <string name="no_nfc">This device seems to not support NFC</string>
     <string name="no_applet">OATH functionality missing or disabled</string>
     <string name="storage_full">YubiKey OATH storage is full!</string>
+    <string name="key_too_long">Issuer/name too long!</string>
 
     <!-- View credentials -->
     <string name="no_credentials">No credentials stored</string>

@@ -8,12 +8,16 @@ import android.view.Menu
 import android.view.MenuItem
 import androidx.core.content.ContextCompat
 import com.google.android.material.snackbar.Snackbar
+import com.yubico.yubikit.application.ApduException
+import com.yubico.yubikit.application.oath.OathApplication
 import com.yubico.yubioath.R
 import com.yubico.yubioath.exc.DuplicateKeyException
+import com.yubico.yubioath.exc.KeyTooLongException
 import com.yubico.yubioath.ui.BaseActivity
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import org.jetbrains.anko.toast
 
 class AddCredentialActivity : BaseActivity<AddCredentialViewModel>(AddCredentialViewModel::class.java) {
     companion object {
@@ -81,8 +85,14 @@ class AddCredentialActivity : BaseActivity<AddCredentialViewModel>(AddCredential
                         } catch (e: DuplicateKeyException) {
                             markDuplicateName()
                         } catch (e: Exception) {
-                            Log.e("yubioath", "exception", e)
-                            validateVersion(data, deviceInfo.version)
+                            when {
+                                e is ApduException && e.sw == OathApplication.SW_FILE_FULL -> toast(R.string.storage_full)
+                                e is KeyTooLongException -> toast(R.string.key_too_long)
+                                else -> {
+                                    Log.e("yubioath", "exception", e)
+                                    validateVersion(data, deviceInfo.version)
+                                }
+                            }
                         }
                     }
                 }

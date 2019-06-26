@@ -9,6 +9,7 @@ import com.yubico.yubikit.application.oath.OathType
 import com.yubico.yubikit.transport.Iso7816Connection
 import com.yubico.yubikit.transport.usb.UsbIso7816Connection
 import com.yubico.yubioath.exc.DuplicateKeyException
+import com.yubico.yubioath.exc.KeyTooLongException
 import com.yubico.yubioath.exc.PasswordRequiredException
 import java.nio.ByteBuffer
 import java.security.MessageDigest
@@ -135,6 +136,9 @@ class OathClient(connection: Iso7816Connection, val keyManager: KeyManager) {
             }
             if (oathType == OathType.TOTP && period != 30) {
                 name = "$period/$name"
+            }
+            if (name.length > 64) {
+                throw KeyTooLongException()
             }
             if (api.listCredentials().any { it.name == name }) {
                 throw DuplicateKeyException()

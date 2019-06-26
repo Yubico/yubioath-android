@@ -101,10 +101,12 @@ abstract class BaseActivity<T : BaseViewModel>(private var modelClass: Class<T>)
                 viewModel.onClient(OathClient(it, keyManager))
             }
         } catch (e: PasswordRequiredException) {
-            launch(Dispatchers.Main) {
-                supportFragmentManager.apply {
-                    if (findFragmentByTag("dialog_require_password") == null) {
-                        RequirePasswordDialog.newInstance(keyManager, e.deviceId, e.salt, e.isMissing).show(beginTransaction(), "dialog_require_password")
+            coroutineScope {
+                launch(Dispatchers.Main) {
+                    supportFragmentManager.apply {
+                        if (findFragmentByTag("dialog_require_password") == null) {
+                            RequirePasswordDialog.newInstance(keyManager, e.deviceId, e.salt, e.isMissing).show(beginTransaction(), "dialog_require_password")
+                        }
                     }
                 }
             }
@@ -119,8 +121,10 @@ abstract class BaseActivity<T : BaseViewModel>(private var modelClass: Class<T>)
                 }
             } else R.string.tag_error
 
-            launch(Dispatchers.Main) {
-                toast(message)
+            coroutineScope {
+                launch(Dispatchers.Main) {
+                    toast(message)
+                }
             }
         }
     }
