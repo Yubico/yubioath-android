@@ -68,6 +68,13 @@ abstract class BaseActivity<T : BaseViewModel>(private var modelClass: Class<T>)
             window.setFlags(WindowManager.LayoutParams.FLAG_SECURE, WindowManager.LayoutParams.FLAG_SECURE)
         }
 
+        if (prefs.getString("themeSelect", null) == "Light"){
+            setTheme(android.R.style.ThemeOverlay_Material_Light)
+        }
+        else if (prefs.getString("themeSelect", null) == "Dark") {
+            setTheme(android.R.style.ThemeOverlay_Material_Dark)
+        }
+
         viewModel = ViewModelProviders.of(this).get(modelClass)
         nfcDispatcher = NordpolNfcDispatcher(this) {
             it.enableReaderMode(!prefs.getBoolean("disableNfcReaderMode", false)).enableUnavailableNfcUserPrompt(false)

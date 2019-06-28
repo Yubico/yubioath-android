@@ -116,6 +116,7 @@
     <string name="hide_thumbnail_description">Don\'t show codes in the app switcher</string>
     <string name="disable_nfc_reader_mode_title">Disable NFC Reader mode</string>
     <string name="disable_nfc_reader_mode_description">This may resolve NFC issues on some handsets, but is likely to introduce them on others. Use what works best for you.</string>
+    <string name="theme_select_title">Theme</string>
     <string name="read_ndef_data_title">Read NFC NDEF payload</string>
     <string name="read_ndef_data_description">Read the OTP slot data over NFC and display it as a credential.</string>
     <string name="warn_nfc_title">NFC warnings</string>
