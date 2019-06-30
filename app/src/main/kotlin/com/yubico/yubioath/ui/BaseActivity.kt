@@ -69,10 +69,11 @@ abstract class BaseActivity<T : BaseViewModel>(private var modelClass: Class<T>)
         }
 
         if (prefs.getString("themeSelect", null) == "Light"){
-            setTheme(android.R.style.ThemeOverlay_Material_Light)
-        }
-        else if (prefs.getString("themeSelect", null) == "Dark") {
-            setTheme(android.R.style.ThemeOverlay_Material_Dark)
+            setTheme(R.style.AppThemeLight)
+        } else if (prefs.getString("themeSelect", null) == "Dark") {
+            setTheme(R.style.AppThemeDark)
+        } else if (prefs.getString("themeSelect", null) == "AMOLED") {
+            setTheme(R.style.AppThemeAmoled)
         }
 
         viewModel = ViewModelProviders.of(this).get(modelClass)

@@ -3,7 +3,10 @@
     <color name="yubicoPrimaryGreen">#9aca3c</color>
     <color name="yubicoPrimaryWhite">#ffffff</color>
 
-    <color name="yubicoSecondaryBlue">#284c61</color>
+    <color name="yubicoSecondaryBlue">#325f74</color>
+    <color name="yubicoDarkSecondaryBlue">#4b8fae</color>
     <color name="yubicoSecondaryLightGray">#939598</color>
-    <color name="yubicoSecondaryDarkGray">#333333</color>
+    <color name="yubicoPrimaryDarkGreen">#3e580a</color>
+    <color name="yubicoAmoledBackground">#000000</color>
+    <color name="yubicoAmoledMenu">#111111</color>
 </resources>

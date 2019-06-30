@@ -1,16 +1,37 @@
 <resources>
 
     <!-- Base application theme. -->
-    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+    <style name="AppThemeLight" parent="Theme.AppCompat.Light.DarkActionBar">
         <item name="preferenceTheme">@style/PreferenceThemeOverlay.v14.Material</item>
 
         <!-- Customize your theme here. -->
         <item name="colorPrimary">@color/yubicoPrimaryGreen</item>
-        <item name="colorPrimaryDark">@color/yubicoSecondaryDarkGray</item>
+        <item name="colorPrimaryDark">@color/yubicoPrimaryDarkGreen</item>
         <item name="colorAccent">@color/yubicoSecondaryBlue</item>
     </style>
 
-    <style name="activated" parent="AppTheme">
+    <style name="AppThemeDark" parent="Theme.AppCompat">
+        <item name="preferenceTheme">@style/PreferenceThemeOverlay.v14.Material</item>
+
+        <!-- Customize your theme here. -->
+        <item name="colorPrimary">@color/yubicoPrimaryGreen</item>
+        <item name="colorPrimaryDark">@color/yubicoPrimaryDarkGreen</item>
+        <item name="colorAccent">@color/yubicoDarkSecondaryBlue</item>
+    </style>
+
+    <style name="AppThemeAmoled" parent="Theme.AppCompat">
+        <item name="preferenceTheme">@style/PreferenceThemeOverlay.v14.Material</item>
+
+        <!-- Customize your theme here. -->
+        <item name="colorPrimary">@android:color/black</item>
+        <item name="colorPrimaryDark">@android:color/black</item>
+        <item name="colorAccent">@color/yubicoDarkSecondaryBlue</item>
+        <!--<item name="android:background">@android:color/black</item>-->
+        <item name="android:windowBackground">@color/yubicoAmoledBackground</item>
+        <item name="android:itemBackground">@color/yubicoAmoledMenu</item>
+    </style>
+
+    <style name="activated" parent="AppThemeLight">
         <item name="android:background">?android:attr/activatedBackgroundIndicator</item>
     </style>
 

@@ -121,5 +121,6 @@
     <string-array name="themeSelection">
         <item>Light</item>
         <item>Dark</item>
+        <item>AMOLED</item>
     </string-array>
 </resources>
