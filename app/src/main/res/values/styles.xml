@@ -6,7 +6,7 @@
 
         <!-- Customize your theme here. -->
         <item name="colorPrimary">@color/yubicoPrimaryGreen</item>
-        <item name="colorPrimaryDark">@color/yubicoPrimaryDarkGreen</item>
+        <item name="colorPrimaryDark">@color/darkGreen</item>
         <item name="colorAccent">@color/yubicoSecondaryBlue</item>
     </style>
 
@@ -15,8 +15,8 @@
 
         <!-- Customize your theme here. -->
         <item name="colorPrimary">@color/yubicoPrimaryGreen</item>
-        <item name="colorPrimaryDark">@color/yubicoPrimaryDarkGreen</item>
-        <item name="colorAccent">@color/yubicoDarkSecondaryBlue</item>
+        <item name="colorPrimaryDark">@color/darkGreen</item>
+        <item name="colorAccent">@color/darkTeal</item>
     </style>
 
     <style name="AppThemeAmoled" parent="Theme.AppCompat">
@@ -25,10 +25,10 @@
         <!-- Customize your theme here. -->
         <item name="colorPrimary">@android:color/black</item>
         <item name="colorPrimaryDark">@android:color/black</item>
-        <item name="colorAccent">@color/yubicoDarkSecondaryBlue</item>
+        <item name="colorAccent">@color/darkTeal</item>
         <!--<item name="android:background">@android:color/black</item>-->
-        <item name="android:windowBackground">@color/yubicoAmoledBackground</item>
-        <item name="android:itemBackground">@color/yubicoAmoledMenu</item>
+        <item name="android:windowBackground">@color/black</item>
+        <item name="android:itemBackground">@color/veryDarkGray</item>
     </style>
 
     <style name="activated" parent="AppThemeLight">

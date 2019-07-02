@@ -35,6 +35,12 @@ abstract class BaseActivity<T : BaseViewModel>(private var modelClass: Class<T>)
         private const val SP_STORED_AUTH_KEYS = "com.yubico.yubioath.SP_STORED_AUTH_KEYS"
 
         private val MEM_STORE = ClearingMemProvider()
+
+        private fun getThemeId(name: String) = when (name) {
+            "Dark" -> R.style.AppThemeDark
+            "AMOLED" -> R.style.AppThemeAmoled
+            else -> R.style.AppThemeLight
+        }
     }
 
     protected lateinit var viewModel: T
@@ -59,6 +65,8 @@ abstract class BaseActivity<T : BaseViewModel>(private var modelClass: Class<T>)
         )
     }
 
+    private var themeId = 0
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -66,14 +74,6 @@ abstract class BaseActivity<T : BaseViewModel>(private var modelClass: Class<T>)
 
         if (prefs.getBoolean("hideThumbnail", true)) {
             window.setFlags(WindowManager.LayoutParams.FLAG_SECURE, WindowManager.LayoutParams.FLAG_SECURE)
-        }
-
-        if (prefs.getString("themeSelect", null) == "Light"){
-            setTheme(R.style.AppThemeLight)
-        } else if (prefs.getString("themeSelect", null) == "Dark") {
-            setTheme(R.style.AppThemeDark)
-        } else if (prefs.getString("themeSelect", null) == "AMOLED") {
-            setTheme(R.style.AppThemeAmoled)
         }
 
         viewModel = ViewModelProviders.of(this).get(modelClass)
@@ -93,6 +93,16 @@ abstract class BaseActivity<T : BaseViewModel>(private var modelClass: Class<T>)
                 yubiKitManager.triggerOnYubiKey()
             }
         })
+
+        themeId = getThemeId(prefs.getString("themeSelect", "Light")!!)
+        setTheme(themeId)
+    }
+
+    private fun updateTheme(newThemeId: Int) {
+        if (themeId != newThemeId) {
+            themeId = newThemeId
+            recreate()
+        }
     }
 
     override fun onYubiKey(transport: YubiKeyTransport?) {
@@ -154,6 +164,12 @@ abstract class BaseActivity<T : BaseViewModel>(private var modelClass: Class<T>)
     public override fun onResume() {
         super.onResume()
         yubiKitManager.resume()
+
+        val newThemeId = getThemeId(prefs.getString("themeSelect", "Light")!!)
+        if (themeId != newThemeId) {
+            themeId = newThemeId
+            recreate()
+        }
 
         if (prefs.getBoolean("warnNfc", true) && !viewModel.nfcWarned) {
             when (val adapter = NfcAdapter.getDefaultAdapter(this)) {
