@@ -76,13 +76,13 @@ class OathViewModel : BaseViewModel() {
                 val refreshCreds = requestClient(deviceInfo.id) {}
                 delay(100) //If we can't get the device in 100ms, give up and notify credListener.
                 if (refreshCreds.isActive) {
-                    _creds.value = mapOf()
+                    _creds.postValue(mapOf())
                     scheduleRefresh()
                 }
             }
         } else {
             clearDevice()
-            _creds.value = mapOf()
+            _creds.postValue(mapOf())
             scheduleRefresh()
         }
     }
