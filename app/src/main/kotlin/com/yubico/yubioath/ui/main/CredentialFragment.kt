@@ -119,7 +119,6 @@ class CredentialFragment : ListFragment(), CoroutineScope {
         listAdapter = CredentialAdapter(context!!, actions, viewModel.creds.value.orEmpty())
 
         viewModel.filteredCreds.observe(activity!!, Observer { filteredCreds ->
-            Log.d("yubikit", "CREDS UPDATED")
             view?.findViewById<TextView>(android.R.id.empty)?.setText(when {
                 viewModel.deviceInfo.value!!.persistent -> R.string.no_credentials
                 !viewModel.searchFilter.value.isNullOrEmpty() && !viewModel.creds.value.isNullOrEmpty() -> R.string.no_match

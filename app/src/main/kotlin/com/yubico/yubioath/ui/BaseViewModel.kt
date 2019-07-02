@@ -34,7 +34,6 @@ abstract class BaseViewModel : ViewModel(), CoroutineScope {
     val needsDevice: LiveData<Boolean> = mutableNeedsDevice
 
     override fun onCleared() {
-        Log.d("yubioath", "ViewModel onCleared() called for $this")
         clientRequests.cancel()
         job.cancel()
     }
@@ -45,7 +44,6 @@ abstract class BaseViewModel : ViewModel(), CoroutineScope {
         clientRequests.send(ClientRequest(id) {
             responseChannel.send(runCatching { func(it) })
         })
-        Log.d("yubioath", "Signal needs device!")
         mutableNeedsDevice.value = true
 
         responseChannel.receive()
