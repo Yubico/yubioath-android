@@ -41,6 +41,10 @@ class SettingsFragment : PreferenceFragmentCompat() {
                 window.setFlags(WindowManager.LayoutParams.FLAG_SECURE, if (it == true) WindowManager.LayoutParams.FLAG_SECURE else 0)
             }
 
+            onPreferenceChange("themeSelect") {
+                recreate()
+            }
+
             onPreferenceClick("clearIcons") {
                 AlertDialog.Builder(this)
                         .setTitle(R.string.clear_icons)
