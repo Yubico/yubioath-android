@@ -21,6 +21,7 @@ import androidx.core.content.ContextCompat
 import androidx.appcompat.app.AlertDialog
 import android.view.*
 import android.view.animation.*
+import android.view.inputmethod.InputMethodManager
 import android.widget.AdapterView
 import android.widget.ImageView
 import android.widget.TextView
@@ -39,6 +40,7 @@ import com.yubico.yubioath.ui.qr.RESULT_NO_PLAY_SERVICES
 import kotlinx.android.synthetic.main.fragment_credentials.*
 import kotlinx.coroutines.*
 import org.jetbrains.anko.clipboardManager
+import org.jetbrains.anko.inputMethodManager
 import org.jetbrains.anko.toast
 import kotlin.coroutines.CoroutineContext
 import kotlin.math.min
@@ -249,6 +251,8 @@ class CredentialFragment : ListFragment(), CoroutineScope {
                 REQUEST_SCAN_QR_EXTERNAL -> {
                     handleUrlCredential(this, data.getStringExtra("SCAN_RESULT"))
                 }
+            } else if(requestCode == REQUEST_ADD_CREDENTIAL && resultCode == Activity.RESULT_CANCELED) {
+                inputMethodManager.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0)
             }
         }
 
