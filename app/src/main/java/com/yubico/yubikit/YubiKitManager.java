@@ -59,12 +59,21 @@ public final class YubiKitManager {
     }
 
     /**
-     * When true (default), the YubiKitManager will prompt the user for permission if needed when a YubiKey is connected over USB, before invoking the OnYubiKeyListener. When false, the listener will be invoked regardless of if permission has been granted or not.
+     * Get the UsbDeviceHandler for direct manipulation.
      *
-     * @param requireUsbPermission Set whether or not to prompt the user for USB permissions.
+     * @return The UsbDeviceHandler which communicates with YubiKeys over USB.
      */
-    public void setRequireUsbPermission(boolean requireUsbPermission) {
-        usbDeviceManager.setRequirePermission(requireUsbPermission);
+    public UsbDeviceManager getUsbDeviceManager() {
+        return usbDeviceManager;
+    }
+
+    /**
+     * Get the NfcDeviceHandler for direct manipulation.
+     *
+     * @return The NfcDeviceHandler which communicates with YubiKeys over NFC.
+     */
+    public NfcDeviceManager getNfcDeviceManager() {
+        return nfcDeviceManager;
     }
 
     /**

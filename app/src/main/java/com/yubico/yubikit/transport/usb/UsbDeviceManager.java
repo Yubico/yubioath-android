@@ -11,6 +11,7 @@ import android.util.Log;
 
 import com.yubico.yubikit.transport.OnYubiKeyListener;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 public final class UsbDeviceManager {
@@ -25,6 +26,12 @@ public final class UsbDeviceManager {
     private transient OnYubiKeyListener usbDeviceListener = null;
     private transient boolean requirePermission = true;
     private transient boolean hasUsb = false;
+    private transient UsbDevicePredicate deviceFiler = new UsbDevicePredicate() {
+        @Override
+        public boolean test(UsbDevice usbDevice) {
+            return usbDevice.getVendorId() == 0x1050;
+        }
+    };
 
     public UsbDeviceManager(Context context, android.os.Handler handler) {
         this.context = context;
@@ -36,8 +43,17 @@ public final class UsbDeviceManager {
         pollUsbRunnable = new PollUsbRunnable();
     }
 
+    /**
+     * When true (default), the YubiKitManager will prompt the user for permission if needed when a YubiKey is connected over USB, before invoking the OnYubiKeyListener. When false, the listener will be invoked regardless of if permission has been granted or not.
+     *
+     * @param requirePermission Set whether or not to prompt the user for USB permissions.
+     */
     public void setRequirePermission(boolean requirePermission) {
         this.requirePermission = requirePermission;
+    }
+
+    public void setUsbDeviceFilter(@NonNull UsbDevicePredicate filter) {
+        deviceFiler = filter;
     }
 
     public void setOnYubiKeyListener(final @Nullable OnYubiKeyListener listener) {
@@ -67,9 +83,12 @@ public final class UsbDeviceManager {
 
     @Nullable
     private UsbDevice findDevice() {
-        for (UsbDevice device : usbManager.getDeviceList().values()) {
-            if (device.getVendorId() == 0x1050) {
-                return device;
+        UsbDevicePredicate filter = deviceFiler;
+        if (filter != null) {
+            for (UsbDevice device : usbManager.getDeviceList().values()) {
+                if(filter.test(device)) {
+                    return device;
+                }
             }
         }
         return null;
@@ -128,5 +147,9 @@ public final class UsbDeviceManager {
                 handler.postDelayed(this, 500);
             }
         }
+    }
+
+    public interface UsbDevicePredicate {
+        boolean test(UsbDevice usbDevice);
     }
 }

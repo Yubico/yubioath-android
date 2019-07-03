@@ -136,7 +136,7 @@ OATH Version: %2$s</p>
 <br/><a href="https://github.com/Yubico/yubioath-android/">Source code</a><br/>
 <br/><a href="https://www.youtube.com/watch?v=W7if0FW12D0">Demo video</a></p>
 
-<p>Yubico Authenticator requires a YubiKey with OATH functionality, such as the YubiKey NEO or YubiKey 4.</p>
+<p>Yubico Authenticator requires a YubiKey with OATH functionality (such as the YubiKey NEO, 4 or 5).</p>
 
 <p>Copyright Yubico<br/>
 <a href="https://www.yubico.com/">https://www.yubico.com/</a></p>]]></string>

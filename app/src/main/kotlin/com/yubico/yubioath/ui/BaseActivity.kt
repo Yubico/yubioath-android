@@ -3,6 +3,7 @@ package com.yubico.yubioath.ui
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
+import android.hardware.usb.UsbConstants
 import android.nfc.NfcAdapter
 import android.os.Build
 import android.os.Bundle
@@ -82,6 +83,20 @@ abstract class BaseActivity<T : BaseViewModel>(private var modelClass: Class<T>)
         }
         yubiKitManager = YubiKitManager(this, null, nfcDispatcher)
         exec = yubiKitManager.handler.asCoroutineDispatcher()
+        yubiKitManager.usbDeviceManager.setUsbDeviceFilter {
+            val hasCcid = 0.until(it.interfaceCount).any { i -> it.getInterface(i).interfaceClass == UsbConstants.USB_CLASS_CSCID }
+            when {
+                it.vendorId != 0x1050 -> false  //Not a Yubico device, ignore it
+                it.productId == 0x421 -> false
+                !hasCcid-> {  //YubiKey with no CCID, display error
+                    launch(Dispatchers.Main) {
+                        toast(R.string.no_applet)
+                    }
+                    false
+                }
+                else -> true
+            }
+        }
 
         yubiKitManager.setOnYubiKeyListener(this)
         if (intent.action == NfcAdapter.ACTION_NDEF_DISCOVERED) {
@@ -114,6 +129,16 @@ abstract class BaseActivity<T : BaseViewModel>(private var modelClass: Class<T>)
     }
 
     open suspend fun useTransport(transport: YubiKeyTransport) {
+        if(!transport.hasIso7816()) {
+            Log.d("yubioath", "Device does not support ISO7816")
+            coroutineScope {
+                launch(Dispatchers.Main) {
+                    toast(R.string.no_applet)
+                }
+            }
+            return
+        }
+
         try {
             transport.connect().use {
                 viewModel.onClient(OathClient(it, keyManager))
@@ -123,7 +148,12 @@ abstract class BaseActivity<T : BaseViewModel>(private var modelClass: Class<T>)
                 launch(Dispatchers.Main) {
                     supportFragmentManager.apply {
                         if (findFragmentByTag("dialog_require_password") == null) {
-                            RequirePasswordDialog.newInstance(keyManager, e.deviceId, e.salt, e.isMissing).show(beginTransaction(), "dialog_require_password")
+                            RequirePasswordDialog.newInstance(e.isMissing) { password, remember ->
+                                keyManager.clearKeys(e.deviceId)
+                                keyManager.addKey(e.deviceId, KeyManager.calculateSecret(password, e.salt, false), remember)
+                                keyManager.addKey(e.deviceId, KeyManager.calculateSecret(password, e.salt, true), remember)
+                                yubiKitManager.triggerOnYubiKey()
+                            }.show(beginTransaction(), "dialog_require_password")
                         }
                     }
                 }
