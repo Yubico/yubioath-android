@@ -117,6 +117,7 @@ public class OathApplication extends AbstractApplication {
         try {
             Mac mac = Mac.getInstance("HmacSHA1");
             mac.init(new SecretKeySpec(secret, mac.getAlgorithm()));
+            mac.update(challenge);
             response = mac.doFinal();
         } catch (NoSuchAlgorithmException | InvalidKeyException e) {
             throw new IllegalStateException(e);
