@@ -22,7 +22,7 @@ const val RESULT_NO_PLAY_SERVICES = Activity.RESULT_FIRST_USER + 0
 private const val PERMISSION_CAMERA = 1
 
 class QrActivity : AppCompatActivity() {
-    private val cameraPreview: CameraPreview by lazy { findViewById<CameraPreview>(R.id.preview) }
+    private val cameraPreview: CameraPreview by lazy { findViewById(R.id.preview) }
     private var cameraSource: CameraSource? = null
 
     private val qrProcessor = object : Detector.Processor<Barcode> {
