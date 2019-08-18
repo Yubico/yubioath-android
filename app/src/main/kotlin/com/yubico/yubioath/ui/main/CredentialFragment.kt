@@ -32,10 +32,9 @@ import com.yubico.yubioath.client.Code
 import com.yubico.yubioath.client.Credential
 import com.yubico.yubioath.client.CredentialData
 import com.yubico.yubioath.getQrCodeDisplayValue
+import com.yubico.yubioath.isGooglePlayAvailable
+import com.yubico.yubioath.startQrCodeAcitivty
 import com.yubico.yubioath.ui.add.AddCredentialActivity
-import com.yubico.yubioath.ui.qr.QR_DATA
-import com.yubico.yubioath.ui.qr.QrActivity
-import com.yubico.yubioath.ui.qr.RESULT_NO_PLAY_SERVICES
 import kotlinx.android.synthetic.main.fragment_credentials.*
 import kotlinx.coroutines.*
 import org.jetbrains.anko.clipboardManager
@@ -43,6 +42,8 @@ import org.jetbrains.anko.inputMethodManager
 import org.jetbrains.anko.toast
 import kotlin.coroutines.CoroutineContext
 import kotlin.math.min
+
+const val QR_DATA = "QR_DATA"
 
 class CredentialFragment : ListFragment(), CoroutineScope {
     companion object {
@@ -171,7 +172,11 @@ class CredentialFragment : ListFragment(), CoroutineScope {
 
         btn_scan_qr.setOnClickListener {
             hideAddToolbar()
-            startActivityForResult(Intent(activity, QrActivity::class.java), REQUEST_SCAN_QR)
+            if (activity?.isGooglePlayAvailable() == true) {
+                startQrCodeAcitivty(REQUEST_SCAN_QR)
+            } else {
+                tryOpeningExternalQrReader()
+            }
         }
         btn_manual_entry.setOnClickListener {
             hideAddToolbar()
@@ -253,16 +258,16 @@ class CredentialFragment : ListFragment(), CoroutineScope {
                 inputMethodManager.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0)
             }
         }
+    }
 
-        if (requestCode == REQUEST_SCAN_QR && resultCode == RESULT_NO_PLAY_SERVICES) {
-            try {
-                startActivityForResult(Intent("com.google.zxing.client.android.SCAN").apply {
-                    putExtra("SCAN_MODE", "QR_CODE_MODE")
-                    putExtra("SAVE_HISTORY", false)
-                }, REQUEST_SCAN_QR_EXTERNAL)
-            } catch (e: ActivityNotFoundException) {
-                activity?.toast(R.string.external_qr_scanner_missing)
-            }
+    private fun tryOpeningExternalQrReader() {
+        try {
+            startActivityForResult(Intent("com.google.zxing.client.android.SCAN").apply {
+                putExtra("SCAN_MODE", "QR_CODE_MODE")
+                putExtra("SAVE_HISTORY", false)
+            }, REQUEST_SCAN_QR_EXTERNAL)
+        } catch (e: ActivityNotFoundException) {
+            activity?.toast(R.string.external_qr_scanner_missing)
         }
     }
 
