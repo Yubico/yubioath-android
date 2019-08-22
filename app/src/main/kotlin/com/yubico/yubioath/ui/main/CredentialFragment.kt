@@ -3,7 +3,6 @@ package com.yubico.yubioath.ui.main
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.app.Activity
-import androidx.lifecycle.ViewModelProviders
 import android.content.ActivityNotFoundException
 import android.content.ClipData
 import android.content.Context
@@ -12,31 +11,30 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
-import android.util.Log
-import androidx.annotation.RequiresApi
-import androidx.annotation.StringRes
-import com.google.android.material.snackbar.Snackbar
-import androidx.fragment.app.ListFragment
-import androidx.core.content.ContextCompat
-import androidx.appcompat.app.AlertDialog
 import android.view.*
 import android.view.animation.*
 import android.view.inputmethod.InputMethodManager
 import android.widget.AdapterView
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.annotation.RequiresApi
+import androidx.annotation.StringRes
+import androidx.appcompat.app.AlertDialog
+import androidx.core.content.ContextCompat
+import androidx.fragment.app.ListFragment
 import androidx.lifecycle.Observer
-import com.google.android.gms.vision.barcode.Barcode
+import androidx.lifecycle.ViewModelProviders
+import com.google.android.material.snackbar.Snackbar
 import com.pixplicity.sharp.Sharp
 import com.yubico.yubikit.application.oath.OathType
 import com.yubico.yubioath.R
 import com.yubico.yubioath.client.Code
 import com.yubico.yubioath.client.Credential
 import com.yubico.yubioath.client.CredentialData
+import com.yubico.yubioath.getQrCodeDisplayValue
+import com.yubico.yubioath.isGooglePlayAvailable
+import com.yubico.yubioath.startQrCodeAcitivty
 import com.yubico.yubioath.ui.add.AddCredentialActivity
-import com.yubico.yubioath.ui.qr.QR_DATA
-import com.yubico.yubioath.ui.qr.QrActivity
-import com.yubico.yubioath.ui.qr.RESULT_NO_PLAY_SERVICES
 import kotlinx.android.synthetic.main.fragment_credentials.*
 import kotlinx.coroutines.*
 import org.jetbrains.anko.clipboardManager
@@ -44,6 +42,8 @@ import org.jetbrains.anko.inputMethodManager
 import org.jetbrains.anko.toast
 import kotlin.coroutines.CoroutineContext
 import kotlin.math.min
+
+const val QR_DATA = "QR_DATA"
 
 class CredentialFragment : ListFragment(), CoroutineScope {
     companion object {
@@ -110,7 +110,7 @@ class CredentialFragment : ListFragment(), CoroutineScope {
                 activity?.let {
                     val clipboard = it.clipboardManager
                     val clip = ClipData.newPlainText("OTP", code.value)
-                    clipboard.primaryClip = clip
+                    clipboard.setPrimaryClip(clip)
                     it.toast(R.string.copied)
                 }
             }
@@ -172,7 +172,11 @@ class CredentialFragment : ListFragment(), CoroutineScope {
 
         btn_scan_qr.setOnClickListener {
             hideAddToolbar()
-            startActivityForResult(Intent(activity, QrActivity::class.java), REQUEST_SCAN_QR)
+            if (it.context.isGooglePlayAvailable()) {
+                startQrCodeAcitivty(REQUEST_SCAN_QR)
+            } else {
+                tryOpeningExternalQrReader()
+            }
         }
         btn_manual_entry.setOnClickListener {
             hideAddToolbar()
@@ -210,7 +214,7 @@ class CredentialFragment : ListFragment(), CoroutineScope {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
-        fun handleUrlCredential(context:Context, data: String) {
+        fun handleUrlCredential(context: Context, data: String) {
             try {
                 val uri = Uri.parse(data)
                 CredentialData.fromUri(uri)
@@ -221,7 +225,7 @@ class CredentialFragment : ListFragment(), CoroutineScope {
         }
 
         activity?.apply {
-            if (resultCode == Activity.RESULT_OK && data != null) when(requestCode) {
+            if (resultCode == Activity.RESULT_OK && data != null) when (requestCode) {
                 REQUEST_ADD_CREDENTIAL -> {
                     toast(R.string.add_credential_success)
                     val credential: Credential = data.getParcelableExtra(AddCredentialActivity.EXTRA_CREDENTIAL)
@@ -245,25 +249,25 @@ class CredentialFragment : ListFragment(), CoroutineScope {
                     actionMode?.finish()
                 }
                 REQUEST_SCAN_QR -> {
-                    handleUrlCredential(this, data.getParcelableExtra<Barcode>(QR_DATA).displayValue)
+                    handleUrlCredential(this, data.getQrCodeDisplayValue(QR_DATA))
                 }
                 REQUEST_SCAN_QR_EXTERNAL -> {
                     handleUrlCredential(this, data.getStringExtra("SCAN_RESULT"))
                 }
-            } else if(requestCode == REQUEST_ADD_CREDENTIAL && resultCode == Activity.RESULT_CANCELED) {
+            } else if (requestCode == REQUEST_ADD_CREDENTIAL && resultCode == Activity.RESULT_CANCELED) {
                 inputMethodManager.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0)
             }
         }
+    }
 
-        if(requestCode == REQUEST_SCAN_QR && resultCode == RESULT_NO_PLAY_SERVICES) {
-            try {
-                startActivityForResult(Intent("com.google.zxing.client.android.SCAN").apply {
-                    putExtra("SCAN_MODE", "QR_CODE_MODE")
-                    putExtra("SAVE_HISTORY", false)
-                }, REQUEST_SCAN_QR_EXTERNAL)
-            } catch (e: ActivityNotFoundException) {
-                activity?.toast(R.string.external_qr_scanner_missing)
-            }
+    private fun tryOpeningExternalQrReader() {
+        try {
+            startActivityForResult(Intent("com.google.zxing.client.android.SCAN").apply {
+                putExtra("SCAN_MODE", "QR_CODE_MODE")
+                putExtra("SAVE_HISTORY", false)
+            }, REQUEST_SCAN_QR_EXTERNAL)
+        } catch (e: ActivityNotFoundException) {
+            activity?.toast(R.string.external_qr_scanner_missing)
         }
     }
 
@@ -431,7 +435,7 @@ class CredentialFragment : ListFragment(), CoroutineScope {
                 }
             }).apply {
                 actionMode = this
-            }).apply {
+            })?.apply {
                 menu.findItem(R.id.pin).setIcon(if (adapter.isPinned(credential)) R.drawable.ic_star_24dp else R.drawable.ic_star_border_24dp)
                 title = (credential.issuer?.let { "$it: " } ?: "") + credential.name
             }
