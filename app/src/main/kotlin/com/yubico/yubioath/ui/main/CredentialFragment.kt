@@ -3,7 +3,6 @@ package com.yubico.yubioath.ui.main
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.app.Activity
-import androidx.lifecycle.ViewModelProviders
 import android.content.ActivityNotFoundException
 import android.content.ClipData
 import android.content.Context
@@ -12,19 +11,20 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
-import androidx.annotation.RequiresApi
-import androidx.annotation.StringRes
-import com.google.android.material.snackbar.Snackbar
-import androidx.fragment.app.ListFragment
-import androidx.core.content.ContextCompat
-import androidx.appcompat.app.AlertDialog
 import android.view.*
 import android.view.animation.*
 import android.view.inputmethod.InputMethodManager
 import android.widget.AdapterView
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.annotation.RequiresApi
+import androidx.annotation.StringRes
+import androidx.appcompat.app.AlertDialog
+import androidx.core.content.ContextCompat
+import androidx.fragment.app.ListFragment
 import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProviders
+import com.google.android.material.snackbar.Snackbar
 import com.pixplicity.sharp.Sharp
 import com.yubico.yubikit.application.oath.OathType
 import com.yubico.yubioath.R
@@ -172,7 +172,7 @@ class CredentialFragment : ListFragment(), CoroutineScope {
 
         btn_scan_qr.setOnClickListener {
             hideAddToolbar()
-            if (activity?.isGooglePlayAvailable() == true) {
+            if (it.context.isGooglePlayAvailable()) {
                 startQrCodeAcitivty(REQUEST_SCAN_QR)
             } else {
                 tryOpeningExternalQrReader()
