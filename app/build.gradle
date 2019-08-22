@@ -3,14 +3,25 @@ apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
 
 android {
-    compileSdkVersion 28
+    compileSdkVersion 29
 
     defaultConfig {
         applicationId 'com.yubico.yubioath'
         minSdkVersion 15
-        targetSdkVersion 28
+        targetSdkVersion 29
         versionCode 20194
         versionName '2.2.0-rc5'
+    }
+    flavorDimensions "openSourcePolicy"
+    productFlavors {
+        // Flavor in which every dependency used should also be open source
+        strict {
+            dimension "openSourcePolicy"
+        }
+        // Relaxed Flavor allows non-open source dependencies to be used
+        relaxed {
+            dimension "openSourcePolicy"
+        }
     }
     buildTypes {
         release {
@@ -36,7 +47,7 @@ dependencies {
     implementation 'org.jetbrains.anko:anko-common:0.10.8'
     implementation 'org.jetbrains.anko:anko-sdk15:0.10.8'
 
-    implementation 'com.google.android.gms:play-services-vision:18.0.0'
+    relaxedImplementation 'com.google.android.gms:play-services-vision:18.0.0'
     implementation 'com.google.android.material:material:1.0.0'
     implementation 'androidx.appcompat:appcompat:1.0.2'
     implementation 'androidx.preference:preference:1.0.0'
