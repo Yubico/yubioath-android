@@ -9,8 +9,8 @@ android {
         applicationId 'com.yubico.yubioath'
         minSdkVersion 15
         targetSdkVersion 29
-        versionCode 20194
-        versionName '2.2.0-rc5'
+        versionCode 20199
+        versionName '2.2.0'
     }
     flavorDimensions "openSourcePolicy"
     productFlavors {
