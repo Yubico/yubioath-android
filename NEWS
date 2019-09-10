@@ -1,4 +1,4 @@
-* Version 2.2.0 unreleased
+* Version 2.2.0 released 2019-09-10
  ** Add support for Light/Dark/AMOLED themes.
  ** Make camera requirement optional.
  ** Handle externally launched otpauth:// URLs.
