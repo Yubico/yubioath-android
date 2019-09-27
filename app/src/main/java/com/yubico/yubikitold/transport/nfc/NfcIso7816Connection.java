@@ -1,9 +1,9 @@
-package com.yubico.yubikit.transport.nfc;
+package com.yubico.yubikitold.transport.nfc;
 
 import android.nfc.Tag;
 import android.nfc.tech.IsoDep;
 
-import com.yubico.yubikit.transport.Iso7816Connection;
+import com.yubico.yubikitold.transport.Iso7816Connection;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;

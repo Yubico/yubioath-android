@@ -10,7 +10,7 @@ import android.view.animation.Animation
 import android.view.animation.LinearInterpolator
 import android.view.animation.Transformation
 import android.widget.BaseAdapter
-import com.yubico.yubikit.application.oath.OathType
+import com.yubico.yubikitold.application.oath.OathType
 import com.yubico.yubioath.R
 import com.yubico.yubioath.client.Code
 import com.yubico.yubioath.client.Credential

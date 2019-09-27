@@ -26,7 +26,7 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import com.google.android.material.snackbar.Snackbar
 import com.pixplicity.sharp.Sharp
-import com.yubico.yubikit.application.oath.OathType
+import com.yubico.yubikitold.application.oath.OathType
 import com.yubico.yubioath.R
 import com.yubico.yubioath.client.Code
 import com.yubico.yubioath.client.Credential

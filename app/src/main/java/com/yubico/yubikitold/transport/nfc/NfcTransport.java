@@ -1,11 +1,11 @@
-package com.yubico.yubikit.transport.nfc;
+package com.yubico.yubikitold.transport.nfc;
 
 import android.nfc.FormatException;
 import android.nfc.NdefMessage;
 import android.nfc.Tag;
 import android.nfc.tech.Ndef;
 
-import com.yubico.yubikit.transport.YubiKeyTransport;
+import com.yubico.yubikitold.transport.YubiKeyTransport;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -65,7 +65,7 @@ public class NfcTransport implements YubiKeyTransport {
     }
 
     @Override
-    public NfcIso7816Connection connect() throws IOException {
+    public com.yubico.yubikitold.transport.nfc.NfcIso7816Connection connect() throws IOException {
         return new NfcIso7816Connection(tag);
     }
 

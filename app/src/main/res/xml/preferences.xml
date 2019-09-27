@@ -1,23 +1,5 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <SwitchPreference
-        android:defaultValue="true"
-        android:key="hideThumbnail"
-        android:summary="@string/hide_thumbnail_description"
-        android:title="@string/hide_thumbnail_title" />
-
-    <SwitchPreference
-        android:defaultValue="true"
-        android:key="warnNfc"
-        android:summary="@string/warn_nfc_description"
-        android:title="@string/warn_nfc_title" />
-
-    <SwitchPreference
-        android:defaultValue="false"
-        android:key="readNdefData"
-        android:summary="@string/read_ndef_data_description"
-        android:title="@string/read_ndef_data_title" />
-
     <ListPreference
         android:defaultValue="US"
         android:entries="@array/defaultKeyboard"
@@ -25,12 +7,6 @@
         android:key="keyboardLayout"
         android:summary="%s"
         android:title="@string/keyboard_layout_title" />
-
-    <SwitchPreference
-        android:defaultValue="false"
-        android:key="disableNfcReaderMode"
-        android:summary="@string/disable_nfc_reader_mode_description"
-        android:title="@string/disable_nfc_reader_mode_title" />
 
     <ListPreference
         android:defaultValue="Light"
@@ -48,9 +24,33 @@
         android:key="clearPasswords"
         android:title="@string/clear_passwords_action" />
 
-
     <Preference
         android:key="about"
         android:title="@string/about_action" />
+
+    <SwitchPreference
+        android:defaultValue="true"
+        android:key="warnNfc"
+        android:summary="@string/warn_nfc_description"
+        android:title="@string/warn_nfc_title" />
+
+    <SwitchPreference
+        android:defaultValue="false"
+        android:key="readNdefData"
+        android:summary="@string/read_ndef_data_description"
+        android:title="@string/read_ndef_data_title" />
+
+    <SwitchPreference
+        android:defaultValue="true"
+        android:key="hideThumbnail"
+        android:summary="@string/hide_thumbnail_description"
+        android:title="@string/hide_thumbnail_title" />
+
+
+    <SwitchPreference
+        android:defaultValue="false"
+        android:key="disableNfcReaderMode"
+        android:summary="@string/disable_nfc_reader_mode_description"
+        android:title="@string/disable_nfc_reader_mode_title" />
 
 </PreferenceScreen>

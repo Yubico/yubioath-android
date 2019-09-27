@@ -1,4 +1,4 @@
-package com.yubico.yubikit.transport.usb;
+package com.yubico.yubikitold.transport.usb;
 
 import android.hardware.usb.UsbConstants;
 import android.hardware.usb.UsbDevice;
@@ -7,7 +7,7 @@ import android.hardware.usb.UsbEndpoint;
 import android.hardware.usb.UsbInterface;
 import android.hardware.usb.UsbManager;
 
-import com.yubico.yubikit.transport.Iso7816Connection;
+import com.yubico.yubikitold.transport.Iso7816Connection;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;

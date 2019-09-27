@@ -1,8 +1,8 @@
-package com.yubico.yubikit.application;
+package com.yubico.yubikitold.application;
 
 import android.util.Log;
 
-import com.yubico.yubikit.transport.Iso7816Connection;
+import com.yubico.yubikitold.transport.Iso7816Connection;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
