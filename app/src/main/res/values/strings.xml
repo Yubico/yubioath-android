@@ -147,4 +147,19 @@ OATH Version: %2$s</p>
     <string name="external_qr_scanner_missing">No QR code reader available.</string>
     <string name="toggle_mask">Show/Hide password</string>
 
+    <string-array name="icon_choices">
+        <item>Select an image…</item>
+        <item>Use default icon</item>
+    </string-array>
+
+    <string-array name="defaultKeyboard">
+        <item>US</item>
+    </string-array>
+
+    <string-array name="themeSelection">
+        <item>Light</item>
+        <item>Dark</item>
+        <item>AMOLED</item>
+    </string-array>
+
 </resources>

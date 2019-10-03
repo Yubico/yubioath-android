@@ -109,18 +109,4 @@
         <item>#263238</item>
     </array>
 
-    <string-array name="icon_choices">
-        <item>Select an image…</item>
-        <item>Use default icon</item>
-    </string-array>
-
-    <string-array name="defaultKeyboard">
-        <item>US</item>
-    </string-array>
-
-    <string-array name="themeSelection">
-        <item>Light</item>
-        <item>Dark</item>
-        <item>AMOLED</item>
-    </string-array>
 </resources>
