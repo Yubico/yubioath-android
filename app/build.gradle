@@ -52,6 +52,11 @@ dependencies {
     implementation 'org.jetbrains.anko:anko-common:0.10.8'
     implementation 'org.jetbrains.anko:anko-sdk15:0.10.8'
 
+    // core library, connection detection, and raw commands communication with YubiKey
+    implementation "com.yubico.yubikit:yubikit:1.0.0-beta03"
+    // OATH
+    implementation "com.yubico.yubikit:oath:1.0.0-beta03"
+
     relaxedImplementation 'com.google.android.gms:play-services-vision:18.0.0'
     implementation 'com.google.android.material:material:1.0.0'
     implementation 'androidx.appcompat:appcompat:1.1.0'
