@@ -20,8 +20,8 @@ import java.util.concurrent.SynchronousQueue;
  */
 public final class YubiKitManager {
     private final Handler handler;
-    private final com.yubico.yubikitold.transport.usb.UsbDeviceManager usbDeviceManager;
-    private final com.yubico.yubikitold.transport.nfc.NfcDeviceManager nfcDeviceManager;
+    private final UsbDeviceManager usbDeviceManager;
+    private final NfcDeviceManager nfcDeviceManager;
     private OnYubiKeyListener listener = null;
     private boolean paused = true;
 
