@@ -45,8 +45,8 @@ public final class YubiKitManager {
             handler = new Handler(YkIoWorker.getLooper());
         }
         this.handler = handler;
-        usbDeviceManager = new com.yubico.yubikitold.transport.usb.UsbDeviceManager(activity, handler);
-        nfcDeviceManager = new com.yubico.yubikitold.transport.nfc.NfcDeviceManager(activity, handler, nfcDispatcher);
+        usbDeviceManager = new UsbDeviceManager(activity, handler);
+        nfcDeviceManager = new NfcDeviceManager(activity, handler, nfcDispatcher);
     }
 
     /**
