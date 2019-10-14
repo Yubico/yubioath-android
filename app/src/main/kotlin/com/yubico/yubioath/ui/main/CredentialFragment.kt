@@ -31,7 +31,6 @@ import com.yubico.yubioath.R
 import com.yubico.yubioath.client.Code
 import com.yubico.yubioath.client.Credential
 import com.yubico.yubioath.client.CredentialData
-import com.yubico.yubioath.getQrCodeDisplayValue
 import com.yubico.yubioath.isGooglePlayAvailable
 import com.yubico.yubioath.startQrCodeAcitivty
 import com.yubico.yubioath.ui.add.AddCredentialActivity
@@ -214,7 +213,7 @@ class CredentialFragment : ListFragment(), CoroutineScope {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
-        fun handleUrlCredential(context: Context, data: String) {
+        fun handleUrlCredential(context: Context, data: String?) {
             try {
                 val uri = Uri.parse(data)
                 CredentialData.fromUri(uri)
@@ -249,7 +248,7 @@ class CredentialFragment : ListFragment(), CoroutineScope {
                     actionMode?.finish()
                 }
                 REQUEST_SCAN_QR -> {
-                    handleUrlCredential(this, data.getQrCodeDisplayValue(QR_DATA))
+                    handleUrlCredential(this, data.dataString)
                 }
                 REQUEST_SCAN_QR_EXTERNAL -> {
                     handleUrlCredential(this, data.getStringExtra("SCAN_RESULT"))
