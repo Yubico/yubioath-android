@@ -214,13 +214,18 @@ class CredentialFragment : ListFragment(), CoroutineScope {
         super.onActivityResult(requestCode, resultCode, data)
 
         fun handleUrlCredential(context: Context, data: String?) {
-            try {
-                val uri = Uri.parse(data)
-                CredentialData.fromUri(uri)
-                startActivityForResult(Intent(Intent.ACTION_VIEW, uri, context, AddCredentialActivity::class.java), REQUEST_ADD_CREDENTIAL)
-            } catch (e: IllegalArgumentException) {
+            if (data != null) {
+                try {
+                    val uri = Uri.parse(data)
+                    CredentialData.fromUri(uri)
+                    startActivityForResult(Intent(Intent.ACTION_VIEW, uri, context, AddCredentialActivity::class.java), REQUEST_ADD_CREDENTIAL)
+                } catch (e: IllegalArgumentException) {
+                    context.toast(R.string.invalid_barcode)
+                }
+            } else {
                 context.toast(R.string.invalid_barcode)
             }
+
         }
 
         activity?.apply {
