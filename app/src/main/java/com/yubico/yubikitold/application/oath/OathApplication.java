@@ -1,12 +1,12 @@
-package com.yubico.yubikit.application.oath;
+package com.yubico.yubikitold.application.oath;
 
 import android.util.SparseArray;
 
-import com.yubico.yubikit.application.AbstractApplication;
-import com.yubico.yubikit.application.ApduException;
-import com.yubico.yubikit.application.Tlv;
-import com.yubico.yubikit.application.Version;
-import com.yubico.yubikit.transport.Iso7816Connection;
+import com.yubico.yubikitold.application.AbstractApplication;
+import com.yubico.yubikitold.application.ApduException;
+import com.yubico.yubikitold.application.Tlv;
+import com.yubico.yubikitold.application.Version;
+import com.yubico.yubikitold.transport.Iso7816Connection;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;

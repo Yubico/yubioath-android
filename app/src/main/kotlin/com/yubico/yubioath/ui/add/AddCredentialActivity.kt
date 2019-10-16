@@ -8,8 +8,8 @@ import android.view.Menu
 import android.view.MenuItem
 import androidx.core.content.ContextCompat
 import com.google.android.material.snackbar.Snackbar
-import com.yubico.yubikit.application.ApduException
-import com.yubico.yubikit.application.oath.OathApplication
+import com.yubico.yubikitold.application.ApduException
+import com.yubico.yubikitold.application.oath.OathApplication
 import com.yubico.yubioath.R
 import com.yubico.yubioath.exc.DuplicateKeyException
 import com.yubico.yubioath.exc.KeyTooLongException

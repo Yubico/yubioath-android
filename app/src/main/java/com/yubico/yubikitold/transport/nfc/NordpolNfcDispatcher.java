@@ -1,4 +1,4 @@
-package com.yubico.yubikit.transport.nfc;
+package com.yubico.yubikitold.transport.nfc;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -6,6 +6,7 @@ import android.nfc.Tag;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+
 import nordpol.android.OnDiscoveredTagListener;
 import nordpol.android.TagDispatcher;
 import nordpol.android.TagDispatcherBuilder;

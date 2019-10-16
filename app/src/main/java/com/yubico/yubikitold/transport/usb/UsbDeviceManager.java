@@ -1,4 +1,4 @@
-package com.yubico.yubikit.transport.usb;
+package com.yubico.yubikitold.transport.usb;
 
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
@@ -9,7 +9,7 @@ import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbManager;
 import android.util.Log;
 
-import com.yubico.yubikit.transport.OnYubiKeyListener;
+import com.yubico.yubikitold.transport.OnYubiKeyListener;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;

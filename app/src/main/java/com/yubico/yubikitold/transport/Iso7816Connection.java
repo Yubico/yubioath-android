@@ -1,4 +1,4 @@
-package com.yubico.yubikit.transport;
+package com.yubico.yubikitold.transport;
 
 import java.io.Closeable;
 import java.io.IOException;

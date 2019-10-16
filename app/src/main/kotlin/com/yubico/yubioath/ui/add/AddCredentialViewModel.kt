@@ -1,7 +1,7 @@
 package com.yubico.yubioath.ui.add
 
 import android.net.Uri
-import com.yubico.yubikit.application.oath.OathType
+import com.yubico.yubikitold.application.oath.OathType
 import com.yubico.yubioath.client.Code
 import com.yubico.yubioath.client.Credential
 import com.yubico.yubioath.client.CredentialData

@@ -1,8 +1,8 @@
 package com.yubico.yubioath.client
 
 import android.net.Uri
-import com.yubico.yubikit.application.oath.HashAlgorithm
-import com.yubico.yubikit.application.oath.OathType
+import com.yubico.yubikitold.application.oath.HashAlgorithm
+import com.yubico.yubikitold.application.oath.OathType
 import org.apache.commons.codec.binary.Base32
 
 

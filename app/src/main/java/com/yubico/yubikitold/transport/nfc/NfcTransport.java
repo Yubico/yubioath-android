@@ -1,17 +1,17 @@
-package com.yubico.yubikit.transport.nfc;
+package com.yubico.yubikitold.transport.nfc;
 
 import android.nfc.FormatException;
 import android.nfc.NdefMessage;
 import android.nfc.Tag;
 import android.nfc.tech.Ndef;
 
-import com.yubico.yubikit.transport.YubiKeyTransport;
+import androidx.annotation.Nullable;
+
+import com.yubico.yubikitold.transport.YubiKeyTransport;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.Arrays;
-
-import androidx.annotation.Nullable;
 
 public class NfcTransport implements YubiKeyTransport {
     private static final byte URL_NDEF_RECORD = (byte) 0xd1;

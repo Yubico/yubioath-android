@@ -7,7 +7,7 @@ android {
 
     defaultConfig {
         applicationId 'com.yubico.yubioath'
-        minSdkVersion 15
+        minSdkVersion 19
         targetSdkVersion 29
         versionCode 20199
         versionName '2.2.0'
@@ -39,6 +39,11 @@ android {
     }
 
     testOptions.unitTests.includeAndroidResources = true
+    compileOptions {
+        sourceCompatibility = 1.8
+        targetCompatibility = 1.8
+    }
+    buildToolsVersion = '29.0.2'
 }
 
 dependencies {
@@ -47,11 +52,16 @@ dependencies {
     implementation 'org.jetbrains.anko:anko-common:0.10.8'
     implementation 'org.jetbrains.anko:anko-sdk15:0.10.8'
 
+    // core library, connection detection, and raw commands communication with YubiKey
+    implementation "com.yubico.yubikit:yubikit:1.0.0-beta03"
+    // OATH
+    implementation "com.yubico.yubikit:oath:1.0.0-beta03"
+
     relaxedImplementation 'com.google.android.gms:play-services-vision:18.0.0'
     implementation 'com.google.android.material:material:1.0.0'
-    implementation 'androidx.appcompat:appcompat:1.0.2'
-    implementation 'androidx.preference:preference:1.0.0'
-    implementation 'androidx.lifecycle:lifecycle-extensions:2.0.0'
+    implementation 'androidx.appcompat:appcompat:1.1.0'
+    implementation 'androidx.preference:preference:1.1.0'
+    implementation 'androidx.lifecycle:lifecycle-extensions:2.1.0'
 
     implementation 'commons-codec:commons-codec:1.11'
     implementation 'com.fidesmo:nordpol-android:0.1.23'

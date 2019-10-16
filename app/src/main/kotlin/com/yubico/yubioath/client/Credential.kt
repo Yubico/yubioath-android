@@ -2,7 +2,7 @@ package com.yubico.yubioath.client
 
 import android.os.Parcel
 import android.os.Parcelable
-import com.yubico.yubikit.application.oath.OathType
+import com.yubico.yubikitold.application.oath.OathType
 
 data class Credential(val deviceId: String, val key: String, val type: OathType?, val touch: Boolean) : Parcelable {
     val issuer: String?

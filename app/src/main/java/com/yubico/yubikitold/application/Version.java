@@ -1,4 +1,4 @@
-package com.yubico.yubikit.application;
+package com.yubico.yubikitold.application;
 
 import java.nio.ByteBuffer;
 import java.util.Locale;

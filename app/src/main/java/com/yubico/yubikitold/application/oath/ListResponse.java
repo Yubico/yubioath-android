@@ -1,6 +1,6 @@
-package com.yubico.yubikit.application.oath;
+package com.yubico.yubikitold.application.oath;
 
-import com.yubico.yubikit.application.Tlv;
+import com.yubico.yubikitold.application.Tlv;
 
 import java.nio.charset.Charset;
 

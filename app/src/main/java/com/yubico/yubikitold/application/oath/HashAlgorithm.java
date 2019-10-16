@@ -1,4 +1,4 @@
-package com.yubico.yubikit.application.oath;
+package com.yubico.yubikitold.application.oath;
 
 import java.nio.ByteBuffer;
 import java.security.MessageDigest;

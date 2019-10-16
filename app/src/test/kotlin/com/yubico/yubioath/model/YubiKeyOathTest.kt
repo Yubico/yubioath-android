@@ -1,8 +1,8 @@
 package com.yubico.yubioath.model
 
-import com.yubico.yubikit.application.oath.HashAlgorithm
-import com.yubico.yubikit.application.oath.OathType
-import com.yubico.yubikit.transport.Iso7816Connection
+import com.yubico.yubikitold.application.oath.HashAlgorithm
+import com.yubico.yubikitold.application.oath.OathType
+import com.yubico.yubikitold.transport.Iso7816Connection
 import com.yubico.yubioath.client.CredentialData
 import com.yubico.yubioath.client.KeyManager
 import com.yubico.yubioath.client.OathClient

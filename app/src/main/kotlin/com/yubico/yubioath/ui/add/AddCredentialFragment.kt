@@ -39,9 +39,9 @@ import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
 import android.widget.AdapterView
 import android.widget.TextView
-import com.yubico.yubikit.application.Version
-import com.yubico.yubikit.application.oath.HashAlgorithm
-import com.yubico.yubikit.application.oath.OathType
+import com.yubico.yubikitold.application.Version
+import com.yubico.yubikitold.application.oath.HashAlgorithm
+import com.yubico.yubikitold.application.oath.OathType
 import com.yubico.yubioath.R
 import com.yubico.yubioath.client.CredentialData
 import kotlinx.android.synthetic.main.fragment_add_credential.*

@@ -10,8 +10,8 @@ import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import androidx.appcompat.widget.SearchView
-import com.yubico.yubikit.transport.YubiKeyTransport
-import com.yubico.yubikit.transport.nfc.NfcTransport
+import com.yubico.yubikitold.transport.YubiKeyTransport
+import com.yubico.yubikitold.transport.nfc.NfcTransport
 import com.yubico.yubioath.R
 import com.yubico.yubioath.client.Code
 import com.yubico.yubioath.scancode.KeyboardLayout

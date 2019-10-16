@@ -4,7 +4,7 @@ import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.yubico.yubikit.application.Version
+import com.yubico.yubikitold.application.Version
 import com.yubico.yubioath.client.DeviceInfo
 import com.yubico.yubioath.client.OathClient
 import kotlinx.coroutines.*

@@ -1,4 +1,4 @@
-package com.yubico.yubikit;
+package com.yubico.yubikitold;
 
 import android.app.Activity;
 import android.os.Handler;
@@ -6,9 +6,9 @@ import android.os.Looper;
 
 import androidx.annotation.Nullable;
 
-import com.yubico.yubikit.transport.OnYubiKeyListener;
-import com.yubico.yubikit.transport.nfc.NfcDeviceManager;
-import com.yubico.yubikit.transport.usb.UsbDeviceManager;
+import com.yubico.yubikitold.transport.OnYubiKeyListener;
+import com.yubico.yubikitold.transport.nfc.NfcDeviceManager;
+import com.yubico.yubikitold.transport.usb.UsbDeviceManager;
 
 import java.util.concurrent.SynchronousQueue;
 
@@ -40,7 +40,7 @@ public final class YubiKitManager {
      * @param handler       Optional Handler used to dispatch YubiKey events on. This should NOT be using the Main Thread.
      * @param nfcDispatcher Optional NfcDispatcher to use instead of the default implementation for NFC communication.
      */
-    public YubiKitManager(Activity activity, @Nullable Handler handler, @Nullable NfcDeviceManager.NfcDispatcher nfcDispatcher) {
+    public YubiKitManager(Activity activity, @Nullable Handler handler, @Nullable com.yubico.yubikitold.transport.nfc.NfcDeviceManager.NfcDispatcher nfcDispatcher) {
         if (handler == null) {
             handler = new Handler(YkIoWorker.getLooper());
         }

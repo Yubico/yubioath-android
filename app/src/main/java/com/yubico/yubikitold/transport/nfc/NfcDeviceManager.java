@@ -1,4 +1,4 @@
-package com.yubico.yubikit.transport.nfc;
+package com.yubico.yubikitold.transport.nfc;
 
 import android.app.Activity;
 import android.nfc.Tag;
@@ -8,7 +8,7 @@ import android.util.Log;
 
 import androidx.annotation.Nullable;
 
-import com.yubico.yubikit.transport.OnYubiKeyListener;
+import com.yubico.yubikitold.transport.OnYubiKeyListener;
 
 public class NfcDeviceManager {
     private final Activity activity;

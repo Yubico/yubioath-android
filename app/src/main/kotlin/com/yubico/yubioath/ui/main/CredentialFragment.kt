@@ -26,12 +26,11 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import com.google.android.material.snackbar.Snackbar
 import com.pixplicity.sharp.Sharp
-import com.yubico.yubikit.application.oath.OathType
+import com.yubico.yubikitold.application.oath.OathType
 import com.yubico.yubioath.R
 import com.yubico.yubioath.client.Code
 import com.yubico.yubioath.client.Credential
 import com.yubico.yubioath.client.CredentialData
-import com.yubico.yubioath.getQrCodeDisplayValue
 import com.yubico.yubioath.isGooglePlayAvailable
 import com.yubico.yubioath.startQrCodeAcitivty
 import com.yubico.yubioath.ui.add.AddCredentialActivity
@@ -214,14 +213,19 @@ class CredentialFragment : ListFragment(), CoroutineScope {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
-        fun handleUrlCredential(context: Context, data: String) {
-            try {
-                val uri = Uri.parse(data)
-                CredentialData.fromUri(uri)
-                startActivityForResult(Intent(Intent.ACTION_VIEW, uri, context, AddCredentialActivity::class.java), REQUEST_ADD_CREDENTIAL)
-            } catch (e: IllegalArgumentException) {
+        fun handleUrlCredential(context: Context, data: String?) {
+            if (data != null) {
+                try {
+                    val uri = Uri.parse(data)
+                    CredentialData.fromUri(uri)
+                    startActivityForResult(Intent(Intent.ACTION_VIEW, uri, context, AddCredentialActivity::class.java), REQUEST_ADD_CREDENTIAL)
+                } catch (e: IllegalArgumentException) {
+                    context.toast(R.string.invalid_barcode)
+                }
+            } else {
                 context.toast(R.string.invalid_barcode)
             }
+
         }
 
         activity?.apply {
@@ -249,7 +253,7 @@ class CredentialFragment : ListFragment(), CoroutineScope {
                     actionMode?.finish()
                 }
                 REQUEST_SCAN_QR -> {
-                    handleUrlCredential(this, data.getQrCodeDisplayValue(QR_DATA))
+                    handleUrlCredential(this, data.dataString)
                 }
                 REQUEST_SCAN_QR_EXTERNAL -> {
                     handleUrlCredential(this, data.getStringExtra("SCAN_RESULT"))

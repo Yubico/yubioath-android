@@ -20,14 +20,14 @@ class SettingsFragment : PreferenceFragmentCompat() {
     private val viewModel: SettingsViewModel by lazy { ViewModelProviders.of(activity!!).get(SettingsViewModel::class.java) }
 
     private inline fun onPreferenceChange(key: String, crossinline func: (value: Any) -> Unit) {
-        preferenceManager.findPreference(key).onPreferenceChangeListener = Preference.OnPreferenceChangeListener { _, value ->
+        preferenceManager.findPreference<Preference>(key)?.onPreferenceChangeListener = Preference.OnPreferenceChangeListener { _, value ->
             func(value)
             true
         }
     }
 
     private inline fun onPreferenceClick(key: String, crossinline func: () -> Unit) {
-        preferenceManager.findPreference(key).onPreferenceClickListener = Preference.OnPreferenceClickListener {
+        preferenceManager.findPreference<Preference>(key)?.onPreferenceClickListener = Preference.OnPreferenceClickListener {
             func()
             true
         }
@@ -85,10 +85,10 @@ class SettingsFragment : PreferenceFragmentCompat() {
             }
 
             onPreferenceChange("readNdefData") {
-                preferenceManager.findPreference("keyboardLayout").isEnabled = it == true
+                preferenceManager.findPreference<Preference>("keyboardLayout")?.isEnabled = it == true
             }
 
-            (preferenceManager.findPreference("keyboardLayout") as ListPreference).apply {
+            (preferenceManager.findPreference<ListPreference>("keyboardLayout"))?.apply {
                 entryValues = KeyboardLayout.availableLayouts
                 entries = entryValues
                 isEnabled = preferenceManager.sharedPreferences.getBoolean("readNdefData", false)

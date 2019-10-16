@@ -1,9 +1,9 @@
-package com.yubico.yubikit.transport.usb;
+package com.yubico.yubikitold.transport.usb;
 
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbManager;
 
-import com.yubico.yubikit.transport.YubiKeyTransport;
+import com.yubico.yubikitold.transport.YubiKeyTransport;
 
 import java.io.IOException;
 import java.util.Arrays;

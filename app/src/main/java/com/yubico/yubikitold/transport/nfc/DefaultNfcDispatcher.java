@@ -1,4 +1,4 @@
-package com.yubico.yubikit.transport.nfc;
+package com.yubico.yubikitold.transport.nfc;
 
 import android.app.Activity;
 import android.nfc.NfcAdapter;

@@ -1,8 +1,6 @@
-package com.yubico.yubikit.transport;
+package com.yubico.yubikitold.transport;
 
 import java.io.IOException;
-
-import androidx.annotation.Nullable;
 
 public interface YubiKeyTransport {
     boolean hasIso7816();

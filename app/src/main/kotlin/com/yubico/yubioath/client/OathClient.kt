@@ -2,12 +2,12 @@ package com.yubico.yubioath.client
 
 import android.util.Base64
 import android.util.Log
-import com.yubico.yubikit.application.ApduException
-import com.yubico.yubikit.application.oath.CalculateResponse
-import com.yubico.yubikit.application.oath.OathApplication
-import com.yubico.yubikit.application.oath.OathType
-import com.yubico.yubikit.transport.Iso7816Connection
-import com.yubico.yubikit.transport.usb.UsbIso7816Connection
+import com.yubico.yubikitold.application.ApduException
+import com.yubico.yubikitold.application.oath.CalculateResponse
+import com.yubico.yubikitold.application.oath.OathApplication
+import com.yubico.yubikitold.application.oath.OathType
+import com.yubico.yubikitold.transport.Iso7816Connection
+import com.yubico.yubikitold.transport.usb.UsbIso7816Connection
 import com.yubico.yubioath.exc.DuplicateKeyException
 import com.yubico.yubioath.exc.KeyTooLongException
 import com.yubico.yubioath.exc.PasswordRequiredException
