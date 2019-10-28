@@ -28,7 +28,7 @@ APK from the command line, run:
 Once done the .apk file can be found in the app/build/outputs/apk/ directory.
 
 == Translations
-https://github.com/Yubico/yubioath-android/blob/master/TRANSLATIONS.md[Check here] for information on how to handle translations & localisation
+https://github.com/Yubico/yubioath-android/blob/master/TRANSLATIONS.adoc[Check here] for information on how to handle translations & localisation
 
 === Issues
 
