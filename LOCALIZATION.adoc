@@ -1,4 +1,4 @@
-# Translations
+# Localization
 
 Localisation is handled through Transifex. The project can be accessed through https://www.transifex.com/yubico-1/yubico-authenticator-android[this link].
 
