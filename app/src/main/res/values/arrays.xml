@@ -109,4 +109,36 @@
         <item>#263238</item>
     </array>
 
+    <string-array name="icon_choices">
+        <item>@string/icon_select_image</item>
+        <item>@string/icon_use_default</item>
+    </string-array>
+
+    <string-array name="defaultKeyboard">
+        <item>@string/keyboard_us</item>
+    </string-array>
+
+    <string-array name="themeSelection">
+        <item>@string/theme_light</item>
+        <item>@string/theme_dark</item>
+        <item>@string/theme_amoled</item>
+    </string-array>
+
+    <string-array name="credential_type">
+        <item>@string/credential_time_based</item>
+        <item>@string/credential_counter_based</item>
+    </string-array>
+
+    <string-array name="credential_algo">
+        <item>SHA-1</item>
+        <item>SHA-256</item>
+        <item>SHA-512</item>
+    </string-array>
+
+    <string-array name="credential_digits">
+        <item>6</item>
+        <item>7</item>
+        <item>8</item>
+    </string-array>
+
 </resources>
