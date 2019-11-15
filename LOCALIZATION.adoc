@@ -1,13 +1,3 @@
-# Localization
+# Strings & Localization
 
-Localisation is handled through Transifex. The project can be accessed through https://www.transifex.com/yubico-1/yubico-authenticator-android[this link].
-
-This Android project has been configured to work with https://docs.transifex.com/client/introduction[Transifex' CLI] which, after installed, can easily be used to push and pull strings.
-
-To push the source string file for translations, simply run this command on the project's root directory:
-
-    tx push -s
-    
-To pull the translated strings, use this command on the project's root directory:
-
-    tx pull -a
+Strings used in this project are hosted in a https://github.com/Yubico/yubioath-strings[separate repository]. When adding a new string, add it to the source file on that repository, and it will automatically be available to other Yubico Authenticator projects, with support for translations through Transifex.
