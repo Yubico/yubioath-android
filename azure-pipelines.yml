@@ -23,7 +23,7 @@ steps:
   displayName: Stage demo app artifacts
   inputs:
     contents: '**/*.apk'
-    targetFolder: $(Build.ArtifactStagingDirectory)/DemoApp/bin
+    targetFolder: $(Build.ArtifactStagingDirectory)/bin
     flattenFolders: true
 
 - task: PublishBuildArtifacts@1
