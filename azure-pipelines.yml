@@ -18,6 +18,5 @@ steps:
     publishJUnitResults: false
     testResultsFiles: '**/TEST-*.xml'
     tasks: 'assembleDebug'
-    
+   
 - publish: '**/*.apk'
-  artifact: $(Build.DefinitionName)
