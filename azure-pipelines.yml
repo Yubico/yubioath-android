@@ -19,4 +19,15 @@ steps:
     testResultsFiles: '**/TEST-*.xml'
     tasks: 'assembleDebug'
    
-- publish: '**/*.apk'
+- task: CopyFiles@2
+  displayName: Stage demo app artifacts
+  inputs:
+    contents: '**/*.apk'
+    targetFolder: $(Build.ArtifactStagingDirectory)/DemoApp/bin
+    flattenFolders: true
+
+- task: PublishBuildArtifacts@1
+  displayName: Publish build artifacts
+  inputs:
+    pathToPublish: $(Build.ArtifactStagingDirectory)
+    artifactName: $(Build.DefinitionName)
