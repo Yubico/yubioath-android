@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="utf-8"?><!--
+  ~ Copyright (c) 2013, Yubico AB.  All rights reserved.
+  ~
+  ~ Redistribution and use in source and binary forms, with or without
+  ~ modification, are permitted provided that the following conditions
+  ~ are met:
+  ~
+  ~ * Redistributions of source code must retain the above copyright
+  ~   notice, this list of conditions and the following disclaimer.
+  ~
+  ~ * Redistributions in binary form must reproduce the above copyright
+  ~   notice, this list of conditions and the following
+  ~   disclaimer in the documentation and/or other materials provided
+  ~   with the distribution.
+  ~
+  ~ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND
+  ~ CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
+  ~ INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+  ~ MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+  ~ DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS
+  ~ BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+  ~ EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED
+  ~ TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+  ~ DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+  ~ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
+  ~ TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
+  ~ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+  ~ SUCH DAMAGE.
+  -->
+
+<resources>
+    <string name="app_name">Yubico Authenticator</string>
+    <string name="ok">OK</string>
+    <string name="save">Save</string>
+    <string name="cancel">Cancel</string>
+    <string name="password">Password</string>
+    <string name="swipe_and_hold">Tap or insert your YubiKey</string>
+    <string name="tag_error">Error in YubiKey communication</string>
+    <string name="nfc_off">NFC is disabled</string>
+    <string name="no_nfc">This device seems to not support NFC</string>
+    <string name="no_applet">OATH functionality missing or disabled</string>
+    <string name="storage_full">YubiKey OATH storage is full!</string>
+    <string name="key_too_long">Issuer/name too long!</string>
+
+    <!-- View credentials -->
+    <string name="no_credentials">No credentials stored</string>
+    <string name="press_for_code">Press button for code…</string>
+    <string name="copy_to_clipboard">Copy</string>
+    <string name="copied">Code copied to clipboard</string>
+    <string name="add_account_scan">Scan QR-code</string>
+    <string name="add_account_manual">Manual entry</string>
+    <string name="invalid_barcode">The scanned barcode is invalid</string>
+    <string name="invalid_image">Error loading image</string>
+    <string name="read_hotp">Read a HOTP code</string>
+    <string name="search">Search</string>
+    <string name="delete">Delete</string>
+    <string name="delete_cred">Delete credential</string>
+    <string name="delete_cred_message">This will delete the credential from your YubiKey. This action cannot be undone.</string>
+    <string name="deleted">Credential deleted!</string>
+    <string name="no_match">No matches</string>
+
+    <!-- Add credential -->
+    <string name="add_credential_issuer">Issuer (optional)</string>
+    <string name="add_credential_secret">Secret key</string>
+    <string name="add_credential_secret_invalid">Invalid value for secret</string>
+    <string name="add_credential_account">Account name</string>
+    <string name="add_credential_account_empty">Account name must not be empty</string>
+    <string name="add_credential_success">Credential added!</string>
+    <string name="require_touch">Require touch</string>
+    <string name="add_credential_touch_version">Requires YubiKey 4 or later</string>
+    <string name="add_credential_algo_512">SHA-512 requires YubiKey 4.3.1 or later</string>
+    <string name="period">Period</string>
+    <string name="period_30" translatable="false">30</string>
+    <string name="credential_type">Type</string>
+    <string name="algorithm">Algorithm</string>
+    <string name="digits">Digits</string>
+    <string name="password_required">Password required</string>
+    <string name="password_wrong">Wrong password</string>
+    <string name="password_remember">Remember password</string>
+
+    <!-- Password -->
+    <string name="change_password">Change password</string>
+    <string name="old_password">Current password</string>
+    <string name="new_password">New password (blank for none)</string>
+    <string name="verify_password">Verify password</string>
+    <string name="password_mismatch">Passwords don\'t match!</string>
+    <string name="password_updated">Password updated!</string>
+    <string name="settings">Settings</string>
+    <string name="clear">Clear</string>
+    <string name="clear_icons">Clear custom icons</string>
+
+    <!-- Settings -->
+    <string name="clear_icons_message">This will remove all custom icons from this device.</string>
+    <string name="icons_cleared">Icons cleared!</string>
+    <string name="clear_passwords">Clear stored passwords</string>
+    <string name="clear_passwords_message">This will clear all stored passwords from this device, prompting you to re-enter them when needed.</string>
+    <string name="passwords_cleared">Stored passwords cleared!</string>
+    <string name="about">About</string>
+    <string name="new_credential">New credential</string>
+    <string name="hide_thumbnail_title">Hide app thumbnail</string>
+    <string name="hide_thumbnail_description">Don\'t show codes in the app switcher</string>
+    <string name="disable_nfc_reader_mode_title">Disable NFC Reader mode</string>
+
+    <string name="disable_nfc_reader_mode_description">This may resolve NFC issues on some handsets, but is likely to introduce them on others. Use what works best for you.</string>
+    <string name="theme_select_title">Theme</string>
+    <string name="read_ndef_data_title">Read NFC NDEF payload</string>
+    <string name="read_ndef_data_description">Read the OTP slot data over NFC and display it as a credential.</string>
+    <string name="warn_nfc_title">NFC warnings</string>
+    <string name="warn_nfc_description">Warn when NFC is disabled or missing</string>
+    <string name="clear_icons_action">Clear custom icons…</string>
+    <string name="clear_passwords_action">Clear stored passwords…</string>
+    <string name="keyboard_layout_title">Keyboard layout (NDEF static passwords)</string>
+    <string name="about_action">About Yubico Authenticator…</string>
+    <string name="about_title">About</string>
+    <string name="no_device">No YubiKey present</string>
+    <string name="about_text"><![CDATA[
+<p>Yubico Authenticator for Android<br/>
+Version: %1$s<br/>
+OATH Version: %2$s</p>
+
+<p><a href="https://developers.yubico.com/yubioath-android/">Web site</a><br/>
+<br/><a href="https://github.com/Yubico/yubioath-android/">Source code</a><br/>
+<br/><a href="https://www.youtube.com/watch?v=W7if0FW12D0">Demo video</a></p>
+
+<p>Yubico Authenticator requires a YubiKey with OATH functionality (such as the YubiKey NEO, 4 or 5).</p>
+
+<p>Copyright Yubico<br/>
+<a href="https://www.yubico.com/">https://www.yubico.com/</a></p>]]></string>
+    <string name="header_qr">Point the camera at the QR code</string>
+    <string name="camera_not_ready">Camera dependency not yet available, please try again later.</string>
+    <string name="external_qr_scanner_missing">No QR code reader available.</string>
+
+
+    <string name="toggle_mask">Show/Hide password</string>
+    <string name="icon_select_image">Select an image…</string>
+    <string name="icon_use_default">Use default icon</string>
+    <string name="keyboard_us">US</string>
+
+    <string name="theme_light">Light</string>
+    <string name="theme_dark">Dark</string>
+    <string name="theme_amoled" translatable="false">AMOLED</string>
+    <string name="credential_time_based">Time based</string>
+    <string name="credential_counter_based">Counter based</string>
+
+</resources>
