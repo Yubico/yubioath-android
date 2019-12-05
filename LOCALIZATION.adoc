@@ -1,0 +1,3 @@
+# Strings & Localization
+
+Strings used in this project are hosted in a https://github.com/Yubico/yubioath-strings[separate repository]. When adding a new string, add it to the source file on that repository, and it will automatically be available to other Yubico Authenticator projects, with support for translations through Transifex.
