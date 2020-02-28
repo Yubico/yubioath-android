@@ -22,6 +22,14 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppThemeLight">
+        <activity android:name=".ui.NewMainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
         <meta-data
             android:name="com.google.android.gms.vision.DEPENDENCIES"
             android:value="barcode" />
@@ -31,10 +39,6 @@
             android:configChanges="orientation|keyboard|keyboardHidden"
             android:launchMode="singleTask">
             <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-
                 <action android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED" />
             </intent-filter>
             <intent-filter>
@@ -60,7 +64,6 @@
                 android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED"
                 android:resource="@xml/device_filter" />
         </activity>
-
         <activity
             android:name=".ui.add.AddCredentialActivity"
             android:configChanges="orientation|keyboard|keyboardHidden"
@@ -70,7 +73,6 @@
                 <action android:name="android.intent.action.VIEW" />
 
                 <category android:name="android.intent.category.DEFAULT" />
-
                 <category android:name="android.intent.category.BROWSABLE" />
 
                 <data android:scheme="otpauth" />
@@ -80,33 +82,27 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.yubico.yubioath.ui.main.MainActivity" />
         </activity>
-
         <activity
             android:name=".ui.password.PasswordActivity"
             android:configChanges="orientation|keyboard|keyboardHidden"
             android:label="@string/change_password"
             android:launchMode="singleTask">
-
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.yubico.yubioath.ui.main.MainActivity" />
         </activity>
-
         <activity
             android:name=".ui.settings.SettingsActivity"
             android:configChanges="orientation|keyboard|keyboardHidden"
             android:label="@string/settings">
-
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.yubico.yubioath.ui.main.MainActivity" />
         </activity>
-
         <activity
             android:name=".ui.qr.QrActivity"
             android:excludeFromRecents="true"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
-
     </application>
 
 </manifest>

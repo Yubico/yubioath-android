@@ -57,6 +57,9 @@ dependencies {
     // OATH
     implementation "com.yubico.yubikit:oath:1.0.0-beta03"
 
+    implementation 'androidx.constraintlayout:constraintlayout:1.1.3'
+    implementation 'androidx.legacy:legacy-support-v4:1.0.0'
+    implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.0.0'
     relaxedImplementation 'com.google.android.gms:play-services-vision:18.0.0'
     implementation 'com.google.android.material:material:1.0.0'
     implementation 'androidx.appcompat:appcompat:1.1.0'
