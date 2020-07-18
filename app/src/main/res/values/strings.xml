@@ -93,6 +93,8 @@
     <string name="password_required">Password required</string>
     <string name="password_wrong">Wrong password</string>
     <string name="password_remember">Remember password</string>
+    <string name="use_fingerprint">Use fingerprint</string>
+    <string name="fingerprint_auth">Fingerprint auth</string>
     <string name="change_password">Change password</string>
     <string name="old_password">Current password</string>
     <string name="new_password">New password (blank for none)</string>
@@ -147,4 +149,12 @@ OATH Version: %2$s</p>
     <string name="external_qr_scanner_missing">No QR code reader available.</string>
     <string name="toggle_mask">Show/Hide password</string>
 
+    <string name="auth_error_message">Authentication error</string>
+    <string name="auth_success_message">Authentication succeeded.</string>
+    <string name="auth_help_message">Authentication help</string>
+    <string name="auth_failed_message">Authentication failed.</string>
+
+    <string name="fingerpint_not_entabled_message">Lock screen security not enabled in Settings</string>
+    <string name="fingerpint_permissions_not_entabled_message">Fingerprint authentication permission not enabled</string>
+    <string name="fingerpint_not_registered_message">Register at least one fingerprint in Settings</string>
 </resources>

@@ -18,7 +18,9 @@ class KeyStoreProvider : KeyProvider {
         keystore.aliases().asSequence().map {
             it.split(',', limit = 2)
         }.forEach {
-            entries.getOrPut(it[0], { mutableSetOf() }).add(it[1])
+            if (it.size == 2) {
+                entries.getOrPut(it[0], { mutableSetOf() }).add(it[1])
+            }
         }
     }
 

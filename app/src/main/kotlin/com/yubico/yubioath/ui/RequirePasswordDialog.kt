@@ -42,43 +42,71 @@ class RequirePasswordDialog : DialogFragment() {
     companion object {
         private const val MISSING = "missing"
 
-        internal fun newInstance(missing: Boolean, onNewPassword:(String, Boolean) -> Unit): RequirePasswordDialog {
+        internal fun newInstance(
+            missing: Boolean
+        ): RequirePasswordDialog {
             return RequirePasswordDialog().apply {
                 arguments = Bundle().apply {
                     putBoolean(MISSING, missing)
                 }
-                setOnNewPassword(onNewPassword)
             }
         }
     }
 
-    private lateinit var onNewPassword: (String, Boolean) -> Unit
+    private lateinit var onNewPassword: (password: String, remember: Boolean, useFingerprint: Boolean) -> Unit
 
-    private fun setOnNewPassword(handler:(String, Boolean) -> Unit) {
-        onNewPassword = handler
+    public fun setOnNewPassword(cb: (password: String, remember: Boolean, useFingerprint: Boolean) -> Unit): RequirePasswordDialog {
+        onNewPassword = cb
+        return this
+    }
+
+    private lateinit var onClose: () -> Unit
+
+    public fun setOnClose(cb: () -> Unit): RequirePasswordDialog {
+        onClose = cb
+        return this
+    }
+
+    private lateinit var onTextFocus: () -> Unit
+
+    public fun setOnTextFocus(cb: () -> Unit): RequirePasswordDialog {
+        onTextFocus = cb
+        return this
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         return arguments!!.let {
             val missing = it.getBoolean(MISSING)
             val view = LayoutInflater.from(context).inflate(R.layout.dialog_require_password, null)
-            AlertDialog.Builder(activity).apply {
-                setView(view)
-                setTitle(if (missing) R.string.password_required else R.string.password_wrong)
-                setPositiveButton(R.string.ok, null) // To be able to cancel dismissing the dialog we use the onClick listener set in the onShowListener...
-                setNegativeButton(R.string.cancel) { dialog, _ -> dialog.cancel() }
-            }.create().apply {
-                setOnShowListener { getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
-                    val password = view.password.text.toString()
-                    val remember = view.rememberPassword.isChecked
-                    if (password.isNotEmpty()) {
-                        onNewPassword(password, remember)
-                        dismiss()
-                    } else {
-                        view.password_wrapper.error = getString(R.string.password_required)
+            AlertDialog.Builder(activity)
+                .apply {
+                    setView(view)
+                    setTitle(if (missing) R.string.password_required else R.string.password_wrong)
+                    setPositiveButton(R.string.ok, null)
+                    setNegativeButton(R.string.cancel) { dialog, _ -> dialog.cancel() }
+                }
+                .create()
+                .apply {
+                    setOnShowListener {
+                        view.password.setOnFocusChangeListener { v, hasFocus ->
+                            if (hasFocus) {
+                                onTextFocus()
+                            }
+                        }
+                        getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+                            val password = view.password.text.toString()
+                            val remember = view.rememberPassword.isChecked
+                            val useFingerprint = view.useFingerprint.isChecked
+                            if (password.isNotEmpty()) {
+                                onNewPassword(password, remember, useFingerprint)
+                                dismiss()
+                            } else {
+                                view.password_wrapper.error = getString(R.string.password_required)
+                            }
+                        }
                     }
-                } }
-            }
+                    setOnClose(onClose)
+                }
         }
     }
 }
