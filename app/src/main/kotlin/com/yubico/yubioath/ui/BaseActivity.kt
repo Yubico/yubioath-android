@@ -80,6 +80,8 @@ abstract class BaseActivity<T : BaseViewModel>(private var modelClass: Class<T>)
 
     private var themeId = 0
 
+    private var devicesAuthenticatedWithFingerprint: MutableList<String> = mutableListOf<String>()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -202,6 +204,8 @@ abstract class BaseActivity<T : BaseViewModel>(private var modelClass: Class<T>)
                                         keyManager.addKey(e.deviceId, KeyManager.calculateSecret(password, e.salt, true), false)
                                         yubiKitManager.triggerOnYubiKey()
 
+                                        devicesAuthenticatedWithFingerprint.add(e.deviceId)
+
                                         dialog.dismiss()
                                     }
                                 })
@@ -261,6 +265,21 @@ abstract class BaseActivity<T : BaseViewModel>(private var modelClass: Class<T>)
             }?.let {
                 toast(it)
                 viewModel.nfcWarned = true
+            }
+        }
+    }
+
+    public override fun onTrimMemory(level: Int) {
+        super.onTrimMemory(level)
+
+        // remove keys after app is moved to background - require auth again after reenter
+        if (level == TRIM_MEMORY_UI_HIDDEN) {
+            if (devicesAuthenticatedWithFingerprint != null) {
+                while (devicesAuthenticatedWithFingerprint.size > 0) {
+                    var deviceId = devicesAuthenticatedWithFingerprint.last()
+                    devicesAuthenticatedWithFingerprint = devicesAuthenticatedWithFingerprint.dropLast(1).toMutableList()
+                    keyManager.clearKeys(deviceId, true)
+                }
             }
         }
     }
