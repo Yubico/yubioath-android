@@ -273,7 +273,7 @@ abstract class BaseActivity<T : BaseViewModel>(private var modelClass: Class<T>)
         super.onTrimMemory(level)
 
         // remove keys after app is moved to background - require auth again after reenter
-        if (level == TRIM_MEMORY_UI_HIDDEN) {
+        if (level >= TRIM_MEMORY_UI_HIDDEN) {
             if (devicesAuthenticatedWithFingerprint != null) {
                 while (devicesAuthenticatedWithFingerprint.size > 0) {
                     var deviceId = devicesAuthenticatedWithFingerprint.last()
