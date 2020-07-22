@@ -57,9 +57,11 @@ class KeyManager(private val permStore: KeyProvider, private val memStore: KeyPr
         }
     }
 
-    fun clearKeys(deviceId: String) {
+    fun clearKeys(deviceId: String, memOnly: Boolean = false) {
         memStore.clearKeys(deviceId)
-        permStore.clearKeys(deviceId)
+        if (!memOnly) {
+            permStore.clearKeys(deviceId)
+        }
     }
 
     fun clearAll() {
