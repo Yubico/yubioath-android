@@ -1,22 +1,16 @@
 package com.yubico.yubioath.ui
 
-import android.Manifest
-import android.app.KeyguardManager
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
-import android.content.pm.PackageManager
-import android.hardware.fingerprint.FingerprintManager
 import android.hardware.usb.UsbConstants
 import android.nfc.NfcAdapter
 import android.os.Build
 import android.os.Bundle
+import android.util.Base64
 import android.util.Log
 import android.view.WindowManager
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.ActivityCompat
-import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.preference.PreferenceManager
@@ -30,8 +24,7 @@ import com.yubico.yubioath.R
 import com.yubico.yubioath.client.KeyManager
 import com.yubico.yubioath.client.OathClient
 import com.yubico.yubioath.exc.PasswordRequiredException
-import com.yubico.yubioath.fingerprint.AuthHandler
-import com.yubico.yubioath.fingerprint.EncryptionObject
+import com.yubico.yubioath.fingerprint.FingerprintAuthManager
 import com.yubico.yubioath.keystore.ClearingMemProvider
 import com.yubico.yubioath.keystore.KeyStoreProvider
 import com.yubico.yubioath.keystore.SharedPrefProvider
@@ -44,8 +37,6 @@ import kotlin.coroutines.CoroutineContext
 abstract class BaseActivity<T : BaseViewModel>(private var modelClass: Class<T>) : AppCompatActivity(), CoroutineScope, OnYubiKeyListener {
     companion object {
         private const val SP_STORED_AUTH_KEYS = "com.yubico.yubioath.SP_STORED_AUTH_KEYS"
-        private const val SECURE_KEY = "data.source.prefs.SECURE_KEY"
-        private const val SEPARATOR = "-"
 
         private val MEM_STORE = ClearingMemProvider()
 
@@ -81,6 +72,8 @@ abstract class BaseActivity<T : BaseViewModel>(private var modelClass: Class<T>)
     private var themeId = 0
 
     private var devicesAuthenticatedWithFingerprint: MutableList<String> = mutableListOf<String>()
+
+    private lateinit var fingerprintAuthManager: FingerprintAuthManager;
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -126,9 +119,9 @@ abstract class BaseActivity<T : BaseViewModel>(private var modelClass: Class<T>)
         themeId = getThemeId(prefs.getString("themeSelect", "Light")!!)
         setTheme(themeId)
 
-        initFingerprintService()
-
-        checkFingerprint()
+        fingerprintAuthManager = FingerprintAuthManager(this)
+        fingerprintAuthManager.initFingerprintService()
+        fingerprintAuthManager.checkFingerprint()
     }
 
     private fun updateTheme(newThemeId: Int) {
@@ -162,58 +155,7 @@ abstract class BaseActivity<T : BaseViewModel>(private var modelClass: Class<T>)
                 viewModel.onClient(OathClient(it, keyManager))
             }
         } catch (e: PasswordRequiredException) {
-            coroutineScope {
-                launch(Dispatchers.Main) {
-                    supportFragmentManager.apply {
-                        if (findFragmentByTag("dialog_require_password") == null) {
-                            var dialog = RequirePasswordDialog
-                                .newInstance(e.isMissing)
-                                .setOnNewPassword { password, remember, useFingerprint ->
-                                    keyManager.clearKeys(e.deviceId)
-                                    keyManager.addKey(e.deviceId, KeyManager.calculateSecret(password, e.salt, false), remember)
-                                    keyManager.addKey(e.deviceId, KeyManager.calculateSecret(password, e.salt, true), remember)
-                                    yubiKitManager.triggerOnYubiKey()
-
-                                    if (useFingerprint) {
-                                        createFingerprintHandlerEnc({
-                                            saveAuthPassword(e.deviceId, password)
-                                        })
-                                    }
-                                }
-                                .setOnTextFocus {
-                                    var authHandler: AuthHandler? = currentAuthHandler
-                                    if (authHandler != null) {
-                                        authHandler.cancel()
-                                    }
-                                }
-                                .setOnClose {
-                                    var authHandler: AuthHandler? = currentAuthHandler
-                                    if (authHandler != null) {
-                                        authHandler.cancel()
-                                    }
-                                }
-
-                            dialog.show(beginTransaction(), "dialog_require_password")
-
-                            if (hasAuthPassword(e.deviceId)) {
-                                createFingerprintHandlerDec(e.deviceId, {
-                                    val password = getAuthPassword(e.deviceId)
-                                    if (password != null) {
-                                        keyManager.clearKeys(e.deviceId)
-                                        keyManager.addKey(e.deviceId, KeyManager.calculateSecret(password, e.salt, false), false)
-                                        keyManager.addKey(e.deviceId, KeyManager.calculateSecret(password, e.salt, true), false)
-                                        yubiKitManager.triggerOnYubiKey()
-
-                                        devicesAuthenticatedWithFingerprint.add(e.deviceId)
-
-                                        dialog.dismiss()
-                                    }
-                                })
-                            }
-                        }
-                    }
-                }
-            }
+            runAuthProcess(e.deviceId, e.salt, e.isMissing)
         } catch (e: Exception) {
             Log.e("yubioath", "Error using OathClient", e)
             val message = if (e is ApduException) {
@@ -245,6 +187,7 @@ abstract class BaseActivity<T : BaseViewModel>(private var modelClass: Class<T>)
 
     public override fun onPause() {
         yubiKitManager.pause()
+        clearDevicesAuthWithFingerprint()
         super.onPause()
     }
 
@@ -267,153 +210,121 @@ abstract class BaseActivity<T : BaseViewModel>(private var modelClass: Class<T>)
                 viewModel.nfcWarned = true
             }
         }
+
+        tryAuthLastDevice()
     }
 
-    public override fun onTrimMemory(level: Int) {
+    override fun onTrimMemory(level: Int) {
         super.onTrimMemory(level)
 
-        // remove keys after app is moved to background - require auth again after reenter
         if (level >= TRIM_MEMORY_UI_HIDDEN) {
-            if (devicesAuthenticatedWithFingerprint != null) {
-                while (devicesAuthenticatedWithFingerprint.size > 0) {
-                    var deviceId = devicesAuthenticatedWithFingerprint.last()
-                    devicesAuthenticatedWithFingerprint = devicesAuthenticatedWithFingerprint.dropLast(1).toMutableList()
-                    keyManager.clearKeys(deviceId, true)
+            clearDevicesAuthWithFingerprint()
+        }
+    }
+
+    override fun onUserLeaveHint() {
+        clearDevicesAuthWithFingerprint()
+
+        super.onUserLeaveHint()
+    }
+
+    override fun onBackPressed() {
+        fingerprintAuthManager.cancel()
+
+        super.onBackPressed()
+    }
+
+    open suspend fun runAuthProcess(deviceId: String, salt: ByteArray, isMissing: Boolean = true) {
+        coroutineScope {
+            launch(Dispatchers.Main) {
+                supportFragmentManager.apply {
+                    if (findFragmentByTag("dialog_require_password") == null) {
+                        var dialog = RequirePasswordDialog
+                            .newInstance(isMissing)
+                            .setOnNewPassword { password, remember, useFingerprint ->
+                                keyManager.clearKeys(deviceId)
+                                keyManager.addKey(deviceId, KeyManager.calculateSecret(password, salt, false), remember)
+                                keyManager.addKey(deviceId, KeyManager.calculateSecret(password, salt, true), remember)
+                                yubiKitManager.triggerOnYubiKey()
+
+                                if (useFingerprint) {
+                                    fingerprintAuthManager.createEncryptHandler({
+                                        fingerprintAuthManager.saveAuthPassword(deviceId, password)
+                                    })
+                                    saveLastDevice(deviceId, salt)
+                                }
+                            }
+                            .setOnTextFocus {
+                                fingerprintAuthManager.cancel()
+                            }
+                            .setOnClose {
+                                fingerprintAuthManager.cancel()
+                            }
+
+                        dialog.show(beginTransaction(), "dialog_require_password")
+
+                        if (fingerprintAuthManager.hasAuthPassword(deviceId)) {
+                            fingerprintAuthManager.createDecryptHandler(deviceId, {
+                                val password = fingerprintAuthManager.getAuthPassword(deviceId)
+                                if (password != null) {
+                                    keyManager.clearKeys(deviceId)
+                                    keyManager.addKey(deviceId, KeyManager.calculateSecret(password, salt, false), false)
+                                    keyManager.addKey(deviceId, KeyManager.calculateSecret(password, salt, true), false)
+                                    yubiKitManager.triggerOnYubiKey()
+
+                                    devicesAuthenticatedWithFingerprint.add(deviceId)
+
+                                    dialog.dismiss()
+                                }
+                            })
+                        }
+                    }
                 }
             }
         }
     }
 
-
-    // fngerprint auth
-    private lateinit var fingerprintManager: FingerprintManager
-    private lateinit var keyguardManager: KeyguardManager
-    private lateinit var cryptoObjectEncrypt: FingerprintManager.CryptoObject
-    private lateinit var cryptoObjectDecrypt: FingerprintManager.CryptoObject
-
-    private lateinit var pref: SharedPreferences
-    private lateinit var editor: SharedPreferences.Editor
-
-    private val encryptionObject: EncryptionObject = EncryptionObject.newInstance()
-
-    private var currentAuthHandler: AuthHandler? = null
-
-    private fun initFingerprintService() {
-        keyguardManager = getSystemService(Context.KEYGUARD_SERVICE) as KeyguardManager
-        fingerprintManager = getSystemService(Context.FINGERPRINT_SERVICE) as FingerprintManager
-
-        pref = this.getSharedPreferences(
-            "com.yubico.secure.pref",
-            Context.MODE_PRIVATE
-        )
-        editor = pref.edit()
-    }
-
-    private fun saveAuthPassword(deviceId: String, password: String) {
-        var key = SECURE_KEY + SEPARATOR + deviceId
-
-        try {
-            var encryptedMessage = encryptionObject.encrypt(
-                encryptionObject.cipherEnc,
-                password.toByteArray(Charsets.UTF_8),
-                SEPARATOR
-            )
-            pref.commit {
-                editor.putString(key, encryptedMessage)
-                editor.apply()
+    private fun clearDevicesAuthWithFingerprint() {
+        if (devicesAuthenticatedWithFingerprint != null) {
+            while (devicesAuthenticatedWithFingerprint.size > 0) {
+                var deviceId = devicesAuthenticatedWithFingerprint.last()
+                devicesAuthenticatedWithFingerprint = devicesAuthenticatedWithFingerprint.dropLast(1).toMutableList()
+                keyManager.clearKeys(deviceId, true)
             }
-        } catch (e: Exception) {
-            e.printStackTrace()
         }
     }
 
-    private fun hasAuthPassword(deviceId: String) : Boolean {
-        var key = SECURE_KEY + SEPARATOR + deviceId
-        return pref.getString(key, null) != null
-    }
+    private fun tryAuthLastDevice() {
+        var lastDeviceId: String? = prefs.getString("lastDeviceId", null)
+        var lastDeviceSalt: String? = prefs.getString("lastDeviceSalt", null)
 
-    private fun getAuthPassword(deviceId: String) : String? {
-        var key = SECURE_KEY + SEPARATOR + deviceId
-        var mess = pref.getString(key, null)
-        if (mess == null) {
-            return null
-        }
+        if (lastDeviceId != null && lastDeviceSalt != null) {
+            var lastDeviceSaltBA = Base64.decode(lastDeviceSalt, Base64.DEFAULT)
 
-        try {
-            mess = mess.split(SEPARATOR)[0].replace("\n", "")
-            val decryptedData = encryptionObject.decrypt(
-                encryptionObject.cipherDec,
-                mess
-            )
-            return decryptedData
-        }
-        catch (e: java.lang.Exception) {
-            return null
+            if (fingerprintAuthManager.hasAuthPassword(lastDeviceId)) {
+                fingerprintAuthManager.createDecryptHandler(lastDeviceId, {
+                    val password = fingerprintAuthManager.getAuthPassword(lastDeviceId)
+                    if (password != null) {
+                        keyManager.clearKeys(lastDeviceId)
+                        keyManager.addKey(lastDeviceId, KeyManager.calculateSecret(password, lastDeviceSaltBA, false), false)
+                        keyManager.addKey(lastDeviceId, KeyManager.calculateSecret(password, lastDeviceSaltBA, true), false)
+                        yubiKitManager.triggerOnYubiKey()
+
+                        devicesAuthenticatedWithFingerprint.add(lastDeviceId)
+                    }
+                })
+            }
         }
     }
 
-    private fun createFingerprintHandlerEnc(cbSuccess: () -> Unit = {}, cbFailed: () -> Unit = {}) {
-        // cancel previous
-        var authHandler: AuthHandler? = currentAuthHandler
-        if (authHandler != null) {
-            authHandler.cancel()
-        }
+    private fun saveLastDevice(deviceId: String, salt: ByteArray) {
+        var saltEncoded = Base64.encodeToString(salt, Base64.DEFAULT)
 
-        // create new one
-        authHandler = AuthHandler(this)
-        try {
-            cryptoObjectEncrypt = FingerprintManager.CryptoObject(encryptionObject.cipherForEncryption())
-            authHandler.startAuth(fingerprintManager, cryptoObjectEncrypt, cbSuccess, cbFailed)
-            currentAuthHandler = authHandler
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
-    }
-
-    private fun createFingerprintHandlerDec(deviceId: String, cbSuccess: () -> Unit = {}, cbFailed: () -> Unit = {}) {
-        var key = SECURE_KEY + SEPARATOR + deviceId
-
-        // cancel previous
-        var authHandler: AuthHandler? = currentAuthHandler
-        if (authHandler != null) {
-            authHandler.cancel()
-        }
-
-        // create new one
-        authHandler = AuthHandler(this)
-        try {
-            var mess = pref.getString(key, null)!!.split(SEPARATOR)[1].replace("\n", "")
-            cryptoObjectDecrypt = FingerprintManager.CryptoObject(
-                encryptionObject.cipherForDecryption(mess)
-            )
-            authHandler.startAuth(fingerprintManager, cryptoObjectDecrypt, cbSuccess, cbFailed)
-            currentAuthHandler = authHandler
-        } catch (e: java.lang.Exception) {
-            e.printStackTrace()
-        }
-    }
-
-    private fun checkFingerprint() {
-        if (!keyguardManager.isKeyguardSecure) {
-            Toast.makeText(this, getString(R.string.fingerpint_not_entabled_message), Toast.LENGTH_SHORT).show()
-            return
-        }
-
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.USE_FINGERPRINT) != PackageManager.PERMISSION_GRANTED) {
-            Toast.makeText(
-                this,
-                getString(R.string.fingerpint_permissions_not_entabled_message),
-                Toast.LENGTH_LONG
-            ).show()
-            return
-        }
-        if (!fingerprintManager.hasEnrolledFingerprints()) {
-            Toast.makeText(
-                this,
-                getString(R.string.fingerpint_not_registered_message),
-                Toast.LENGTH_LONG
-            ).show()
-            return
+        var editor: SharedPreferences.Editor = prefs.edit()
+        prefs.commit {
+            editor.putString("lastDeviceId", deviceId)
+            editor.putString("lastDeviceSalt", saltEncoded)
+            editor.apply()
         }
     }
 
